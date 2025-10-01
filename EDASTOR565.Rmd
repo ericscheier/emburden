@@ -1,0 +1,134 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(corrplot)
+library(reshape)
+data<- read_csv("diabetes.csv")
+data <- data%>% mutate(index=1:n())
+```
+
+```{r}
+head(data)
+
+na_count <-sapply(data, function(y) sum(length(which(is.na(y)))))
+na_count
+```
+
+768 Observations, 9 variables
+8 Predictor Variables, all numeric
+1 Binary response variable
+No NA's in the set
+268 1's in Outcome, meanign 268 people w diabetes
+
+
+```{r}
+corrplot.mixed(cor(data), upper = "shade", lower.col = "black")
+#corrplot(cor(data), method = "number")
+```
+
+```{r}
+data$Pregnancies.scaled <- scale(data$Pregnancies)
+data$Glucose.scaled <- scale(data$Glucose)
+data$BloodPressure.scaled <- scale(data$BloodPressure)
+data$SkinThickness.scaled <- scale(data$SkinThickness)
+data$Insulin.scaled <- scale(data$Insulin)
+data$BMI.scaled <- scale(data$BMI)
+data$DiabetesPedigreeFunction.scaled <- scale(data$DiabetesPedigreeFunction)
+data$Age.scaled <- scale(data$Age)
+```
+Standardized the variables so we can compare them. 
+
+```{r}
+# lmts = range(data$Pregnancies.scaled, data$Glucose.scaled, data$BloodPressure.scaled, data$SkinThickness.scaled, data$Insulin.scaled, data$BMI.scaled, data$DiabetesPedigreeFunction.scaled)
+# par(mfrow = c(1,8))
+# boxplot(data$Pregnancies.scaled, ylim = lmts)
+# boxplot(data$Glucose.scaled, ylim = lmts)
+# boxplot(data$BloodPressure.scaled, ylim = lmts)
+# boxplot(data$SkinThickness.scaled, ylim = lmts)
+# boxplot(data$Insulin.scaled, ylim = lmts)
+# boxplot(data$BMI.scaled, ylim = lmts)
+# boxplot(data$DiabetesPedigreeFunction.scaled, ylim = lmts)
+# boxplot(data$Age.scaled, ylim=lmts)
+```
+
+```{r}
+e <- ggplot(data, aes(x = as.factor(Outcome), y = Pregnancies))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+The Black dot is the mean # of pregnancies for each side and the Notch represents a confidence interval for the true median. Pretty Sure it's a 90% Confidence interval but it would be easy to doubled check
+
+```{r}
+e <- ggplot(data, aes(x = as.factor(Outcome), y = Glucose))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+
+```{r}
+e <- ggplot(data, aes(x = as.factor(Outcome), y = BloodPressure))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+These two don't seem as clearly seperated as the others.
+
+```{r}
+e <- ggplot(data, aes(x = as.factor(Outcome), y = SkinThickness))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+
+
+```{r}
+e <- ggplot(data, aes(x = as.factor(Outcome), y = Insulin))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+
+Might Need to turn the notch of for this one. Same Process but w/ removing people who dont take insulin below:
+```{r}
+only.insulin <- subset(data, data$Insulin != 0)
+e <- ggplot(only.insulin, aes(x = as.factor(Outcome), y = Insulin))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+
+
+
+```{r}
+e <- ggplot(data, aes(x = as.factor(Outcome), y = BMI))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+
+
+```{r}
+e <- ggplot(data, aes(x = as.factor(Outcome), y = DiabetesPedigreeFunction))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+
+```{r}
+e <- ggplot(data, aes(x = as.factor(Outcome), y = Age))
+e + geom_boxplot(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+e + geom_violin(notch = TRUE, fill = "lightgray", aes(color = as.factor(Outcome))) +scale_color_manual(values = c("blue", "red")) + stat_summary(fun = mean, geom = "point", shape = 18, size = 2.5, color = "black")
+```
+Logistic Regression might be tough -- 0/1 Clusters are not super well seperated for every variable
+
+```{r}
+varList <- 0
+for (i in 1:8){
+  varList[i] <- var(data[,i])
+}
+varList <- as.data.frame(varList)
+barplot(t(varList))
+```
+The super high variance is associated with Insulin level.
+
+

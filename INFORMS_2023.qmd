@@ -1,0 +1,222 @@
+---
+title: "Exploring American Residential Community Distributed Energy Resource Adoption Potential by Energyshed"
+subtitle: "INFORMS 2023"
+author: "Eric Scheier"
+affiliation: "Emergi Foundation"
+location: "SF Bay Area, CA"
+format: html
+editor: visual
+---
+
+## Abstract
+
+Energy equity and distributed resource integration have the potential to interact positively and negatively throughout the energy transition. Here, we estimate the impact of deploying community co-located DERs within each United States electric distribution grid as measured by a number of sustainability and resilience metrics alongside market values. We show which cohorts are expected to contribute to and benefit most from different energy transition pathways and demonstrate future scenarios that meet 24/7 energy needs with affordable, clean energy.
+
+Introduction
+
+1.  Energy equity and distributed resource integration have the potential to interact positively and negatively throughout the energy transition. 
+
+2.  Here, we 
+
+    1.  estimate the impact of deploying community co-located DERs 
+
+    2.  within each United States electric distribution grid 
+
+    3.  as measured by 
+
+        1.  a number of sustainability and 
+
+        2.  resilience metrics alongside 
+
+        3.  market values.  
+
+3.  We show 
+
+    1.  which cohorts are expected to 
+
+        1.  contribute to and 
+
+        2.  benefit most 
+
+    2.  from different energy transition pathways and 
+
+    3.  demonstrate future scenarios that meet 24/7 energy needs with 
+
+        1.  affordable, 
+
+        2.  clean energy. 
+
+\
+
+Tech stack:
+
+-   GenX
+
+    -   by NERC region?
+
+    -   Can we do this by energyshed?
+
+-   
+
+\
+
+Vertical slice:
+
+# Framework
+
+## Distributed Energy Resources
+
+-   electric vehicles
+
+-   solar systems
+
+    -   behind-the-meter
+
+        -   net metered
+
+        -   zero backfeed
+
+    -   distribution-interconnected
+
+    -   transmission-interconnected
+
+-   battery storage
+
+    -   standalone
+
+    -   paired with solar
+
+    -   paired with \[x\]
+
+-   beneficial electrification
+
+    -   cooking
+
+    -   laundry
+
+    -   hvac
+
+-   smart home
+
+    -   thermostats
+
+    -   heat pump water heaters
+
+    -   heat pump HVAC systems
+
+    -   other smart home appliances
+
+    -   dishwasher
+
+    -   laundry washing machine
+
+    -   laundry drying machine
+
+-   energy efficiency measures
+
+    -   insulation
+
+    -   windows
+
+    -   lighting
+
+    -   ? - stack from NREL studies
+
+## Cohorts
+
+-   Subdivisions of LEAD/ACS/census data
+
+-   Equity communities
+
+-   Zip codes
+
+## Energysheds
+
+-   EIA distribution grids \[in California or WECC?\] vs by NERC region?
+
+    -   NERC region --\> Green-E minimally viable scope
+
+    -   EIA distribution grid --\> true granularity
+
+-   What about CCAs?
+
+    -   Ignore for now. Not really definable or meaningful in terms of underlying energysheds
+    -   Vs: focus on them as an ignored part of the market
+
+-   Residential Utility Rate Database
+
+    -   Residential defaults
+
+    -   Also consider options that are available e.g. Time of Use
+
+-   Available DERs limited by smart meter deployment and other attributes of the energyshed
+
+## Impact Metrics
+
+-   Sustainability
+
+    -   Carbon
+
+    -   Equity: Gini Coefficient of NER
+
+    -   SDG indicators?
+
+-   Resilience
+
+    -   Disaster index
+
+    -   Hours without grid connectivity could stay online
+
+    -   Social resilience index?
+
+    -   See ca_at_risk_communities & ca_underserved_communities.Rmd
+
+-   Market Values
+
+    -   Net Energy Return Boost
+
+    -   Self-consumption ratio
+
+    -   Retail values vs wholesale values
+
+# Annualized Scenarios
+
+-   Green-E Standard
+
+-   Regulatory Additionality to RPS requirements
+
+# 24x7 Scenarios
+
+-   GenX 24x7 with physical delivery and additionality
+
+## **Analysis**
+
+An Analysis is a new analysis of existing data or describes new data obtained in a comparative analysis that leads to novel and arresting conclusions of importance to a broad audience. 
+
+**Format**
+
+-   Length -- up to 3,000 words (excluding abstract, online Methods, references and figure legends)
+
+-   Abstract -- 100-150 words, unreferenced. 
+
+-   Display items -- up to 8 items (figures and/or tables). 
+
+-   Analyses should be divided as follows: 
+
+    -   Introduction (without heading) 
+
+    -   Main text
+
+    -   Discussion/Conclusions
+
+    -   Methods. ​
+
+-   Main text and Methods should be divided by topical subheadings; the Discussion does not contain subheadings. 
+
+-   References -- as a guideline, we typically recommend up to 50.
+
+-   Analyses include received/accepted dates. 
+
+-   Analyses may be accompanied by supplementary information. 
+
+-   Analyses are peer reviewed.

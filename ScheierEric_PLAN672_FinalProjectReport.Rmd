@@ -1,0 +1,183 @@
+---
+title: 'PLAN 672: Final Project Report'
+author: "Eric Scheier"
+date: "`r format(Sys.time(), '%Y-%B-%d')`"
+output:
+  tufte::tufte_handout: default
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+is_final=FALSE
+is_preview=TRUE
+is_draft=TRUE
+set.seed(123)
+
+knitr::opts_chunk$set(comment='##', 
+                      collapse=ifelse(is_preview,TRUE,!is_draft),
+                      echo=ifelse(is_preview,FALSE,is_draft),
+                      eval=TRUE,
+                      warning=ifelse(is_preview,FALSE,is_draft),
+                      error=ifelse(is_preview,FALSE,is_draft),
+                      results=ifelse(is_final,'hide',ifelse(is_preview,'hide','asis')),
+                      fig.keep=ifelse(is_final,'none',ifelse(is_preview,'none','all')),
+                      message=ifelse(is_preview,FALSE,is_draft),
+                      include=ifelse(is_preview,TRUE,is_draft),
+                      tidy=TRUE,
+                      cache=FALSE,
+                      fig.margin=TRUE,
+                      fig.fullwidth = FALSE
+                      )
+```
+
+```{r}
+library(tidyverse)
+library(knitr)
+kable(knitr::opts_chunk$get() %>% enframe())
+```
+
+
+```{r}
+library(MASS)
+library(scales)
+library(caret)
+library(tidyverse)
+library(spatstat)
+library(GGally)
+library(ggpubr)
+library(patchwork)
+library(mgcv)
+```
+
+```{r}
+data <- read_csv(file.path(getwd(),"clean_lead.csv"),
+                          col_types=cols(
+                            geo_id = readr::col_character(),
+                            state_id = readr::col_character(),
+                            county_id = readr::col_character(),
+                            tract_id = readr::col_character(),
+                            puma10_code = readr::col_character(),
+                            fmr_code = readr::col_character(),
+                            occupancy_type = readr::col_factor(),
+                            income_bracket = readr::col_factor(),
+                            primary_heating_fuel = readr::col_factor(),
+                            number_of_units = readr::col_factor(),
+                            year_constructed = readr::col_factor(),
+                            households = col_double(),
+                            annual_income = col_double(),
+                            electricity_spend = col_double(),
+                            gas_spend = col_double(),
+                            other_spend = col_double(),
+                            acs_responses = col_double(),
+                            min_age = col_double(),
+                            min_units = col_double(),
+                            detached = readr::col_factor(NULL),
+                            mean_energy_cost = col_double(),
+                            mean_energy_burden = col_double(),
+                            mean_eroi = col_double(),
+                            energy_poverty = col_logical(),
+                            pct_non_male = col_double(), 
+                            median_age = col_double(),
+                            pct_no_high_school = col_double(),
+                            pct_non_white = col_double(),
+                            median_income = col_double(),
+                            acs_total_households = col_double(),
+                            utility_id = readr::col_factor(levels = NULL, ordered = FALSE, include_na = TRUE),
+                            percent_tract_served = readr::col_double(),
+                            tract_households_served = readr::col_double(),
+                            utility_name = readr::col_character(),
+                            ownership_type = readr::col_factor(NULL),
+                            balancing_authority = readr::col_factor(NULL),
+                            retail_revenue_thousands = readr::col_double(),
+                            retail_sales_MWh = readr::col_double(),
+                            retail_customers = readr::col_double(),
+                            implied_price_kWh = readr::col_double(),
+                            revenue_per_customer = readr::col_double(),
+                            implied_electricity_use = readr::col_double()
+                            ))
+clean_data <- drop_na(data)
+```
+
+
+# Introduction
+
+Energy burden is a statistic defined as the proportion of household income spent on energy bills.  The procurement of electricity, natural gas, fuel oil, wood, coal, solar, and other fuel sources included in this metric are considered essential to the health and safety of prosperous societies. The lower the energy burden, the more discretionary income is available to the household for other necessary goods and services, for savings and investments that contribute to economic growth and community well-being. Inversely, high energy burdens constrict households’ participation in society, and are a contributing factor in poverty broadly.  While per-unit energy costs in the United States are lower than many other countries on average, many Americans still struggle to afford their energy bills.  The universal and fundamental nature of this metric makes it one of public policy interest.  The Federal Low Income Home Energy Assistance Program (LIHEAP) and the Weatherization Assistance Program (WAP) seek to address aspects of energy poverty through bill payment assistance and energy efficiency measures. 
+
+As part of these programs, energy burden has been assessed comprehensively by census tract, county, state, and nationally.  Research based on this data and related methods have found that gender, age, housing age, tenure type, energy inefficiency, education, employment, geography, socioeconomic status, and race/ethnicity are associated with high energy burdens.  However, energy burden has not been examined comprehensively at the scope of the energy provider service territory.  
+
+The energy service territory is more relevant than these other cadastral scopes because the service provider is the authority for determining the costs of energy for each of its customers: in vertically integrated energy markets the monopoly utility is the only option available to all consumers, and in organized energy markets the utility is designated as the provider of last resort for those unable or unwilling to participate in competitive procurement of energy. In some markets, specialized rates or programs are available for Low and Moderate Income consumers (LMI), who may have higher energy burdens.  In fact, 51% of all funding directed to address high energy burdens in the U.S. is from utility ratepayer funded bill and energy efficiency assistance^[https://www.energyefficiencyforall.org/resources/lifting-the-high-energy-burden-in-americas-largest-cities-how-energy/]. This relevance especially holds true for electricity because it is a commodity delivered via a stationary grid system. Even in organized markets where energy supply is competitive, local utilities retain ownership of the transmission and distribution of electricity to end consumers. Furthermore, the lack of storage infrastructure on the grid and behind each meter means that households are beholden to electricity providers for the time of use.  It stands to reason that energy costs, and therefore energy burdens, might be related to the electric service territory in which a household is located. 
+
+This project will estimate the dynamics of energy burden across each electric service territory in North Carolina in order to understand whether energy burdens vary by the type of retail electricity service providers. 
+
+# Data
+
+This analysis uses the following open datasets from 2016: 
+
+This analysis relies on two primary sources of data: Low-Income Energy Affordability Data (LEAD^[https://openei.org/doe-opendata/dataset/celica-data]) furnished by the U.S.  Department of Energy and the Electric Retail Service Territories (ERST^[https://hifld-geoplatform.opendata.arcgis.com/datasets/c4fd0b01c2544a2f83440dab292f0980_0]) provided by the U.S. Department of Homeland Security.  It will also rely on two datasets from which the LEAD dataset was formed: Energy Information Agency Form 861 (EIA^[https://www.census.gov/data/developers/data-sets/acs-5year.2016.html]) and the 5-Year American Community Survey (ACS^[https://www.eia.gov/electricity/data/eia861/]).
+
++ *Low-Income Energy Affordability Data (LEAD)*
+++ Source: Department of Energy
+++ Provides: Energy Cost by Housing Type
+++ Form: Spreadsheet by Census Tract
+
++ *Electric Retail Service Territories (ERST)*
+++ Source: Department of Homeland Security
+++ Provides: Extent of Electricity Grids
+++ Form: Shapefiles by Utility
+
++ *Energy Information Agency Form 861 (EIA)*
+++ Source: Energy Information Agency
+++ Provides: Revenues, Sales, and Customers
+++ Form: Spreadsheet by Utility
+
++ *5-Year American Community Survey (ACS)*
+++ Source: Census Bureau
+++ Provides: Demographic Data
+++ Form: Shapefiles by Census Block/Tract
+
+As part of the calibration process in the creation of the LEAD dataset, utility service territories were mapped to census tracts using a simple intersection.  The average of energy prices was used for tracts with more than one utility present.  The consumption and expenditure estimates for each tract were rescaled and weighted based on these assumptions. This process means that the consumption and cost assumptions along census tracts shared by multiple utilities (i.e. along territory borders) may show a mean-reversion bias.  These assumptions could be relaxed by recreating the LEAD dataset from scratch from the underlying data and methods while incorporating the spatial distribution of housing units in each tract by block group, but this is outside the scope of this project. Instead, a future analysis will assess the systemic bias of the dataset along service territory borders to determine whether this is an issue. 
+Lower income groups may have variable or seasonal income that might not show up in the annualized census data.  These monthly peaks are more important to households when energy bills are higher (e.g. summer air conditioning or winter heating). Furthermore, the impacts of rate structures are not accounted for in the consumption estimates.  This dataset does not control for weather, so the relative efficiency of households cannot be inferred. 
+
+
+# Methods
+
+I cleaned the [LEAD]() and [ERST]() data according to the process outlined in the linked data munging scripts. In summary, this process involved:
+
++ *Trivial Steps*
+++ Join LEAD ↔ ACS by GEOID
+++ Join ERST ↔ EIA by Utility ID
+++ Compute row-wise statistics
++ *Non-Trivial Steps*
+++ Remove Utility overlap
++++ Filter out incorrect extents
++++ Split overlaps “in half”
++++ Prioritize merge by type
+++++ Muni > Coop > IOU
+++ Assign Tracts to Utilities
++++ Assign Block Groups by Most Area covered by Utility
++++ Assign Tract by Most Homes Served by Utility
+
+Then, I joined the census tract demographic data, including the LEAD and ACS data, to the information about each electric retail service provider, including the EIA data. This resulted in the following map of census tracts colored by type of service provider serving them:
+
+```{r}
+
+```
+
+
+# Results
+
+This process resulted in a dataset which outlines the energy expenditures, incomes, household characteristics, and demographic characteristics for each census tract in North Carolina.
+
+```{r fig.margin=TRUE, fig.keep='all', fig.cap=""}
+```
+
+
+
+
+```{marginfigure fig.keep='all', fig.margin = TRUE, results='asis'}
+#print(kable(var_desc) %>% kable_styling(c("striped", "bordered")))
+```
+
+

@@ -1,0 +1,669 @@
+---
+title: 'STOR 565: Final Project Report (Group 4)'
+author: "Colin Camp, Eric Scheier, Omar Shaban"
+date: "`r format(Sys.time(), '%Y-%B-%d')`"
+output:
+  tufte::tufte_handout: default
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+is_final=FALSE
+is_preview=TRUE
+is_draft=TRUE
+set.seed(123)
+
+knitr::opts_chunk$set(comment='##', 
+                      collapse=ifelse(is_preview,TRUE,!is_draft),
+                      echo=ifelse(is_preview,FALSE,is_draft),
+                      eval=TRUE,
+                      warning=ifelse(is_preview,FALSE,is_draft),
+                      error=ifelse(is_preview,FALSE,is_draft),
+                      results=ifelse(is_preview,'hide',is_draft),
+                      fig.keep=ifelse(is_final,'none',ifelse(is_preview,'none','all')),
+                      message=ifelse(is_preview,FALSE,is_draft),
+                      include=ifelse(is_preview,TRUE,is_draft),
+                      tidy=TRUE,
+                      cache=FALSE,
+                      fig.margin=TRUE,
+                      fig.fullwidth = FALSE
+                      )
+```
+
+```{r}
+library(tidyverse)
+library(knitr)
+kable(knitr::opts_chunk$get() %>% enframe())
+```
+
+
+```{r}
+library(ggplot2)
+library(corrplot)
+library(reshape)
+library(caret)
+library(mice)
+library(e1071)
+library(rattle)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+library(MASS)
+library(scales)
+library(caret)
+library(spatstat)
+library(rattle)
+library(phylogram)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+library(GGally)
+library(neuralnet)
+library(ggtree)
+library(rpart.utils)
+library(ISLR)
+library(caret)
+library(class)
+library(randomForest)
+library(formatR)
+library(tufte)
+library(kableExtra)
+library(ggdendro)
+library(data.tree)
+```
+
+# Introduction
+
+```{r}
+full_dataset <- read_csv("./diabetes.csv"#,
+                      #col_types = cols(
+                      #  Outcome = col_logical())
+)
+
+descriptions <- names(full_dataset)
+descriptions[descriptions=="Glucose"] <- "GlucoseLevel"
+descriptions[descriptions=="Insulin"] <- "InsulinLevel"
+descriptions[descriptions=="BMI"] <- "BodyMassIndex"
+descriptions[descriptions=="Outcome"] <- "DiabetesDiagnosis (1=yes|0=no)"
+
+full_dataset <- full_dataset %>% dplyr::rename(Pregnant=`Pregnancies`,
+                               BP=`BloodPressure`,
+                               Skin=`SkinThickness`,
+                               Pedigree=`DiabetesPedigreeFunction`)
+
+new_names <- names(full_dataset)
+var_desc <- data.frame(Variable=new_names, 
+           Description=gsub('\\B([[:upper:]])', ' \\1', descriptions))
+
+response_var <- "Outcome"
+reg_response_var <- NA
+
+predictor_vars <- names(full_dataset)[!names(full_dataset) %in% c(response_var)]
+if(!is.na(reg_response_var)){
+  reg_subset_predictors = c(predictor_vars, reg_response_var)
+  reg_subset_predictors = reg_subset_predictors[!predictor_vars %in% c(response_var)]
+}
+
+pda_data <- full_dataset[,c(response_var, predictor_vars)]
+pda_data[,response_var] <- factor(pda_data[[c(response_var)]], levels=unique(pda_data[[c(response_var)]]), ordered = FALSE)
+```
+
+Our team chose the Pima Indians Diabetes Dataset for our analysis^[Uci. (2016, October 6). Pima Indians Diabetes Database. Retrieved from https://www.kaggle.com/uciml/pima-indians-diabetes-database]. This dataset was originally gathered by the National Institute of Diabetes and Digestive and Kidney Diseases with the intention of predicting diabetes cases using the ADAP Learning Algorithm. The participants are women, aged 21 or older, of Pima Indian heritage and reside around the Phoenix, Arizona area. The data consists of eight diagnostic measurements from examinations of `r nrow(full_dataset)` and a binary classification for whether or not the individual would develop Diabetes Mellitus, a chronic condition characterized by high blood sugar and an abnormal metabolism. Some women received multiple examinations, but only one examination per subject was included in the dataset.  The target variable records whether or not the participant developed diabetes within 5 years of the examination. However, the data set excludes examinations from subjects who developed diabetes within a year of the examination, because those cases are significantly easier to predict. `r sum(full_dataset[[response_var]]==1)` of the patients chosen for the dataset developed diabetes within five years, and the remaining `r sum(full_dataset[[response_var]]==0)` did not. This translates to roughly 35% being diabetic. Our goal with this data set was to build a model that could accurately classify patients into the diabetic or non-diabetic groups using the eight measurements.
+
+```{r fig.margin=TRUE, fig.keep='all', fig.cap="Relative frequency of diabetes outcomes. Pink will indicate a Positive diagnosis of Diabetes, and Blue a Negative, throughout this report."}
+# distribution of outcomes
+ggplot(pda_data, aes(x=Outcome)) + geom_bar(aes(fill=Outcome)) + 
+  theme_minimal() + theme(legend.position="top")
+
+#, xlab = "Diabetes Diagnosis", ylab = "Frequency Density", main = "Ratios of Positive and Negative Diabetes Diagnoses in Pima Indian Patients")
+```
+
+
+  According to the original collectors of this dataset, the eight predictor variables were chosen because they are simple measurements to collect and a similar dataset could be easily produced^[Smith, J. W., Everhart, J. E., Dickson, W. C., Knowler, W. C., & Johannes, R. S. (1988, November 9). Using the ADAP Learning Algorithm to Forecast the Onset of Diabetes Mellitus. Retrieved from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2245318/]. The predictor variables are all measurements that could be easily acquired, and thus the classification method would be an accessible method for screening individuals who might be at risk for diabetes. Of the predictors, age, BMI, and number of pregnancies are all very non-invasive and straightforward measurements. The other diagnostics, which are more in-depth, include blood pressure, skin thickness, insulin levels, glucose levels, and a rating from a diabetes pedigree function. Skin thickness refers to a measurement of the width of a skin fold at the patient's tricep in millimeters. The diabetes pedigree function, which was unvalidated at the time of the original study’s publication, incorporates the prevalence of diabetes in the patient’s extended family to give a value to the genetic component of diabetes development.
+
+```{marginfigure eval=FALSE, fig.keep='all', fig.margin = TRUE, results='all'}
+print(kable(var_desc) %>% kable_styling(c("striped", "bordered")))
+```
+
+  We chose this dataset because it contained a reasonable amount of samples and independent variables, and because it came ready for analysis. We did not have to refine or clean the data too much. All of the predictors are numeric variables that are straightforward and easy to interpret and work with, so we could focus on building a complex and accurate classifier. Given the prevalence of diabetes research and data, our research question and any findings we had could be compared to other studies and analyses. 
+
+## Preliminary Data Analysis
+
+```{r}
+head(pda_data)
+str(pda_data)
+nrow(pda_data)
+```
+
+```{r}
+# Five-Number summaries of diagnostic predictors
+apply(pda_data[, -9], 2, summary)
+```
+
+```{r}
+head(pda_data)
+
+na_count <-sapply(pda_data, function(y) sum(length(which(is.na(y)))))
+na_count
+```
+
+```{r}
+# 768 Observations, 9 variables
+# 8 Predictor Variables, all numeric
+# 1 Binary response variable
+# No NA's in the set
+# 268 1's in Outcome, meanign 268 people w diabetes
+```
+
+```{r fig.margin=FALSE, fig.fullwidth = TRUE, fig.keep='all', fig.cap='Relationships among untreated data'}
+raw_pair_plot <- ggpairs(pda_data, aes(color = !! sym(response_var), alpha = 0.4),
+                     upper = list(
+                       continuous = wrap("cor", size = 1.5, alignPercent = 1)),
+                     progress=FALSE) + theme_minimal(base_size = 5) + 
+  theme(axis.text=element_text(size=3.0))
+
+#ggsave("./clean_pair_plot.png", plot=full_pair_plot, width=10,height=7.5,units="in")
+
+suppressMessages(print(raw_pair_plot))
+```
+   
+```{r fig.margin=FALSE, fig.fullwidth=TRUE, fig.keep='all', fig.cap="Scaled predictor distributions"}
+# scale the data for further analysis
+scaled_pda_data <- pda_data %>% mutate_at(vars(all_of(predictor_vars)), function(x) as.vector(scale(x)))
+summary(scaled_pda_data)
+e <- pivot_longer(scaled_pda_data, cols=predictor_vars, names_to = "Predictor", values_to = "Scaled Value") %>% 
+  ggplot(aes(x = Predictor, y=`Scaled Value`, color = !! sym(response_var), fill= !! sym(response_var))) + 
+  geom_boxplot(aes(group=Predictor), notch=TRUE, width=0.2, fill=NA, color="gray", shape = 18, size = 0.5) + 
+  stat_summary(fun.data = "mean_se", geom = "point", shape = 18, size = 2.5) + 
+  geom_violin(trim=FALSE, alpha=0.3) + 
+  #ggtitle(paste0("Predictor Scaled Distributions")) +
+  theme_minimal(base_size = 5) + theme(legend.position="none") + 
+  theme(axis.text=element_text(size=3.5)) + 
+  coord_flip()
+print(e)
+```
+
+```{r}
+# Data cleaning stage
+pMiss <- function(x){sum(x == 0)/length(x)*100}
+apply(full_dataset[, -c(1,9)], 2, pMiss)
+```
+
+```{r}
+# Dropping prediction features that have greater than 5% of their data points missing
+#dataset = full_dataset
+#dataset$SkinThickness = NULL
+#dataset$Insulin = NULL
+ignore_vars <- c("Skin", "Insulin")
+
+predictor_vars <- names(full_dataset)[!names(full_dataset) %in% c(response_var, ignore_vars)]
+
+reg_response_var <- NA
+if(!is.na(reg_response_var)){
+  reg_subset_predictors = c(predictor_vars, reg_response_var)
+  reg_subset_predictors = reg_subset_predictors[!predictor_vars %in% c(response_var)]
+}
+
+model_data <- full_dataset[,c(response_var, predictor_vars)]
+model_data[,response_var] <- factor(model_data[[c(response_var)]], levels=unique(model_data[[c(response_var)]]), ordered = FALSE)
+
+# Replacing 0's with NA's in the remaining predictors that have missing values
+#dataset[, -c(1, 7)][dataset[, -c(1, 7)] == 0] <- NA
+not_impute_vars <- c("Pregnant")
+impute_predictor_vars <- predictor_vars[!predictor_vars %in% c(not_impute_vars)]
+model_data <- model_data %>% mutate_at(vars(all_of(impute_predictor_vars)), na_if, 0)
+
+tempData = mice(model_data, m=20, maxit=50, meth='pmm', seed=500, printFlag = FALSE)
+tempData$method
+  
+completedData = complete(tempData, 'long')
+a = aggregate(completedData[,4:6] , by = list(completedData$.id), FUN = mean)
+
+model_data[, 2:4] = a[, 2:4]
+summary(model_data)
+#md.pattern(pda_data)
+```
+
+```{r}
+for(predictor in predictor_vars){
+  e <- ggplot(pda_data, aes(x = !! sym(response_var), y = !! sym(predictor))) + 
+    geom_boxplot(notch=TRUE, width=0.2, fill=NA, color="gray", shape = 18, size = 1.5) + 
+    stat_summary(fun.data = "mean_se", geom = "point", shape = 18, size = 2.5, color = "black") + 
+    geom_violin(aes(color = !! sym(response_var), fill= !! sym(response_var)), trim=FALSE, alpha=0.3) + 
+    ggtitle(paste0(predictor," Distribution by ",response_var)) +
+    theme_minimal() + theme(legend.position="none")
+  print(e)
+}
+```
+
+```{r fig.margin=TRUE, fig.keep="all", fig.cap="Variance for each predictor"}
+apply(pda_data[predictor_vars],2,var) %>% enframe(name="Predictor", value="Variance") %>% 
+  ggplot(aes(x=Predictor, y=Variance)) + 
+  geom_bar(stat="identity") + coord_flip()
+```
+
+
+```{r}
+model_formula <- as.formula(paste0(response_var," ~ ",paste(predictor_vars, collapse=" + ")))
+```
+
+```{r}
+pregnancy_patients = model_data[model_data$Pregnant != 0, ]
+no_pregnancy_patients = model_data[model_data$Pregnant == 0, ]
+
+nrow(pregnancy_patients)
+nrow(no_pregnancy_patients)
+barplot(prop.table(table(pregnancy_patients$Outcome)), xlab = "Diabetes Diagnosis", ylab = "Frequency Density", main = "Ratio of Diabetes Diagnoses in Pima Indian Patients that have been pregnant >=1 times")
+barplot(prop.table(table(no_pregnancy_patients$Outcome)), xlab = "Diabetes Diagnosis", ylab = "Frequency Density", main = "Ratio of Diabetes Diagnoses in Pima Indian Patients that were never pregnant")
+
+```
+
+  In our preliminary exploration of the data, we found a lot of measurements were recorded as zeros in places that were impossible. For example, BMI cannot be zero. We concluded that these zeros corresponded to missing or unrecorded measurements. Obviously, a zero for the number of pregnancies is possible, so we chose to treat zeros in that as true measurements, not missing values. We found that both the Insulin and Skin Thickness measurements were missing more than a significant portion of their measurements. In fact, Insulin measurements were missing for close to half the sample, and Skin Thickness measurements were missing in approximately 30% of the sample, so we chose to omit those predictors in our model-building. In later tests, we found that these diagnostics were not effective predictors anyway. Missing measurements in other predictors were imputed using the mice package in r. We used a predictive mean matching function that, in short, uses linear regression on the variables with missing measurements and tries to match the missing observations to existing ones in the data. It creates observations that are more like real observations than other imputing methods like linear regression or multivariate normal.^[Imputation by Predictive Mean Matching: Promise & Peril. (n.d.). Retrieved from https://statisticalhorizons.com/predictive-mean-matching]
+  
+   Correlation between variables was also tested, and we found no issues with multicollinearity in the data. The correlation plot below shows that the most significant correlation between predictors is between Age and Pregnancies, which makes sense. The plot below illustrates some of the findings in our exploratory analysis. It shows the correlation between our variables, as well as the frequency distributions of class 1 and class 0 for each variable. 
+
+
+```{r fig.margin=FALSE, fig.fullwidth = TRUE, fig.keep='all', fig.cap="Relationships among cleaned data"}
+clean_pair_plot <- ggpairs(model_data, aes(color = !! sym(response_var), alpha = 0.4),
+                     upper = list(
+                       continuous = wrap("cor", size = 1.75, alignPercent = 1)),
+                     progress=FALSE) + theme_minimal(base_size = 5) + 
+  theme(axis.text=element_text(size=3.5))
+
+#ggsave("./clean_pair_plot.png", plot=full_pair_plot, width=10,height=7.5,units="in")
+
+suppressMessages(print(clean_pair_plot))
+```
+
+ Following our exploratory analysis and cleaning, we split the data into train and test sets using a random sample and a split of 80% in the training set and 20% in the test set. Before doing any further analysis, we did a quick verification that the proportion of the True and False measurements in the response variable of the original set matched those of the train and test sets, and went to work model-building.
+ 
+```{r fig.keep='all'}
+# Creating the training and test sets
+split = createDataPartition(model_data[[response_var]], p=0.8, list=FALSE)
+train = model_data[split[,1],]
+test  = model_data[-split[,1],]
+
+barplot(prop.table(table(train$Outcome)), xlab = "Diabetes Diagnosis", ylab = "Frequency Density", main = "Ratio of Diabetes Diagnoses in Training Set")
+
+#barplot(prop.table(table(test$Outcome)), xlab = "Diabetes Diagnosis", ylab = "Frequency Density", main = "Ratio of Diabetes Diagnoses in Testing Set")
+```
+
+```{r}
+# Plotting Age vs Pregnancies
+plot(Age ~ Pregnant, data = model_data, main = "Age vs Pregnancies in Patients of Pima Indian Heritage")
+cor(model_data$Age, model_data$Pregnant)
+```
+
+```{r}
+# Plotting BMI vs Glucose
+plot(BMI ~ Glucose, data = model_data, main = "BMI vs Glucose in Patients of Pima Indian Heritage")
+```
+
+
+```{r}
+hist(model_data$Pregnant, main = "Historgram of Pregnancies")
+
+hist(model_data$Glucose, main = "Histogram of Glucose")
+
+hist(model_data$Pedigree, main = "Histogram of Diabetes Pedigree Function")
+```
+
+
+```{r}
+pcs = prcomp(train[,predictor_vars] %>% drop_na, scale = TRUE)
+pcs
+summary(pcs)
+screeplot(pcs, type = "lines", main = "Variance explained by PC")
+```
+
+```{r}
+plot(pcs$x[,1:2], main = "Biplot of Diabetes Data", xlab = "PC 1", ylab = "PC 2", col = train$Outcome)
+```
+
+
+```{r}
+pairs(pcs$x[, 1:3], col = train$Outcome, main = "Pairs Plot of First Three PCs")
+```
+
+
+```{r}
+## Bayes Rule
+false_in_sample_predictions <- factor(rep(names(which.max(table(train[[response_var]]))), nrow(train)), 
+                                      levels=levels(train[[response_var]]), ordered=FALSE)
+
+false_in_sample_performance <- sum(false_in_sample_predictions == train[[response_var]])/nrow(train)
+print(paste0("The majority rules model's in-sample accuracy is ",label_percent()(false_in_sample_performance)))
+#cm <- confusionMatrix(false_in_sample_predictions, train[[response_var]])
+```
+
+
+```{r}
+false_out_of_sample_predictions <- factor(rep(0, nrow(test)), levels=c(0,1), ordered=FALSE)
+
+false_out_of_sample_performance <- sum(false_out_of_sample_predictions == test[[response_var]])/nrow(test)
+print(paste0("The majority rules model's out-of-sample accuracy is ",label_percent()(false_out_of_sample_performance)))
+```
+
+
+```{r}
+## Logistic Regression
+logit_model <- glm(model_formula, data = train, family = binomial('logit'))
+summary(logit_model)
+```
+
+```{r}
+glm_in_sample_predictions <- predict.glm(object = logit_model,
+                           newdata = train,
+                           type = "response") > .5
+
+glm_in_sample_performance <- sum(glm_in_sample_predictions == ifelse(train[[response_var]]==1, TRUE, FALSE), na.rm=TRUE)/nrow(train %>% drop_na)
+print(paste0("The logistic model's in-sample performance is ",label_percent()(glm_in_sample_performance)))
+```
+
+```{r}
+glm_out_of_sample_predictions <- predict.glm(object = logit_model,
+                           newdata = test,
+                           type = "response") > .5
+
+glm_out_of_sample_performance <- sum(glm_out_of_sample_predictions == ifelse(test[[response_var]]==1, TRUE, FALSE), na.rm=TRUE)/nrow(test %>% drop_na())
+print(paste0("The logistic model's out-of-sample performance is ",label_percent()(glm_out_of_sample_performance)))
+```
+
+```{r}
+## Linear Discriminant Analysis
+lda_model <- lda(model_formula, data = train)
+summary(lda_model)
+```
+
+```{r}
+lda_in_sample_predictions <- predict(lda_model, newdata=train)
+
+lda_in_sample_performance <- sum(lda_in_sample_predictions$class == train[[response_var]], na.rm = T)/nrow(train %>% drop_na())
+print(paste0("The LDA model's in-sample performance is ",label_percent()(lda_in_sample_performance)))
+
+
+```
+
+```{r}
+lda_out_of_sample_predictions <- predict(lda_model, newdata=test)
+
+lda_out_of_sample_performance <- sum(lda_out_of_sample_predictions$class == test[[response_var]], na.rm=T)/nrow(drop_na(test))
+print(paste0("The LDA model's out-of-sample performance is ",label_percent()(lda_out_of_sample_performance)))
+```
+
+
+```{r}
+## K-Nearest Neighbors Classification
+ctrl <- trainControl(method="repeatedcv",repeats = 3)
+knnFit <- train(model_formula, data = drop_na(train), method = "knn", trControl = ctrl, preProcess = c("center","scale"),tuneLength = 20)
+knnFit
+
+plot(knnFit)
+```
+
+```{r}
+best_k <- as.numeric(knnFit$bestTune)
+```
+
+```{r}
+knn_in_sample_predictions <- knn(train=drop_na(train)[,predictor_vars], test=drop_na(train)[,predictor_vars], cl = drop_na(train)[[response_var]], k=best_k)
+
+knn_in_sample_performance <- sum(knn_in_sample_predictions == train[[response_var]], na.rm = T)/nrow(train %>% drop_na())
+print(paste0("The knn model's in-sample performance is ",label_percent()(knn_in_sample_performance)))
+
+
+```
+
+```{r}
+knn_out_of_sample_predictions <- knn(train=drop_na(train)[,predictor_vars], test=drop_na(test)[,predictor_vars], cl = drop_na(train)[[response_var]], k=best_k)
+
+knn_out_of_sample_performance <- sum(knn_out_of_sample_predictions == test[[response_var]], na.rm=T)/nrow(drop_na(test))
+print(paste0("The knn model's out-of-sample performance is ",label_percent()(knn_out_of_sample_performance)))
+```
+
+
+```{r}
+## Support Vector Machines
+# Applying Support Vector Machines Classification
+# Feature scaling
+scaled_train = train %>% mutate_at(vars(all_of(predictor_vars)), function(x) as.vector(scale(x)))
+scaled_test = test %>% mutate_at(vars(all_of(predictor_vars)), function(x) as.vector(scale(x)))
+
+# Do PCA for creating two factors
+pca = preProcess(scaled_train[predictor_vars], method='pca')
+
+scaled_train_pca = predict(pca, scaled_train)   # column orders change. The DV becomes the first variable
+scaled_test_pca =  predict(pca, scaled_test)
+
+# Just rearranging the columns
+#scaled_train = scaled_train[,c(2,3,1)]
+#scaled_test  = scaled_test[,c(2,3,1)]
+
+# Create a logistic rgression model on the reduced data
+#modSVM = svm(Outcome~.,data=scaled_train, type='C-classification', kernel='linear')
+tune.out = tune(svm, Outcome~.,data=scaled_train_pca, type='C-classification', kernel='linear',
+                ranges =list(cost=c(0.001, 0.01, 0.1, 1, 5, 10, 100)))
+summary(tune.out)
+modSVM = tune.out$best.model
+modSVM$cost
+
+y_train_pred = predict(modSVM, scaled_train_pca %>% dplyr::select(-all_of(response_var)) %>% drop_na())
+svm_train_cm <- confusionMatrix(y_train_pred, drop_na(scaled_train_pca)[[response_var]])
+svm_train_error <- sum(y_train_pred != drop_na(scaled_train_pca)[[response_var]])/nrow(drop_na(scaled_train_pca))
+svm_in_sample_performance <- 1-svm_train_error
+
+# Predict the outcomes using the model
+y_pred = predict(modSVM, scaled_test_pca %>% dplyr::select(-all_of(response_var)) %>% drop_na())
+
+
+# Evaluate the model
+svm_test_cm <- confusionMatrix(y_pred, drop_na(scaled_test_pca)[[response_var]])
+
+# Testing Error
+svm_test_error <- sum(y_pred != drop_na(scaled_test_pca)[[response_var]])/nrow(drop_na(scaled_test_pca))
+svm_out_of_sample_performance <- 1-svm_test_error
+
+plot(modSVM, scaled_train_pca, PC2 ~ PC1)
+```
+
+```{r}
+# Visualize the decision boundaries for training set
+# Feature scaling
+# Do PCA for creating two factors
+pca = preProcess(scaled_train[predictor_vars], method='pca', pcaComp = 2)
+
+scaled_train_pca = predict(pca, drop_na(scaled_train))   # column orders change. The DV becomes the first variable
+scaled_test_pca =  predict(pca, drop_na(scaled_test))
+
+# Just rearranging the columns
+scaled_train_pca = scaled_train_pca[,c(2,3,1)]
+scaled_test_pca  = scaled_test_pca[,c(2,3,1)]
+
+# Create a logistic rgression model on the reduced data
+#modSVM = svm(Outcome~.,data=scaled_train_pca, type='C-classification', kernel='linear')
+tune.out = tune(svm, Outcome~.,data=scaled_train_pca, type='C-classification', kernel='linear',
+                ranges =list(cost=c(0.001, 0.01, 0.1, 1, 5, 10, 100)))
+modSVM = tune.out$best.model
+
+# Predict the outcomes using the model
+y_pred = predict(modSVM, scaled_test_pca %>% dplyr::select(-all_of(response_var)) %>% drop_na())
+
+set = scaled_train_pca
+
+X1 = seq(from=min(set[,1])-1, to=max(set[,1]+1), by=0.02)
+X2 = seq(from=min(set[,2])-1, to=max(set[,2]+1), by=0.02)
+grid_set = expand.grid(X1, X2)
+colnames(grid_set) = c('PC1', 'PC2')
+y_grid = predict(modSVM, grid_set)
+```
+
+Prior to implementing our chosen model, we evaluated a number of classification methods covered in class as benchmarks. These were:
+  
+  + Bayes Risk (Accuracy: `r label_percent()(false_in_sample_performance)`  in-sample vs. `r label_percent()(false_out_of_sample_performance)` out-of-sample)
+  + Logistic Regression (Accuracy: `r label_percent()(glm_in_sample_performance)`  in-sample vs. `r label_percent()(glm_out_of_sample_performance)` out-of-sample)
+  + Linear Discriminant Analysis (Accuracy: `r label_percent()(lda_in_sample_performance)`  in-sample vs. `r label_percent()(lda_out_of_sample_performance)` out-of-sample)
+  + K-Nearest Neighbors Classification (Accuracy: `r label_percent()(knn_in_sample_performance)`  in-sample vs. `r label_percent()(knn_out_of_sample_performance)` out-of-sample)
+  + Support Vector Machines (Accuracy: `r label_percent()(svm_in_sample_performance)`  in-sample vs. `r label_percent()(svm_out_of_sample_performance)` out-of-sample)
+
+
+# Learning Method: Decision Trees
+
+  The statistical setting is a list of observations each with a set of predictors and a categorical response variable which we are trying to predict. As such, we chose to use decision trees as our new supervised learning procedure. Decision tree models represent independent variables as branches and response variables as leaves, splitting the branches at each node at values that will optimally predict the response variable^[Rokach, Lior; Maimon, O. (2008). Data mining with decision trees: theory and applications. World Scientific Pub Co Inc.]. These models can handle both numerical and categorical data, and perform well with large datasets in which there is complex interaction between predictor variables. The resulting trees are interpretable and their reliability can be validated with statistical tests.  These characteristics make decision trees a good candidate for use in this statistical setting. The potential weaknesses of decision trees are that they are considered a weak classifier, so may not have significant predictive power over standard benchmark.  They also have the potential to be overfit, which is why techniques such as random forests aggregate decision trees to come up with more robust out-of-sample predictions.
+  
+```{r}
+# Applying Decision Tree Models on Training set
+tree = rpart(model_formula, data = train, method = 'class')
+# Cross-Validation to find the complexity parameter that gives the optimal tree
+printcp(tree)
+plotcp(tree)
+min.cp = tree$cptable[which.min(tree$cptable[,"xerror"]), "CP"]
+min.cp
+# Pruning our tree to create the optimal decision tree
+ptree = rpart::prune(tree, cp = min.cp)
+```
+
+  
+```{r fig.margin=FALSE, fig.fullwidth = FALSE, fig.keep='last', fig.cap='Abtracted depiction of our final decision tree'}
+ptree_copy <- ptree
+ptree_copy$frame$n <- as.numeric(rownames(ptree_copy$frame))
+node_obj <- as.Node(ptree_copy, use.n=FALSE)
+node_obj$rpart.id <- as.numeric(rownames(ptree_copy$frame))
+phylo_ptree <- as.phylo.Node(node_obj)
+                             
+p <- ggtree(phylo_ptree, 
+       ladderize=FALSE,
+       layout="rectangular",
+       right=FALSE)
+
+p$data$label[p$data$label=="TRUE_"] <- TRUE
+p$data$label[p$data$label=="FALSE"] <- FALSE
+
+p$data$condition <- gsub("([^ 0-9.><=])+", "",p$data$label) %>% replace(list=.=="",values=NA)
+p$data$feature <- gsub("([^A-Za-z])+", "",p$data$label) %>% replace(list=.%in%c("TRUE","FALSE"),values=NA)
+p$data$value <- gsub("([^0-9.])+", "",p$data$label)  %>% replace(list=.=="",values=NA)
+p$data$outcome <- as.logical(p$data$label)
+
+p$data$great_or_less <- rep(NA, nrow(p$data))
+p$data$great_or_less[(gsub("([^ >])", "",p$data$condition) %>% replace(list=.=="",values=NA))==">"] <- "Greater"
+p$data$great_or_less[(gsub("([^ <])", "",p$data$condition) %>% replace(list=.=="",values=NA))=="<"] <- "Less"
+
+subrules <- rpart.utils::rpart.subrules.table(ptree_copy)
+rules <- rpart.utils::rpart.rules(ptree_copy)
+rules_index <- which(lapply(rules,length)>0)
+rules <- rules[rules_index]
+edges <- phylo_ptree$edge
+
+long_subrules <- pivot_longer(subrules, cols=c("Greater","Less")) %>% dplyr::select(subrule=Subrule, feature=Variable, great_or_less=name, value) %>% drop_na()
+
+p$data <- left_join(x=p$data, y=long_subrules)
+
+p$data <- left_join(p$data, p$data %>% dplyr::select(`node`,y_parent=`y`), by=c("parent"="node")) %>% dplyr::mutate(left_right=if_else(y<=y_parent, TRUE, FALSE))
+
+
+p_data <- p$data
+p_frame <- ptree_copy$frame
+
+p + aes(color=left_right) + 
+  layout_dendrogram() + 
+  theme(legend.position='none') +
+  scale_color_manual(values=c("green", "red"), 
+                     labels=c("TRUE", "FALSE")) + 
+  geom_tiplab(aes(label=label, fill=outcome), hjust=.4, vjust=2.5) +
+  geom_tippoint(size=5, shape=21, aes(fill=outcome, x=x+.5), color="white",show.legend=FALSE) +
+  geom_nodelab(aes(label=condition), color="black", geom='text', nudge_x=-5) +
+  geom_nodepoint(size=5, shape=24, aes(fill=feature, x=x+.5), color="white", show.legend=FALSE, na.rm=TRUE) + #24
+  scale_color_manual(values=c("green", "red"), 
+                     labels=c(TRUE, FALSE))
+```
+
+
+# Results
+
+## Standard Decision Trees
+
+With our data now cleaned and split into training and testing sets, we were ready to apply our primary learning method on our training data to produce the desired classifier that predicts the onset of diabetes from our remaining medical predictors. As such, using the `rpart` package in R, we grew a classification decision tree from our training data and the resulting tree is as follows:
+
+
+```{r fig.margin=FALSE, fig.fullwidth = TRUE, fig.keep='all', fig.cap='First decision tree prior to tuning'}
+#rpart.plot(tree, extra = 106)
+fancyRpartPlot(tree, sub="",caption="")
+summary(tree)
+```
+
+The initial findings for this classification tree were promising so we did not see a need to tune hyper-parameters related to how the tree is grown such as maximum depth and the minimum number of samples a leaf node must have. However, our attempt to obtain a classification procedure was far from complete. We were yet to take into account the complexity parameter in order to prune our decision tree.
+
+Decision tree complexity is simply defined by the number of nodes in the tree, the greater the number of nodes, the greater the complexity. Statisticians wish to reduce tree complexity so as to avoid overfitting the model onto the training dataset and so we set out to do the same. The complexity parameter specifies the tradeoff in the cost function between the performance of a particular tree and the penalty produced by the number of nodes it has. Thus, given a grown decision tree, the optimal cost-complexity subtree is the one that minimizes our cost function:
+
+
+```{r out.width='100%', results='markup'}
+knitr::include_graphics('./equation.png')
+```
+
+With that background theory in mind, we performed cross validation to find the best value for our complexity parameter. In other words, the complexity parameter corresponds to the subtree that yields the least cross validation error. The result was used to prune our initial classification decision tree to produce the following pruned decision tree:
+
+
+```{r fig.margin=FALSE, fig.fullwidth = TRUE, fig.keep='all', fig.cap='Pruned decision tree'}
+fancyRpartPlot(ptree, uniform = TRUE, sub="",caption="")
+```
+
+```{r}
+# Testing Error
+predict_unseen = predict(ptree, test, type='class')
+ptree.error_rate = sum(predict_unseen != test[[response_var]])/nrow(test)
+ptree.error_rate
+```
+
+We then used our pruned decision tree to predict the Outcome variable in our testing dataset and compared the results with the true values to get a testing error of 0.22.
+
+```{r}
+## Random Forest
+rf_model <- randomForest(
+  formula = model_formula,
+  data=train,
+  na.action=na.exclude
+)
+summary(rf_model)
+```
+
+
+```{r}
+rf_in_sample_predictions <- predict(rf_model, newdata=drop_na(train))
+
+rf_in_sample_performance <- sum(rf_in_sample_predictions == drop_na(train)[[response_var]])/nrow(drop_na(train))
+print(paste0("The Random Forest model's in-sample performance is ",label_percent()(rf_in_sample_performance)))
+```
+
+```{r}
+rf_out_of_sample_predictions <- predict(rf_model, newdata=drop_na(test))
+
+rf_out_of_sample_performance <- sum(rf_out_of_sample_predictions == drop_na(test)[[response_var]])/nrow(drop_na(test))
+print(paste0("The Random Forest model's out-of-sample performance is ",label_percent()(rf_out_of_sample_performance)))
+```
+
+# Discussion & Conclusion
+
+As discussed earlier in the paper, decision trees are weak classifiers. Because of this, we wanted to run a stronger classification procedure on our data to compare the results with our decision tree before we get into the analysis and interpretation of our decision tree. As such, we ran principal component analysis on our data to obtain the principal component variables and then used those principal components as predictors for Diabetes outcome in a support vector machine model. After applying cross validation once again to obtain the model with the least cross validation error. This model gave us a testing error of 0.19.
+
+```{r fig.margin=FALSE, fig.fullwidth = TRUE, fig.keep='last', fig.cap='Results of support vector machines applied via the first two principal components of the data'}
+plot(set[,-3],
+     main = '',
+     xlab = 'PC1', ylab = 'PC2',
+     xlim = range(X1), ylim = range(X2))
+
+#contour(X1, X2, matrix(as.numeric(y_grid), length(X1), length(X2)), add=TRUE)   # this is optional
+
+points(grid_set, pch='.',col=ifelse(y_grid==2,'deepskyblue',ifelse(y_grid==1,'springgreen3','tomato')))
+points(set, pch=21, bg=ifelse(set[,3]==2,'blue3', ifelse(set[,3]==1, 'green4','red3')))
+```
+
+
+The principal component analysis gave us interesting insights about the predictors in our dataset and their influence on variability. The variables with the largest PC1 loadings were Age, BloodPressure, and Pregnancies (although this variable was highly correlated with Age). Furthermore, we can see in Figure 8, which plots our training data points projected onto the first two principal components, that there is some pattern or grouping that can be discerned between the subjects who were tested positive for type II diabetes and those who were tested negative in the trial. The positive cases (colored red in the plot) are somewhat concentrated in the top right corner. The negative cases, however, are much more evenly distributed throughout. The amount of variability captured by the first two principal components is 54%.
+
+On top of the data point projections in Figure 8, we plotted the linear separation rule obtained from the “best” SVM model that was discussed earlier. It shows a decision boundary that separates the data points at right about the edge of that concentration of positive samples. It also splits the feature space into two distinguishable regions that appear to provide a reasonable classification rule for our data. This was of course confirmed by the testing error of 0.19 that was obtained from this SVM model, which is acceptable under the limitations of the data collected in our dataset.
+Similarly, our pruned decision tree also performed reasonably on our test data under the same constraints of data collection and missing values that were explained earlier. It gave us a testing error of 0.22. Moreover, a further reason why this result is exciting is because one of our initial goals in this research paper was to provide a classification rule that we could easily read and interpret. As such, the hope was to glean simple conclusions about the influence of some medical predictors on the onset of diabetes in the near future. Our classification not only provides that, but it also does so with an accuracy rate that is not dissimilar to that of a much stronger classifier in SVM.
+
+What can we learn about our predictors from our results? Looking at our pruned decision tree in Figure 7, we can easily see that Glucose, BMI, and Age are important distinguishing factors when it comes to differentiating who is at risk of diabetes and who isn’t. This can be extremely useful for self-assessment of one’s own health and risk, especially if medical resources and tests are limited or not easily accessible. Also, many of these predictors and measurements are not difficult for an individual to obtain on their own.
+
+As an example, we can easily deduce from our classification tree that a Glucose level >= 155 is very troublesome. Over 80% of patients who reported that measurement developed a positive onset of type II diabetes. On the other hand, if the Glucose level is < 122, then the odds are much more desirable. If Glucose level is in between those two values, then we start to look at another predictor: BMI. A BMI < 27 is desirable and interestingly, overweight on a BMI scale is defined to be between 25 and 29.9 so our findings are in line with that. Finally, an interesting result is that if BMI is > 27 and Age > 29, then we get into some pretty murky waters when it comes to predicting the onset of Diabetes. Prediction accuracy goes down and our model beings to rely on more complicated predictors like the Pedigree function which has to do with genetics in order to make its prediction.

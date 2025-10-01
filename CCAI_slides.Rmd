@@ -2,7 +2,7 @@
 title: "A measurement strategy to address disparities across household energy burdens"
 author: "Eric Scheier & Noah Kittner"
 institute: 
-  - "PLAN 574"
+  - "For: CCAI"
   - "This Presentation Was Created On:"
 date: "`r format(Sys.time(), '%Y-%B-%d')`"
 output: 
@@ -15,9 +15,8 @@ output:
 header-includes:
   - \usepackage{booktabs}
   - \usepackage{makecell}
-  - \setbeameroption{show notes} #{show/hide notes}
-  - \setbeamerfont{note page}{size=\tiny}
-   - \usepackage{svg}
+  - \setbeameroption{hide notes} #{show/hide notes}
+  - \setbeamerfont{note page}{size=\tiny} 
 ---
 
 ```{r setup, include=FALSE}
@@ -27,47 +26,23 @@ options(kableExtra.latex.load_packages = FALSE)
 library(kableExtra)
 
 # make this dynamic to most recent 
-version_path <- "."#"net_energy_equity_final_review20211217200747_files"
+version_path <- "NatureComm_figure-latex"#"net_energy_equity_final_review20211217200747_files"
 
 knitr::opts_chunk$set(echo=FALSE)
 ```
 
-# New Data
-
-Low-Income Energy Affordability Data (LEAD)
-
-**Purpose**: "to help state and local partners understand housing and energy characteristics for the low- and moderate-income (LMI) communities they serve"
-
-  + **Source**: U.S. Department of Energy
-  + **Method**: Iterative Proportional Fitting (IPF) of responses from the 5-year American Community Survey (ACS-5)
-  + **Geography**: Census tracts for 50 states, D.C., & P.R.
-  + **Provides**: Incomes and Energy Costs by Housing Characteristics
-  + **Years**: 2016, 2018
-
-\note{
-Distinct urban and rural analyses have been performed to describe energy inequity in the US. While limited by geographic and demographic focus and a lack of peer-review, these studies have established the proportion of income (G) spent on energy expenditures (S), or energy burden (Eb), as the standard benchmark for energy poverty in the US today (Equation 1). The US Department of Energy (DOE) significantly improved upon previous methodology by assembling its Low-Income Energy Affordability Dataset (LEAD), which estimates incomes and energy expenditures for most households in the US at a census tract scale.
-}
-
 # Energy Burden & Net Energy Return
 
-\[G = Gross\ Income\ ;\ S = Spending\ on\ Energy\]
+\[G = Gross\ Income\]
+\[S = Spending\ on\ Energy\]
 \[
 Energy\ Burden\ (E_{b})= \frac{S}{G}
 \]
 \[
 Household\ Net\ Energy\ Return\ (N_{h}) = \frac{G - S}{S}
 \]
-\[E_{B}^{*} = \frac{S}{G} = 6\%\ ;\ N_{h}^{*} \approx 16 \Rightarrow Household\ at\ Energy\ Poverty\ Line\]
-
-```{r load-table-full, include=FALSE}
-print_table <- read_csv("comparison_table.csv")
-```
-
-```{r table-full, results="asis"}
-print_table %>%  knitr::kable(booktabs=T, escape = F) %>%
-  kable_styling(latex_options="scale_down")
-  #kableExtra::kable_styling(latex_options = c("striped","hold_position"))
-```
+\[E_{B}^{*} = \frac{S}{G} = 6\%\]
+\[N_{h}^{*} \approx 16 \Rightarrow Household\ at\ Energy\ Poverty\ Line\]
 
 \note{
 While a variety of thresholds have been developed and explored, energy-poor households in the US are commonly defined in terms of Eb as those with an expenditure of greater than 6\% of household income on energy.
@@ -85,10 +60,51 @@ Net Energy Return, which describes the newly released potential to do work as a 
 Translated into its relative level for Net Energy Return, the 6\% energy poverty line is approximately 16. This means that a household that earns less than approximately \$16 of income for every dollar it spends on secondary energy.
 }
 
+# New Data
+
+Low-Income Energy Affordability Data (LEAD)
+
+**Purpose**: "to help state and local partners understand housing and energy characteristics for the low- and moderate-income (LMI) communities they serve"
+
+  + **Source**: U.S. Department of Energy
+  + **Method**: Iterative Proportional Fitting (IPF) of responses from the 5-year American Community Survey (ACS-5)
+  + **Geography**: Census tracts for 50 states, D.C., & P.R.
+  + **Provides**: Incomes and Energy Costs by Housing Characteristics
+  + **Years**: 2016, *2018*
+
+\note{
+Distinct urban and rural analyses have been performed to describe energy inequity in the US. While limited by geographic and demographic focus and a lack of peer-review, these studies have established the proportion of income (G) spent on energy expenditures (S), or energy burden (Eb), as the standard benchmark for energy poverty in the US today (Equation 1). The US Department of Energy (DOE) significantly improved upon previous methodology by assembling its Low-Income Energy Affordability Dataset (LEAD), which estimates incomes and energy expenditures for most households in the US at a census tract scale.
+}
+
+# Summary & Comparison
+
+```{r, fig.cap="", out.height = '50%'}
+knitr::include_graphics(paste(version_path,"metric-comparison-1.pdf",sep="/"))
+```
+
+```{r load-table-full, include=FALSE}
+print_table <- read_csv(paste(version_path,"comparison_table.csv",sep="/"))
+# print_table <- read_csv("comparison_table.csv")
+```
+
+```{r table-full, results="asis", include=TRUE}
+print_table %>%  knitr::kable(booktabs=T, escape = F) %>%
+  kable_styling(latex_options="scale_down")
+  #kableExtra::kable_styling(latex_options = c("striped","hold_position"))
+```
+
+\note{
+While most ERRs, including NER, are hyperbolic paraboloids, NER has several useful mathematical properties: it can smoothly
+handle systems with negative incomes and energy costs, accept households with zero income, and emphasize extreme incomes
+and energy costs in an interpretable fashion, as shown in Fig. 1. While Eb appears inversely correlated to income, this is primarily driven by a long tail of households with zero or very low incomes, often with energy expenditures exceeding their incomes (approximately n = 118,000 households in the dataset have Eb > 100\% or Eb < 0\%). Due to the structure of the Eb equation (Eq. 1), the Eb of these households approaches inﬁnity and cannot be captured on the standard 0-100\% scale the metric is intended to be interpreted within: around 37,000 homes have an inﬁnite energy burden. Since LEAD is estimated and provided for the express purpose of exploring low-income communities, we are hesitant to discard these households as outliers. Nh provides a framing of the same dataset that allows for exploration of most households on a similar scale without the long tail. Nh appears positively related to income, and most communities appear within a few orders of magnitude. Utilizing Nh avoids discarding low-income communities as outliers in energy poverty analysis. Furthermore, Nh offers a way to view the relationship between energy expenditures and income such that the wide disparity between those in broader poverty is immediately apparent. Many households with moderate-to-high Ebs are actually higher-income households with high energy expenditures, making their Nhs quite high (e.g., >\$100 of income per \$1 of energy spending). Almost 100\% of the households in the dataset have net incomes between -\$1000 and \$60,000, with Nhs (or Ebs) of between -10 (-10\%) and 400 (400\%). Only households with no energy costs are excluded from the analysis, whereas households with no energy costs or incomes must be excluded from an analysis utilizing Eb.
+
+The average US home in the dataset has an income of \$41,922 and an annual energy expenditure of \$1219 (\$102/month), which equates to an average Eb of 3\% or an average Nh of 33.4. While the dataset slightly overrepresents households below the median income due to the limitations of the statistical methods used to compile them, it represents estimates for approximately 94–95\% of the 119.5–120.0 million family-occupied households evaluated by the American Community Survey. Table 1 shows a summary of these data for households and their average statistics delineated by their incomes relative to the median income of similar size families in the same metropolitan area or non-metropolitan county, known as Area Median Income (AMI). We can see that high burdens are found mostly in the very-low-income group, with an average Eb of 14\% or Nh of 6.2. Income drives the escape from energy poverty: middle and high-income groups do not spend drastically different amounts on energy (21\% and 63\% more, respectively) but earn 3 and 10 times that of the very low-income group, respectively. An Eb of 14\% means that \$71 per month is spent on energy, which is quite high on a monthly income of \$510. The additional \$15 per month that the next rung of moderate-income groups spends on energy represents a minuscule proportion of their income (1\%).
+}
+
 # Geography
 
-```{r pressure, fig.cap=""}
-knitr::include_graphics(paste(version_path,"figure-latex/continental-map-1.pdf",sep="/"))
+```{r, fig.cap=""}
+knitr::include_graphics(paste(version_path,"continental-map-1.pdf",sep="/"))
 ```
 
 \note{
@@ -100,7 +116,7 @@ communities at multiple scales such as census tract, county, state, and regional
 # Urban Scale
 
 ```{r, fig.cap=""}
-knitr::include_graphics(paste(version_path,"figure-latex/inset-map-1.pdf",sep="/"))
+knitr::include_graphics(paste(version_path,"inset-map-1.pdf",sep="/"))
 ```
 
 \note{
@@ -118,7 +134,7 @@ tracts since diverse neighborhoods may not be represented accurately by aggregat
 # Household Breakdowns
 
 ```{r breakdowns, fig.cap=""}
-knitr::include_graphics(paste(version_path,"figure-latex/density-charts-1.pdf",sep="/"))
+knitr::include_graphics(paste(version_path,"density-charts-1.pdf",sep="/"))
 ```
 
 \note{
@@ -137,7 +153,7 @@ Nh for energy-impoverished households utilizing solar power is 19, compared to 7
 # State Comparison by Fuel Composition
 
 ```{r states, fig.cap=""}
-knitr::include_graphics(paste(version_path,"figure-latex/state-violin-1.pdf",sep="/"))
+knitr::include_graphics(paste(version_path,"state-violin-1.pdf",sep="/"))
 ```
 
 \note{
@@ -154,9 +170,9 @@ Visualizing the proportion of end-use energy sourced from the combustion of foss
 
 # Conclusions
 
-+ 16% of households experience energy poverty as presently defined (>6% of household income on energy expenditures)
++ 16% of households (1 in 6) experience energy poverty as presently defined (>6% of household income on energy expenditures)
 + 94% of households below the federal poverty line also face energy poverty
-+ More than 5.2m of those above the federal poverty line face this scarcity
++ More than 5.2m of those above the federal poverty line (1 in 6) face this scarcity
 + Fossil fuel reliance does not lead to lower energy poverty rates at a state scale
 + Solar power is associated with decreased energy poverty at a household scale
 + Energy poverty presents an obstacle to decarbonization and wealth creation
@@ -171,4 +187,14 @@ Energy expenditures in the US disproportionately burden those in:
 + Urban Centers
 
 The United States should develop and implement a federal energy poverty line.
+
+# Future / Ongoing Research
+
++ Expanding the burden scope to other costs (transportation, housing, food, goods, & services)
++ Extending the underlying methodology over time scale
++ Ground-truthing estimates with better consumption and income data
++ Exploring the potential of distributed energy resources to alleviate energy burdens
++ Assessing vulnerability more holistically (natural disasters, historical disadvantages)
++ Incorporating better understanding of human behavior (hidden energy burden)
++ Informing program and rate design for state, utility, and industry stakeholders
 

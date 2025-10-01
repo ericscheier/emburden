@@ -1,0 +1,266 @@
+---
+title: "Aggregating by Zip Code"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(tidyverse)
+```
+
+You can add options to executable code like this
+
+```{r}
+cohort_data = read_csv("CohortData_FederalPovertyLine.csv")
+head(cohort_data)
+```
+
+```{r}
+names(cohort_data)
+```
+
+```{r}
+cohort_data_agg <- 
+  cohort_data %>% 
+  rename(
+    tract = merge_geo_id
+  ) %>%
+  mutate(
+    gas_or_no = simplified_primary_heating_fuel=="Gas",
+    rent_or_own = str_remove(housing_tenure, "ed"),
+    electric_spend_proportion = electricity_spend / energy_cost
+  ) %>%
+  group_by(
+    tract,
+    rent_or_own,
+    gas_or_no
+  ) %>%
+  summarise(
+    n_h = sum((ner * households))/sum(households),
+    homes = sum(households),
+    electric_spend_proportion = sum(electric_spend_proportion * households)/sum(households),
+    .groups = "keep"
+  ) %>% 
+  select(
+    tract,
+    gas_or_no,
+    rent_or_own,
+    n_h,
+    electric_spend_proportion,
+    homes
+  )
+  #summarise(
+    #electric_spend_proportion,
+    #n_h
+  #)
+
+head(cohort_data_agg)
+```
+
+```{r}
+# https://www.huduser.gov/apps/public/uspscrosswalk/home
+# https://www.huduser.gov/portal/datasets/usps_crosswalk.html
+
+# When a Census tract, county or CBSA is split by a ZIP code, that tract, county or CBSA code is duplicated in the crosswalk file. In the example below tract 01001020200 is split by two different ZIP codes, 36008 and 36067, which appear in the ZIP column. The ratio of residential addresses in the first tract-ZIP record to the total number of residential addresses in the tract is .0272 (2.72%). The remaining residential addresses in that tract (97.28%) fall into the second tract-ZIP record. So, for example, if one wanted to allocate data from Census tract 01001020200 to the ZIP code level, one would multiply the number of observations in the Census tract by the residential ratio for each ZIP code associated with that Census tract. Note that the sum of each ratio column for each distinct ZIP code may not always equal 1.00 (or 100%) due to rounding issues.
+
+tract_to_zip <- read_csv("TRACT_ZIP.csv")
+
+tract_to_zip
+```
+
+```{r}
+cohort_data_zip <- merge(cohort_data_agg, tract_to_zip, by = "tract") %>% 
+  mutate(zip_cohort_homes = homes * res_ratio) %>% 
+  group_by(
+    zip,
+    gas_or_no,
+    rent_or_own
+  ) %>% 
+    summarise(
+    n_h = sum((n_h * zip_cohort_homes))/sum(zip_cohort_homes),
+    homes = sum(zip_cohort_homes),
+    electric_spend_proportion = sum(electric_spend_proportion * zip_cohort_homes)/sum(zip_cohort_homes),
+    .groups = "keep"
+  ) %>% 
+  na.omit() %>% 
+  mutate(
+    cohort_id = paste(zip,gas_or_no, rent_or_own, sep = "_")
+  ) %>% 
+  select(
+    cohort_id,
+    zip,
+    gas_or_no,
+    rent_or_own,
+    n_h,
+    electric_spend_proportion,
+    homes
+  )
+  
+cohort_data_zip
+```
+
+```{r}
+write_csv(cohort_data_zip, file = "energy_burden_zip_cohort.csv")
+```
+
+```{r}
+# Define a function to split a dataframe by rows and save as csv files
+split_df <- function(df, n, prefix = "output") {
+  # df: the dataframe to split
+  # n: the number of rows per csv file
+  # prefix: the common prefix for the output file names
+  
+  # Calculate the number of output files needed
+  k <- ceiling(nrow(df) / n)
+  
+  # Loop over the output files and write each chunk of the dataframe
+  for (i in 1:k) {
+    # Subset the dataframe by rows
+    chunk <- df[(n * (i - 1) + 1):(n * i), ]
+    
+    # Construct the output file name with the prefix and the index
+    file_name <- paste0(prefix, i, ".csv")
+    
+    # Write the chunk to the output file
+    write.csv(chunk, file_name, row.names = FALSE)
+  }
+}
+
+split_df(cohort_data_zip, round(nrow(cohort_data_zip)/20,0), prefix="energy_burden_zip_cohort_chunk_")
+
+```
+
+```{r}
+# Load the googlesheets4 package
+library (googlesheets4)
+
+# Specify the path of the csv file
+# csv_file <- "path/to/your/file.csv"
+
+# Read the csv file into a data frame
+# df <- read.csv (csv_file)
+
+# Specify the name or id of the Google sheet
+gsheet <- "1oH2QLSJC1xS7el7qnjSCKOzpBJIoeMer0AJaGH1IOg8"
+
+# Specify the name of the sheet within the Google sheet
+sheet_name <- "energy_burden_data"
+
+# Write the data frame to the sheet
+googlesheets4::sheet_write(cohort_data_zip, ss = gsheet, sheet = sheet_name)
+```
+
+```{r}
+gas_data_zip <- cohort_data_zip %>%
+  group_by(
+    zip,
+    gas_or_no
+  ) %>% 
+    summarise(
+    n_h = sum((n_h * homes))/sum(homes),
+    electric_spend_proportion = sum(electric_spend_proportion * homes)/sum(homes),
+    homes = sum(homes),
+    .groups = "keep"
+  ) %>% 
+  na.omit() %>% 
+  mutate(
+    cohort_id = paste(zip,gas_or_no,sep="_"),
+    rent_or_own = NA
+  ) %>% 
+  select(
+    cohort_id,
+    zip,
+    gas_or_no,
+    rent_or_own,
+    n_h,
+    electric_spend_proportion,
+    homes
+  )
+
+gas_data_zip
+```
+
+```{r}
+write_csv(gas_data_zip, file = "energy_burden_zip_gas.csv")
+```
+
+```{r}
+data_zip <- cohort_data_zip %>%
+  group_by(
+    zip
+  ) %>% 
+    summarise(
+    n_h = sum((n_h * homes))/sum(homes),
+    electric_spend_proportion = sum(electric_spend_proportion * homes)/sum(homes),
+    homes = sum(homes),
+    .groups = "keep"
+  ) %>% 
+  na.omit() %>% 
+  mutate(
+    cohort_id = zip,
+    gas_or_no = NA,
+    rent_or_own = NA
+  ) %>% 
+  select(
+    cohort_id,
+    zip,
+    gas_or_no,
+    rent_or_own,
+    n_h,
+    electric_spend_proportion,
+    homes
+  )
+
+data_zip
+```
+
+```{r}
+write_csv(data_zip, file = "energy_burden_zip.csv")
+```
+
+```{r eval=FALSE}
+# interpolate for missing cohort archetypes
+pivot_wider(cohort_data_zip,
+            id_cols = c(cohort_id, zip),
+            names_from = c(gas_or_no, rent_or_own), 
+            values_from = c(n_h, electric_spend_proportion, homes),
+            values_fn = mean,
+            values_fill = NA
+            ) %>%
+  select(-cohort_id) %>%
+  mutate(zip = as.factor(zip)) %>% # convert zip to factor
+  group_by(zip) %>%
+  summarise(across(-zip, list(mean=mean)), .groups="keep")
+```
+
+```{r eval=FALSE}
+library(data.table)
+
+# convert your data to a data.table object
+cohort_data_zip <- as.data.table(cohort_data_zip)
+# set the key columns for faster grouping
+setkey(cohort_data_zip, cohort_id, zip)
+# perform the pivot using dcast
+cohort_data_zip <- dcast(cohort_data_zip, cohort_id + zip ~ gas_or_no + rent_or_own, 
+                         value.var = c("n_h", "electric_spend_proportion", "homes"), 
+                         fun.aggregate = mean, fill = NA)
+# remove the cohort_id column
+cohort_data_zip[, cohort_id := NULL]
+# convert the zip column to a factor
+cohort_data_zip[, zip := as.factor(zip)]
+# perform the summarise using lapply
+cohort_data_zip_wide <- cohort_data_zip[, lapply(.SD, mean, na.rm=TRUE), by = zip]
+
+```
+
+```{r}
+write_csv(cohort_data_zip_wide, file="energy_burden_zip_wide.csv")
+```

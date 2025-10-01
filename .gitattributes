@@ -1,3 +1,4 @@
 *.csv filter=lfs diff=lfs merge=lfs -text
 CohortData_AreaMedianIncome.csv filter=lfs diff=lfs merge=lfs -text
 CohortData_FederalPovertyLine.csv filter=lfs diff=lfs merge=lfs -text
+CensusTractData.csv filter=lfs diff=lfs merge=lfs -text

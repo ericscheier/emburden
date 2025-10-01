@@ -1,0 +1,155 @@
+---
+title: "Identifying Developing Areas in the United States"
+author: "Eric Scheier"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    toc: yes
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo=FALSE,
+  message=FALSE,
+  warning=FALSE,
+  include=FALSE,
+  eval=FALSE
+  )
+
+library(tidyverse)
+library(knitr)
+options(kableExtra.latex.load_packages = FALSE)
+library(kableExtra)
+
+source("sources.R")
+```
+
+```{r}
+# metric_name <- "neb"
+# metric_cutoff_level <- ner_func(g = 1,s = 0.06)^-1
+# metric_label <- bquote(E[b]^n)
+
+metric_name <- "energy_burden"
+metric_cutoff_level <- 0.06
+metric_label <- bquote(E[b])
+
+# as.expression(bquote(~italic(nE[b])~": Energy Burden"))
+```
+
+```{r load-data}
+clean_data_ami_all <- read_csv("CohortData_AreaMedianIncome.csv")
+clean_data_fpl_all <- read_csv("CohortData_FederalPovertyLine.csv")
+replica_sup <- read_csv("CensusTractData.csv") #get_replica_supplemental_dataset()
+
+census_tracts_shp <- get_tract_shapefiles(
+    states="all",
+    acs_version=acs_version,
+    refresh=refresh,
+    return_files=TRUE,
+    all_from_list=unique(replica_sup$state_abbr)
+  )
+```
+
+```{r preprocessing}
+clean_data_ami_all$neb <- clean_data_ami_all$ner^-1
+clean_data_fpl_all$neb <- clean_data_fpl_all$ner^-1
+
+clean_data_ami_all_sup <- left_join(clean_data_ami_all, replica_sup, by=c("geoid"))
+clean_data_fpl_all_sup <- left_join(clean_data_fpl_all, replica_sup, by=c("geo_id"="geoid"))
+
+clean_data_ami_all_sup_shp <- st_sf(left_join(census_tracts_shp, clean_data_ami_all_sup, by=c("gisjoin")))
+clean_data_fpl_all_sup_shp <- st_sf(left_join(census_tracts_shp, clean_data_fpl_all_sup, by=c("gisjoin")))
+```
+
+```{r}
+tract_shp <- st_sf(left_join(census_tracts_shp, replica_sup, by=c("gisjoin")))
+
+continental_shp <- tract_shp %>% filter(!(state_abbr %in% c("HI","AK", NA)))
+
+state_shp <- tract_shp %>% filter(state_abbr=="CA")
+
+county_shp <- state_shp %>% filter(county_name %in% c("Sonoma County", "Mendocino County"))
+
+grid_operator_shp <- tract_shp %>% filter(company_na=="Pacific Gas & Electric Co")
+
+territory_shp <- tract_shp %>% filter(state_abbr=="CA", 
+                                         county_name %in% 
+                                           c("Sonoma County",
+                                             "Mendocino County"),
+                                         company_na %in% c("Pacific Gas & Electric Co",
+                                                           "Trinity Public Utilities District")
+                                         )
+
+group_variable <- "geoid"# "GEOID" #"state_abbr" #merge_geo_id" #
+group_columns <- c(group_variable) #c("gisjoin") #
+
+
+# add utility cutout
+# utility_shp <- tract_shp %>% filter(company_na=="")
+
+# full_map_data <- left_join(tract_shp, gwm, by=c("geoid"))
+
+gwm <- calculate_weighted_metrics(filter_graph_data(clean_data_ami_all,
+                                                    c("geoid"),
+                                                    metric_name),
+                           c("geoid"),
+                           metric_name,
+                           metric_cutoff_level=0,
+                           upper_quantile_view = 1,
+                           lower_quantile_view=0)
+
+gwm$metric_name <- metric_name
+
+territory_map_data <- left_join(territory_shp, gwm, by=c("geoid"))
+state_map_data <- left_join(state_shp, gwm, by=c("geoid"))
+county_map_data <- left_join(county_shp, gwm, by=c("geoid"))
+continental_map_data <- left_join(continental_shp, gwm, by=c("geoid"))
+grid_operator_map_data <- left_join(grid_operator_shp, gwm, by=c("geoid"))
+```
+
+```{r}
+
+remove_dup_colnames <- function(map_data){
+  # Assuming continental_map_data is your dataset
+  # Identify duplicate names
+  dup_names <- names(map_data)[duplicated(tolower(names(map_data)))]
+  unique_dup_names <- unique(dup_names)
+  
+  # Print out duplicate names for manual inspection
+  print(unique_dup_names)
+  
+  # Example renaming strategy (simple case)
+  if(length(unique_dup_names) > 0) {
+    for(name in unique_dup_names) {
+      # Find indices of duplicates for this name
+      indices <- which(names(map_data) == name)
+      # Rename duplicates by appending a suffix
+      for(i in seq_along(indices)) {
+        new_name <- paste0(name, "_", i)
+        names(map_data)[indices[i]] <- new_name
+      }
+    }
+  }
+  
+  return(map_data)
+}
+```
+
+```{r}
+head(remove_dup_colnames(state_map_data))
+```
+
+
+```{r}
+st_write(continental_map_data,"basic_census_tracts.geojson", append = FALSE)
+```
+
+```{r}
+st_write(remove_dup_colnames(continental_map_data),"basic_census_tracts.geojson", append = FALSE)
+```
+
+```{r}
+st_write(remove_dup_colnames(state_map_data) ,"basic_census_tracts_state.geojson", append = FALSE, quiet = FALSE)
+```
+

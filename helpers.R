@@ -138,11 +138,22 @@ to_big <- function(x){
 }
 
 to_million <- function(x, suffix=" million", override_to_k=TRUE){
-  if(abs(x)<10^6){
-    y <- scales::label_number(accuracy = 1, suffix = "k")(x * 10^-3)
-  } else {
-    y <- scales::label_number(accuracy = 0.1, suffix = suffix)(x * 10^-6)
-  }
+  y<-ifelse(abs(x)<10^6, 
+         scales::label_number(accuracy = 1, suffix = "k")(x * 10^-3),
+         scales::label_number(accuracy = 0.1, suffix = suffix)(x * 10^-6))
+  # if(abs(x)<10^6){
+  #   y <- scales::label_number(accuracy = 1, suffix = "k")(x * 10^-3)
+  # } else {
+  #   y <- scales::label_number(accuracy = 0.1, suffix = suffix)(x * 10^-6)
+  # }
+  y[is.na(x)] <- ""
+  return(y)
+}
+
+to_billion_dollar <- function(x, suffix=" billion", override_to_k=TRUE){
+  y<-ifelse(abs(x)<10^9, 
+            scales::label_number(accuracy = 1, suffix = "m", prefix="$")(x * 10^-6),
+            scales::label_number(accuracy = 0.1, suffix = suffix, prefix="$")(x * 10^-9))
   y[is.na(x)] <- ""
   return(y)
 }

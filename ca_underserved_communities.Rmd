@@ -419,7 +419,7 @@ https://hazards.fema.gov/nri/data-resources#shpDownload
 
 #### PSPS
 
-See psps.rmd (a seperate file which I need to import)
+See psps.rmd
 
 ### Winter Weather
 
