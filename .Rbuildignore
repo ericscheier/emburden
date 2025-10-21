@@ -1,0 +1,115 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.git$
+^\.github$
+^\.gitignore$
+^\.gitattributes$
+^\.flox$
+^\.claude$
+^_bookdown_files$
+^rsconnect$
+^\.Rhistory$
+^\.RData$
+^.*_cache$
+^.*_files$
+^RPubs
+^data-raw$
+^analysis$
+
+# Large data files (not included in package)
+^CohortData_.*\.csv$
+^CensusTractData\.csv$
+^.*\.geojson$
+^TRACT_ZIP\.csv$
+^energy_burden_zip.*\.csv$
+^data/
+
+# Analysis scripts and outputs (keep in repo but not package)
+^analysis/
+^all_utilities_energy_burden\.R$
+^nc_all_utilities_energy_burden\.R$
+^nc_cooperatives_energy_burden\.R$
+^render_.*_tables\.R$
+^format_.*_table\.R$
+^all_utilities_.*\.(csv|html|tex|md)$
+^nc_all_utilities_.*\.(csv|html|tex|md)$
+^nc_cooperatives_.*\.(csv|html|tex|md)$
+^ANALYSIS_COMPLETE\.md$
+
+# Rmd research files (not vignettes)
+^.*\.Rmd$
+^.*\.qmd$
+^.*\.log$
+^.*\.nav$
+^.*\.snm$
+^.*\.toc$
+^.*\.tex$
+^preamble-latex\.tex$
+
+# Generated outputs
+^.*\.pdf$
+^.*\.html$
+^.*\.docx$
+^.*\.odt$
+^.*\.pptx$
+^.*\.svg$
+^.*\.png$
+^.*\.jpg$
+
+# Shiny app (separate from package)
+^ui\.R$
+^server\.R$
+^global\.R$
+
+# Development/project files
+^sources\.R$
+^render\.R$
+^libraries\.R$
+^comparison_table\.R$
+^paper_source\.R$
+^poster_.*\.R$
+^.*_munging\.R$
+^.*_slides\.R.*$
+^.*_poster\.R.*$
+^MarketFigures\.R$
+^methods\.R$
+^figures\.R$
+^usurdb_.*\.(R|py|db)$
+^energy_poverty_dashboard\.R$
+
+# Config files
+^config.*\.yml$
+
+# Lua filters
+^.*\.lua$
+
+# Bibliography
+^.*\.bib$
+^.*\.csl$
+^.*\.bst$
+
+# Misc
+^README\.md$
+^NEWS\.md$
+^cran-comments\.md$
+^pkgdown$
+^_pkgdown\.yml$
+^\.lintr$
+^codecov\.yml$
+
+# Additional project files
+^PACKAGE_TRANSFORMATION\.md$
+^QUICK_START\.md$
+^STATUS\.md$
+^cleanup_conflicts\.R$
+^helpers\.R$
+^ratios\.R$
+^comparison_table\.csv$
+^market_sums\.csv$
+^nerc_state_mapping\.(csv|ods)$
+^poster_results\.RData$
+^poster_test\.md$
+^svglov3\.clo$
+^svjour3\.cls$
+^usurdb\.db$
+^NatureComm_figure-latex/

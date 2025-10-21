@@ -1,0 +1,71 @@
+url: https://ericscheier.github.io/net_energy_equity/
+
+template:
+  bootstrap: 5
+
+home:
+  title: "Energy Burden Analysis with Net Energy Return"
+  description: >
+    R package for analyzing household energy burden using proper aggregation
+    methodology based on Net Energy Return (Nh) transformations.
+
+reference:
+  - title: "Energy Metrics"
+    desc: "Core functions for calculating energy burden and related ratios"
+    contents:
+      - energy_burden_func
+      - ner_func
+      - eroi_func
+      - dear_func
+
+  - title: "Statistical Analysis"
+    desc: "Weighted aggregation and group-level calculations"
+    contents:
+      - calculate_weighted_metrics
+
+  - title: "Formatting Utilities"
+    desc: "Format numbers for publication-ready tables"
+    contents:
+      - to_percent
+      - to_dollar
+      - to_big
+      - to_million
+      - to_billion_dollar
+      - colorize
+
+navbar:
+  structure:
+    left:  [home, reference, articles, news]
+    right: [search, github]
+  components:
+    home:
+      icon: fas fa-home fa-lg
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Articles
+      menu:
+      - text: Getting Started
+        href: articles/getting-started.html
+      - text: Methodology
+        href: articles/methodology.html
+    news:
+      text: News
+      href: news/index.html
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/ericscheier/net_energy_equity
+
+articles:
+  - title: "Tutorials"
+    navbar: ~
+    contents:
+    - getting-started
+    - methodology
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with
