@@ -20,9 +20,9 @@ keywords:
   - net energy
   - macro-energy systems
   - energy inequality
-bibliography: references.bib
+bibliography: research/templates/bibliography/references.bib
 bibstyle: spphys
-csl: nature-no-et-al.csl
+csl: research/templates/csl/nature-no-et-al.csl
 journalname: Nature Energy
 date: "`r format(Sys.time(), '%d %B %Y')`"
 toc: false
@@ -32,21 +32,21 @@ output:
     keep_tex: true
     documentclass: article
     pandoc_args:
-      - '--lua-filter=color-text.lua'
-      - '--lua-filter=scholarly-metadata.lua'
-      - '--lua-filter=author-info-blocks.lua'
-    includes:  
-      in_header: preamble-latex.tex
+      - '--lua-filter=research/templates/lua-filters/color-text.lua'
+      - '--lua-filter=research/templates/lua-filters/scholarly-metadata.lua'
+      - '--lua-filter=research/templates/lua-filters/author-info-blocks.lua'
+    includes:
+      in_header: research/templates/latex/preamble-latex.tex
   bookdown::html_document2:
     number_sections: false
     pandoc_args:
-      - '--lua-filter=color-text.lua'
+      - '--lua-filter=research/templates/lua-filters/color-text.lua'
   bookdown::word_document2:
     number_sections: false
     pandoc_args:
-      - '--lua-filter=color-text.lua'
-      - '--lua-filter=scholarly-metadata.lua'
-      - '--lua-filter=author-info-blocks.lua'
+      - '--lua-filter=research/templates/lua-filters/color-text.lua'
+      - '--lua-filter=research/templates/lua-filters/scholarly-metadata.lua'
+      - '--lua-filter=research/templates/lua-filters/author-info-blocks.lua'
   bookdown::pdf_book:
     base_format: rticles::springer_article
     keep_tex: true

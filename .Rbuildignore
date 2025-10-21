@@ -26,6 +26,8 @@
 
 # Analysis scripts and outputs (keep in repo but not package)
 ^analysis/
+^research/
+^deprecated/
 ^all_utilities_energy_burden\.R$
 ^nc_all_utilities_energy_burden\.R$
 ^nc_cooperatives_energy_burden\.R$
