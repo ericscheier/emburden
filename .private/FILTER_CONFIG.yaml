@@ -1,0 +1,83 @@
+# Filter Configuration for Public Release
+# ========================================
+#
+# This file documents what gets removed when syncing to public release.
+# Edit the sync_to_public.sh script to modify filtering behavior.
+
+---
+# Commit Message Patterns
+#
+# These patterns are removed from commit messages when FILTER_HISTORY=true
+commit_filters:
+  - pattern: "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+    description: "Claude Code AI attribution line"
+
+  - pattern: "Co-Authored-By: Claude <noreply@anthropic.com>"
+    description: "Co-authorship attribution for AI assistance"
+
+  - pattern: "\\n\\n\\n+"
+    description: "Multiple consecutive blank lines (cleanup after removal)"
+
+# File and Directory Patterns
+#
+# These are always removed from the public release branch
+file_filters:
+  # Private development directory
+  - pattern: ".private/"
+    type: "directory"
+    description: "All private development files and documentation"
+    always_remove: true
+
+  # Build artifacts and logs
+  - pattern: "*.log"
+    type: "file"
+    description: "Log files from builds and renders"
+    always_remove: true
+
+  # R Markdown cache
+  - pattern: "*_cache/"
+    type: "directory"
+    description: "knitr/R Markdown cache directories"
+    always_remove: true
+
+  # R Markdown output
+  - pattern: "*_files/"
+    type: "directory"
+    description: "R Markdown figure and output directories"
+    always_remove: true
+
+# Files Preserved in Public Release
+#
+# These directories and files are kept
+preserve:
+  - "R/"
+  - "man/"
+  - "data-raw/"
+  - "vignettes/"
+  - "tests/"
+  - "analysis/"
+  - "research/"
+  - "README.md"
+  - "DESCRIPTION"
+  - "NAMESPACE"
+  - "LICENSE"
+  - ".Rbuildignore"
+  - ".gitignore"
+
+# Branch Configuration
+branches:
+  private: "package-transformation"
+  public: "public-release"
+
+# Git History Rewriting
+git_filter_repo:
+  enabled: false  # Set FILTER_HISTORY=true in sync_to_public.sh to enable
+  backup_branches: true
+  force_required: true
+
+# Notes
+# -----
+# - Internal documentation has been moved to .private/internal_docs/
+# - Research files remain in research/ for public access
+# - All R package code in R/ is preserved
+# - To customize filtering, edit .private/scripts/sync_to_public.sh

@@ -151,4 +151,8 @@ data/
 
 config.yml
 
-rsconnect/
+rsconnect/.env
+
+# Private development files (for public release workflow)
+.private/
+*_files/
