@@ -1,0 +1,138 @@
+name: Publish to Public Repository
+
+# Trigger options:
+# 1. On version tags (v1.0.0, v2.1.3, etc.)
+# 2. On release tags (release-2024-10-31, release-foo, etc.)
+# 3. On push to 'ready-for-public' branch (create this branch with protections)
+# 4. Manual trigger via GitHub Actions UI
+
+on:
+  push:
+    tags:
+      - 'v*'           # Matches v1.0.0, v2.1.3, etc.
+      - 'release-*'    # Matches release-2024-10-31, release-foo, etc.
+    branches:
+      - 'ready-for-public'  # Protected branch for controlled releases
+  workflow_dispatch:    # Manual trigger from GitHub UI
+
+env:
+  PUBLIC_REPO: 'ericscheier/net_energy_burden'
+  PUBLIC_BRANCH: 'main'
+
+jobs:
+  publish:
+    name: Clean and publish to public repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout private repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for proper git operations
+
+      - name: Configure git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Clean repository for public release
+        run: |
+          echo "Cleaning repository for public distribution..."
+
+          # Remove .private/ directory
+          if [ -d ".private" ]; then
+            rm -rf .private/
+            echo "✓ Removed .private/ directory"
+          fi
+
+          # Remove log files
+          find . -name "*.log" -type f -delete 2>/dev/null || true
+          echo "✓ Removed *.log files"
+
+          # Remove cache directories
+          find . -name "*_cache" -type d -exec rm -rf {} + 2>/dev/null || true
+          echo "✓ Removed *_cache directories"
+
+          # Remove output directories
+          find . -name "*_files" -type d -exec rm -rf {} + 2>/dev/null || true
+          echo "✓ Removed *_files directories"
+
+          # Remove workflow file itself (don't want this in public repo)
+          rm -f .github/workflows/publish-to-public.yml
+          echo "✓ Removed workflow file"
+
+          echo ""
+          echo "Files cleaned. Current status:"
+          git status --short || true
+
+      - name: Check if there are changes to commit
+        id: check_changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit cleaned changes
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git add -A
+
+          # Create commit message with cleaned attribution
+          cat > /tmp/commit_msg.txt <<'EOF'
+          Prepare for public release
+
+          Remove private development files and prepare repository
+          for public distribution.
+          EOF
+
+          git commit -F /tmp/commit_msg.txt
+          echo "✓ Changes committed"
+
+      - name: Push to public repository
+        env:
+          PUBLIC_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          # Add public remote
+          git remote add public https://x-access-token:${PUBLIC_TOKEN}@github.com/${PUBLIC_REPO}.git
+
+          # Push to public repository
+          # Use --force-with-lease for safety (won't overwrite if public has unexpected changes)
+          git push public HEAD:${PUBLIC_BRANCH} --force-with-lease
+
+          echo ""
+          echo "================================================================"
+          echo "  Successfully published to ${PUBLIC_REPO}"
+          echo "================================================================"
+          echo ""
+          echo "Public repository: https://github.com/${PUBLIC_REPO}"
+          echo "Branch: ${PUBLIC_BRANCH}"
+
+          # If triggered by tag, also push the tag
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "Pushing tag: ${TAG_NAME}"
+            git push public ${TAG_NAME} || echo "Note: Tag may already exist on public repo"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Publication Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Successfully published to [\`${PUBLIC_REPO}\`](https://github.com/${PUBLIC_REPO})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Target branch:** \`${PUBLIC_BRANCH}\`" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "**Tag:** \`${TAG_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Cleaned items:" >> $GITHUB_STEP_SUMMARY
+          echo "- \`.private/\` directory" >> $GITHUB_STEP_SUMMARY
+          echo "- \`*.log\` files" >> $GITHUB_STEP_SUMMARY
+          echo "- \`*_cache/\` directories" >> $GITHUB_STEP_SUMMARY
+          echo "- \`*_files/\` directories" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow files" >> $GITHUB_STEP_SUMMARY
