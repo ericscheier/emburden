@@ -1,4 +1,4 @@
-Package: netenergyequity
+Package: netenergyburden
 Title: Energy Burden Analysis Using Net Energy Return Methodology
 Version: 0.1.0
 Authors@R:
@@ -18,6 +18,8 @@ Depends:
     R (>= 4.0.0)
 Imports:
     dplyr,
+    httr,
+    rappdirs,
     rlang,
     scales,
     spatstat.geom,
@@ -25,11 +27,14 @@ Imports:
     tibble,
     tidyr
 Suggests:
+    DBI,
+    RSQLite,
     knitr,
     rmarkdown,
+    rticles,
     testthat (>= 3.0.0),
     kableExtra
 VignetteBuilder: knitr
 LazyData: true
-URL: https://github.com/ericscheier/net_energy_equity
-BugReports: https://github.com/ericscheier/net_energy_equity/issues
+URL: https://github.com/ericscheier/net_energy_burden
+BugReports: https://github.com/ericscheier/net_energy_burden/issues

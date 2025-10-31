@@ -1,14 +1,16 @@
-# netenergyequity
+# netenergyburden
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/ericscheier/net_energy_equity/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ericscheier/net_energy_equity/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/ericscheier/net_energy_burden/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ericscheier/net_energy_burden/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 R package for analyzing household energy burden using the Net Energy Return (Nh) methodology.
 
 ## Overview
 
-**netenergyequity** provides tools for calculating and analyzing household energy burden across geographic and demographic cohorts. The package implements proper aggregation methodology using Net Energy Return (Nh) as the preferred metric before converting back to energy burden ratios.
+**netenergyburden** provides tools for calculating and analyzing household energy burden across geographic and demographic cohorts. The package implements proper aggregation methodology using Net Energy Return (Nh) as the preferred metric before converting back to energy burden ratios.
+
+**NEW**: Data downloads automatically from OpenEI on first use! No manual data setup required. Data is automatically imported to database for fast subsequent access.
 
 ### Key Features
 
@@ -25,18 +27,25 @@ Energy burden (E_b = S/G) is a ratio that requires harmonic mean aggregation. Th
 
 ## Installation
 
-You can install the development version of netenergyequity from GitHub:
+You can install the development version of netenergyburden from GitHub:
 
 ```r
 # install.packages("devtools")
-devtools::install_github("ericscheier/net_energy_equity")
+devtools::install_github("ericscheier/net_energy_burden")
 ```
 
 ## Quick Start
 
 ```r
-library(netenergyequity)
+library(netenergyburden)
 library(dplyr)
+
+# Data downloads automatically on first use!
+# Load census tract data for North Carolina
+nc_tracts <- load_census_tract_data(states = "NC")
+
+# Load household cohort data by Area Median Income
+nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 
 # Calculate Net Energy Return (Nh)
 gross_income <- 50000
@@ -49,8 +58,8 @@ print(energy_burden)  # 0.06 or 6%
 
 # Analyze weighted metrics across groups
 results <- calculate_weighted_metrics(
-  graph_data = your_data,
-  group_columns = "utility_name",
+  graph_data = nc_ami,
+  group_columns = "income_bracket",
   metric_name = "ner",
   metric_cutoff_level = 15.67,  # 6% energy burden threshold
   upper_quantile_view = 0.95,
@@ -67,6 +76,7 @@ results$formatted_median <- to_percent(results$metric_median)
 ### Energy Metrics
 
 - `energy_burden_func()` - Calculate energy burden (S/G)
+- `neb_func()` - Calculate Net Energy Burden (mathematically equivalent to energy burden, but emphasizes proper aggregation via Nh)
 - `ner_func()` - Calculate Net Energy Return ((G-S)/S)
 - `eroi_func()` - Calculate Energy Return on Investment (G/S)
 - `dear_func()` - Calculate Disposable Energy-Adjusted Resources
@@ -118,6 +128,7 @@ Run from project root:
 # Load package for development
 devtools::load_all()
 
+# Data downloads automatically on first use!
 # Run analysis
 source("analysis/scripts/nc_all_utilities_energy_burden.R")
 
@@ -126,14 +137,60 @@ source("analysis/scripts/nc_all_utilities_energy_burden.R")
 
 ## Data Requirements
 
-Analysis scripts expect data files with columns:
+### Database Integration (Recommended)
 
-- `geoid` - Census tract identifier
-- `ner` - Net Energy Return values
-- `households` - Household counts for weighting
-- Group columns (e.g., `company_na`, `company_ty`, `state_abbr`)
+As of version 0.2.0, energy burden data has been migrated to the `emrgi_db.sqlite` database for improved performance and integration. The package provides automatic fallback to CSV files for backward compatibility.
 
-Large data files (>100MB) are not included in the package. See `analysis/README.md` for data documentation.
+**NEW in v0.3.0**: Support for both 2018 and 2022 LEAD Tool data vintages enables temporal analysis.
+
+**Loading data** (automatic database/CSV/OpenEI download fallback):
+
+```r
+library(netenergyburden)
+
+# Check which data source is available
+check_data_sources()
+
+# Load census tract data (tries database → CSV → automatic download)
+nc_tracts <- load_census_tract_data(states = "NC")
+
+# Load household cohort data (defaults to latest vintage - 2022)
+# Auto-downloads from OpenEI on first use, imports to database for fast subsequent access!
+nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
+
+# Load specific vintage (2018 or 2022)
+nc_ami_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
+nc_ami_2022 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2022")
+
+# Compare vintages for temporal analysis
+comparison <- compare_vintages(dataset = "ami", states = "NC", aggregate_by = "state")
+```
+
+**Data Loading Workflow:**
+
+On first use, `load_cohort_data()` automatically:
+1. **Tries local database** (emrgi_db.sqlite) for fast access
+2. **Falls back to local CSV** files if database unavailable
+3. **Downloads from OpenEI** (DOE LEAD dataset) if neither exists
+4. **Imports to database** automatically for subsequent fast access
+5. Returns the requested data - no manual steps required!
+
+Data sources:
+- **OpenEI 2018**: https://data.openei.org/submissions/573 (4 AMI brackets)
+- **OpenEI 2022**: https://data.openei.org/submissions/6219 (6 AMI brackets)
+
+
+See `data-raw/README.md` for complete migration documentation and `data-raw/LEAD_SCHEMA_COMPARISON.md` for vintage differences.
+
+### Legacy CSV Files
+
+For backward compatibility, the package still supports CSV files:
+
+- `CensusTractData.csv` - Census tract demographics and utility info
+- `CohortData_AreaMedianIncome.csv` - Energy burden by Area Median Income brackets
+- `CohortData_FederalPovertyLine.csv` - Energy burden by Federal Poverty Line brackets
+
+These files are large (>100MB each) and not included in git. Contact maintainer for access or use the database (recommended).
 
 ## Energy Poverty Threshold
 
@@ -191,8 +248,103 @@ devtools::document()
 devtools::install()
 ```
 
+## Database Integration
+
+The package integrates with the **emrgi_data_public** database for enhanced analysis and improved performance:
+
+### What's Available
+
+**Energy Burden Data** (new in v0.2.0):
+- **Census tract demographics** - 72K tracts with utility service territory info
+- **Household cohort energy burden** - 2.4M cohorts by income/tenure/housing type
+- **Area Median Income (AMI) brackets** - Income relative to local median
+- **Federal Poverty Line (FPL) brackets** - Income relative to poverty threshold
+
+**Utility & Market Data**:
+- **Utility electricity rates** by ZIP code
+- **eGrid emissions subregions** for environmental justice analysis
+- **Geographic crosswalks** (tract ↔ ZIP ↔ county)
+- **State retail sales projections** (1998-2050)
+- **Renewable generator registry**
+
+### Installation
+
+```r
+# Install database packages
+install.packages(c("DBI", "RSQLite"))
+
+# Clone emrgi_data_public repository as sibling directory
+# Or set environment variable: EMRGI_DB_PATH=/path/to/emrgi_db.sqlite
+```
+
+### Usage
+
+**Energy Burden Data** (automatic database/CSV/download fallback):
+
+```r
+library(netenergyburden)
+
+# Load census tract data (tries database → CSV → automatic download)
+nc_tracts <- load_census_tract_data(states = "NC")
+
+# Load household cohort data by income bracket
+# Downloads automatically if not available locally!
+nc_ami <- load_cohort_data(
+  dataset = "ami",  # or "fpl"
+  states = "NC",
+  income_brackets = c("0-30% AMI", "30-50% AMI")
+)
+
+# Load integrated data (burden + utility rates + emissions)
+nc_full <- load_burden_with_utilities(
+  states = "NC",
+  dataset = "ami",
+  income_brackets = "0-30% AMI"
+)
+```
+
+**Utility Rate Data** (requires database connection):
+
+```r
+# Connect to database
+conn <- connect_emrgi_db()
+
+# Get utility rates for North Carolina
+nc_rates <- get_utility_rates(conn, state = "NC")
+
+# Get emissions regions
+egrid <- get_egrid_regions(conn, zips = c(27701, 27705, 28052))
+
+# Get retail sales projections
+sales <- get_retail_sales_projections(conn, states = "NC", years = 2020:2030)
+
+# Always disconnect when done
+DBI::dbDisconnect(conn)
+```
+
+### Example Analyses
+
+See the vignette for complete examples:
+
+```r
+vignette("integrating-utility-data", package = "netenergyburden")
+```
+
+And the example script:
+
+```r
+source("analysis/scripts/utility_rate_comparison.R")
+```
+
+**Benefits:**
+- **Faster data access** - Database queries 10-50x faster than CSV parsing
+- **Integrated analysis** - Join burden data with utility rates and emissions in single query
+- **Flexible filtering** - Query only needed states/income brackets instead of loading full CSVs
+- **Environmental justice** - Link high-burden areas with high-emissions grid regions
+- **Policy modeling** - Scenario analysis with utility rate structures and demand projections
+
 ## Related Resources
 
 - **Paper**: "Net energy metrics reveal striking disparities across United States household energy burdens"
-- **Data sources**: [To be documented]
-- **Methodology**: See package vignettes (coming soon)
+- **emrgi_data_public**: Energy market database (https://github.com/ScheierVentures/emrgi_data_public)
+- **Methodology**: See package vignettes
