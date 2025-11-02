@@ -1,14 +1,14 @@
-# netenergyburden
+# emburden
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/ericscheier/net_energy_burden/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ericscheier/net_energy_burden/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 R package for analyzing household energy burden using the Net Energy Return (Nh) methodology.
 
 ## Overview
 
-**netenergyburden** provides tools for calculating and analyzing household energy burden across geographic and demographic cohorts. The package implements proper aggregation methodology using Net Energy Return (Nh) as the preferred metric before converting back to energy burden ratios.
+**emburden** provides tools for calculating and analyzing household energy burden across geographic and demographic cohorts. The package implements proper aggregation methodology using Net Energy Return (Nh) as the preferred metric before converting back to energy burden ratios.
 
 **NEW**: Data downloads automatically from OpenEI on first use! No manual data setup required. Data is automatically imported to database for fast subsequent access.
 
@@ -27,17 +27,17 @@ Energy burden (E_b = S/G) is a ratio that requires harmonic mean aggregation. Th
 
 ## Installation
 
-You can install the development version of netenergyburden from GitHub:
+You can install the development version of emburden from GitHub:
 
 ```r
 # install.packages("devtools")
-devtools::install_github("ericscheier/net_energy_burden")
+devtools::install_github("ericscheier/emburden")
 ```
 
 ## Quick Start
 
 ```r
-library(netenergyburden)
+library(emburden)
 library(dplyr)
 
 # Data downloads automatically on first use!

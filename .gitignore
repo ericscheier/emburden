@@ -156,3 +156,9 @@ rsconnect/.env
 # Private development files (for public release workflow)
 .private/
 *_files/
+
+# Flox development environment
+.flox/
+
+# Package build artifacts
+*.tar.gz
