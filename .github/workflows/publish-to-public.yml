@@ -23,6 +23,9 @@ jobs:
   publish:
     name: Clean and publish to public repository
     runs-on: ubuntu-latest
+    environment:
+      name: public-release
+      url: https://github.com/${{ env.PUBLIC_REPO }}
 
     steps:
       - name: Checkout private repository
