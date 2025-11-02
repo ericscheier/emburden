@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(netenergyequity)
+library(emburden)
 
-test_check("netenergyequity")
+test_check("emburden")
