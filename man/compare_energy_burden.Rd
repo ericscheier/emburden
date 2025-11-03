@@ -30,7 +30,7 @@ compare_energy_burden(
 \value{
 A data.frame with energy burden comparison showing:
 \itemize{
-\item neb_\link{year}: Net Energy Burden for each vintage
+\item neb_YYYY: Net Energy Burden for each vintage (where YYYY is the year)
 \item change_pp: Absolute change in percentage points
 \item change_pct: Relative percent change
 }

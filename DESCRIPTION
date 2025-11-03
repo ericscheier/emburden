@@ -19,9 +19,10 @@ Imports:
     dplyr,
     httr,
     rappdirs,
+    readr,
     rlang,
     scales,
-    spatstat.geom,
+    spatstat.univar,
     stats,
     tibble,
     tidyr

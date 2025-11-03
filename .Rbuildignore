@@ -81,6 +81,8 @@
 
 # Config files
 ^config.*\.yml$
+^\.env$
+^\.private$
 
 # Lua filters
 ^.*\.lua$
@@ -98,6 +100,8 @@
 ^_pkgdown\.yml$
 ^\.lintr$
 ^codecov\.yml$
+^GITHUB_SETUP\.md$
+^NEB_QUICKSTART\.md$
 
 # Additional project files
 ^PACKAGE_TRANSFORMATION\.md$
