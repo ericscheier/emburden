@@ -91,7 +91,7 @@ jobs:
       - name: Verify version consistency
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          DESC_VERSION=$(Rscript -e "cat(desc::desc_get_version())")
+          DESC_VERSION=$(Rscript -e "cat(as.character(desc::desc_get_version()))")
 
           if [ "$VERSION" != "$DESC_VERSION" ]; then
             echo "ERROR: Tag version ($VERSION) does not match DESCRIPTION version ($DESC_VERSION)"
