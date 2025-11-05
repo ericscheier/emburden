@@ -85,7 +85,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::pkgbuild
+          extra-packages: any::rcmdcheck, any::pkgbuild, any::covr
           needs: check
 
       - name: Verify version consistency
