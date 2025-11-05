@@ -1,0 +1,40 @@
+{
+  "title": "emburden: Energy Burden Analysis Using Net Energy Return Methodology",
+  "description": "R package providing tools for calculating and analyzing household energy burden using the Net Energy Return (Nh) aggregation methodology. Functions support weighted statistical calculations across geographic and demographic cohorts, with utilities for formatting results into publication-ready tables.",
+  "license": "AGPL-3.0-or-later",
+  "upload_type": "software",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Scheier, Eric",
+      "affiliation": "Scheier Ventures",
+      "orcid": "0000-0001-9849-9089"
+    }
+  ],
+  "keywords": [
+    "energy burden",
+    "net energy return",
+    "household energy",
+    "energy poverty",
+    "energy equity",
+    "statistical analysis",
+    "R package"
+  ],
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "",
+      "resource_type": "publication-article",
+      "scheme": "doi"
+    }
+  ],
+  "contributors": [],
+  "communities": [
+    {
+      "identifier": "zenodo"
+    }
+  ],
+  "grants": [],
+  "version": "0.1.0",
+  "language": "eng"
+}
