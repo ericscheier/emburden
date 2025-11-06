@@ -112,11 +112,17 @@ For **development and offline work**, large CSV files can be placed in `data/`:
 
 ```
 data/
-  CensusTractData.csv              # Census tract metadata
-  CohortData_AreaMedianIncome.csv  # AMI cohort data
-  CohortData_FederalPovertyLine.csv # FPL cohort data
+  CensusTractData.csv              # Census tract metadata (2018-based)
+  CohortData_AreaMedianIncome.csv  # AMI cohort data (2018-based)
+  CohortData_FederalPovertyLine.csv # FPL cohort data (2018-based)
   emrgi_db.sqlite                  # Optional database (auto-generated)
 ```
+
+**Note on CSV files in data/**: These files are from the **2018 LEAD Tool vintage** and were originally published on Zenodo:
+- **Zenodo DOI**: [10.5281/zenodo.5725912](https://zenodo.org/records/5725912)
+- **Published**: December 2021
+- **Data Source**: DOE LEAD Tool 2018 vintage (https://data.openei.org/submissions/573)
+- **Structure**: Same schema as used in the original analysis
 
 These files are:
 - **Excluded from package** (via `.Rbuildignore` pattern `^data/`)
@@ -125,6 +131,8 @@ These files are:
   - Offline development
   - Faster initial load times
   - Custom data processing
+  - Reproducing 2018-based analysis
+  - Temporal comparison with 2022 data
 
 ## Data Processing Pipeline
 

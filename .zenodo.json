@@ -22,6 +22,12 @@
   ],
   "related_identifiers": [
     {
+      "relation": "isNewVersionOf",
+      "identifier": "10.5281/zenodo.5725912",
+      "resource_type": "dataset",
+      "scheme": "doi"
+    },
+    {
       "relation": "isSupplementTo",
       "identifier": "",
       "resource_type": "publication-article",
