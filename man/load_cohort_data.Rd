@@ -40,7 +40,7 @@ A tibble with columns:
 \description{
 Load household energy burden cohort data with automatic fallback:
 \enumerate{
-\item Try local database (emrgi_db.sqlite)
+\item Try local database
 \item Fall back to local CSV files
 \item Auto-download from OpenEI if neither exists
 \item Auto-import downloaded data to database for future use

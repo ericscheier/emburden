@@ -4,7 +4,7 @@ utils::globalVariables(c("geoid", "income_bracket"))
 #' Load DOE LEAD Tool Cohort Data
 #'
 #' Load household energy burden cohort data with automatic fallback:
-#' 1. Try local database (emrgi_db.sqlite)
+#' 1. Try local database
 #' 2. Fall back to local CSV files
 #' 3. Auto-download from OpenEI if neither exists
 #' 4. Auto-import downloaded data to database for future use
@@ -272,7 +272,7 @@ check_data_sources <- function(verbose = TRUE) {
     cat("Data Source Status\n")
     cat(strrep("=", 60), "\n")
 
-    cat("\nDatabase (emrgi_db.sqlite):\n")
+    cat("\nLocal database:\n")
     if (result$database$available) {
       cat("  \u2713 Available at:", result$database$path, "\n")
       if (length(result$database$tables) > 0) {
@@ -924,7 +924,7 @@ try_import_tracts_to_database <- function(data, verbose = FALSE) {
 find_emrgi_db <- function() {
 
   # Check environment variable first
-  env_path <- Sys.getenv("EMRGI_DB_PATH")
+  env_path <- Sys.getenv("EMBURDEN_DB_PATH")
   if (nzchar(env_path) && file.exists(env_path)) {
     return(env_path)
   }

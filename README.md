@@ -209,7 +209,7 @@ comparison <- compare_vintages(dataset = "ami", states = "NC", aggregate_by = "s
 **Data Loading Workflow:**
 
 On first use, `load_cohort_data()` automatically:
-1. **Tries local database** (emrgi_db.sqlite) for fast access
+1. **Tries local database** for fast access
 2. **Falls back to local CSV** files if database unavailable
 3. **Downloads from OpenEI** (DOE LEAD dataset) if neither exists
 4. **Imports to database** automatically for subsequent fast access
@@ -290,7 +290,7 @@ devtools::install()
 
 ## Database Integration
 
-The package integrates with the **emrgi_data_public** database for enhanced analysis and improved performance:
+The package supports local SQLite database integration for enhanced analysis and improved performance:
 
 ### What's Available
 
@@ -313,8 +313,8 @@ The package integrates with the **emrgi_data_public** database for enhanced anal
 # Install database packages
 install.packages(c("DBI", "RSQLite"))
 
-# Clone emrgi_data_public repository as sibling directory
-# Or set environment variable: EMRGI_DB_PATH=/path/to/emrgi_db.sqlite
+# Optional: Set environment variable to use existing database
+# Sys.setenv(EMBURDEN_DB_PATH = "/path/to/your/database.sqlite")
 ```
 
 ### Usage
@@ -346,11 +346,12 @@ nc_full <- load_burden_with_utilities(
 **Utility Rate Data** (requires database connection):
 
 ```r
-# Connect to database
-conn <- connect_emrgi_db()
+# Connect to database (if available)
+# Database integration requires separate setup - see Database Integration section
+# conn <- DBI::dbConnect(RSQLite::SQLite(), "/path/to/database.sqlite")
 
-# Get utility rates for North Carolina
-nc_rates <- get_utility_rates(conn, state = "NC")
+# Get utility rates for North Carolina (requires database connection)
+# nc_rates <- get_utility_rates(conn, state = "NC")
 
 # Get emissions regions
 egrid <- get_egrid_regions(conn, zips = c(27701, 27705, 28052))
@@ -386,5 +387,5 @@ source("analysis/scripts/utility_rate_comparison.R")
 ## Related Resources
 
 - **Paper**: "Net energy metrics reveal striking disparities across United States household energy burdens"
-- **emrgi_data_public**: Energy market database (https://github.com/ScheierVentures/emrgi_data_public)
+- **Data Source**: DOE Low-Income Energy Affordability Data (LEAD) Tool via OpenEI
 - **Methodology**: See package vignettes
