@@ -44,7 +44,7 @@ reference:
 
 navbar:
   structure:
-    left:  [home, reference, articles, news]
+    left:  [home, reference, news]
     right: [search, github]
   components:
     home:
@@ -53,26 +53,12 @@ navbar:
     reference:
       text: Reference
       href: reference/index.html
-    articles:
-      text: Articles
-      menu:
-      - text: Getting Started
-        href: articles/getting-started.html
-      - text: Methodology
-        href: articles/methodology.html
     news:
       text: News
       href: news/index.html
     github:
       icon: fab fa-github fa-lg
       href: https://github.com/ScheierVentures/emburden
-
-articles:
-  - title: "Tutorials"
-    navbar: ~
-    contents:
-    - getting-started
-    - methodology
 
 footer:
   structure:
