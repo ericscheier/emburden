@@ -24,6 +24,7 @@ Imports:
     scales,
     spatstat.univar,
     stats,
+    stringr,
     tibble,
     tidyr
 Suggests:
@@ -36,5 +37,5 @@ Suggests:
     kableExtra
 VignetteBuilder: knitr
 LazyData: true
-URL: https://github.com/ericscheier/emburden
-BugReports: https://github.com/ericscheier/emburden/issues
+URL: https://github.com/ScheierVentures/emburden, https://scheierventures.github.io/emburden/
+BugReports: https://github.com/ScheierVentures/emburden/issues

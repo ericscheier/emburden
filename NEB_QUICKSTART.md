@@ -111,7 +111,7 @@ high_burden_pct <- high_burden_count / sum(nc_data$households) * 100
 
 ```r
 # Install from GitHub
-devtools::install_github("ericscheier/net_energy_burden")
+devtools::install_github("ScheierVentures/emburden")
 
 # Or for development
 devtools::load_all()
@@ -138,12 +138,39 @@ vignette("neb-proper-aggregation", package = "netenergyburden")
 | Harmonic mean of Eb | `1 / weighted.mean(1/eb, weights)` | ✅ Correct (but more complex) |
 | Simple mean of Eb | `mean(eb)` | ❌ INCORRECT (ignores household weights) |
 
+## Computational Advantage: Arithmetic vs Harmonic Mean
+
+The Nh method transforms the problem from **harmonic mean** (complex) to **arithmetic mean** (simple):
+
+```r
+# Via Nh: Uses simple arithmetic weighted mean ✓
+nh <- ner_func(income, spending)
+nh_mean <- weighted.mean(nh, weights)        # Simple arithmetic mean!
+neb <- 1 / (1 + nh_mean)
+
+# Direct EB: Requires harmonic mean (more complex)
+eb <- energy_burden_func(income, spending)
+neb <- 1 / weighted.mean(1/eb, weights)      # Harmonic mean (complex)
+```
+
+**Why arithmetic mean is better** (for aggregation across households):
+1. **Simpler** - Uses standard `weighted.mean()` function
+2. **More stable** - Avoids division by very small EB values (e.g., 0.01 → 100)
+3. **More interpretable** - "Average net return per dollar spent on energy"
+4. **Error prevention** - Makes it obvious you can't use arithmetic mean on EB directly
+
+**Important**: This computational advantage applies **only when aggregating across multiple households**. For single household calculations, both methods are mathematically equivalent (NEB = EB = S/G) and require the same operations.
+
+Both aggregation methods are mathematically equivalent and give identical results, but the Nh approach is computationally simpler and numerically more stable when aggregating.
+
 ## Why NEB > Eb?
 
 1. **Same interpretability**: NEB = S/G, still shows % of income on energy
 2. **Proper aggregation**: Formula makes Nh relationship explicit
-3. **Conceptual clarity**: Prevents accidental misuse of arithmetic mean
-4. **Avoids errors**: Direct Eb averaging can introduce 1-5% error
+3. **Computational simplicity**: Arithmetic mean instead of harmonic mean
+4. **Numerical stability**: Avoids division by very small values
+5. **Conceptual clarity**: Prevents accidental misuse of arithmetic mean
+6. **Avoids errors**: Direct Eb averaging can introduce 1-5% error
 
 ## Mathematical Identity
 
@@ -159,7 +186,7 @@ For aggregation:
 - **Vignette**: `vignette("neb-proper-aggregation")`
 - **Full example**: `analysis/scripts/neb_example_nc.R`
 - **Paper**: "Net energy metrics reveal striking disparities across United States household energy burdens"
-- **Package docs**: https://github.com/ericscheier/net_energy_equity
+- **Package docs**: https://github.com/ScheierVentures/emburden
 
 ## Contact
 

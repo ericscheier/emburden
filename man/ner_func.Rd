@@ -24,9 +24,29 @@ accounts for harmonic mean behavior when aggregating across households.
 }
 \details{
 The Net Energy Return is mathematically related to energy burden by:
-E_b = 1 / (Nh + 1)
+E_b = 1 / (Nh + 1), or equivalently: Nh = (1/E_b) - 1
 
-The 6\% energy burden poverty threshold corresponds to Nh ≤ 15.67.
+\strong{Why use Nh for aggregation?}
+
+For individual household data, the Nh method enables simple arithmetic weighted
+mean aggregation:
+\itemize{
+\item \strong{Via Nh}: \code{neb = 1 / (1 + weighted.mean(nh, weights))} (arithmetic mean)
+\item \strong{Direct EB}: \code{neb = 1 / weighted.mean(1/eb, weights)} (harmonic mean)
+}
+
+\strong{Computational advantages of the arithmetic mean approach:}
+\enumerate{
+\item \strong{Simpler to compute} - Uses standard \code{weighted.mean()} function
+\item \strong{More numerically stable} - Avoids division by very small EB values (e.g., 0.01)
+\item \strong{More interpretable} - "Average net return per dollar spent on energy"
+\item \strong{Prevents errors} - Makes it obvious you can't use arithmetic mean on EB directly
+}
+
+For cohort data (pre-aggregated totals), direct calculation \code{sum(S)/sum(G)}
+is mathematically equivalent to the Nh method but simpler.
+
+The 6\% energy burden poverty threshold corresponds to Nh ≥ 15.67.
 }
 \examples{
 # Calculate Net Energy Return

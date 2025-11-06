@@ -4,7 +4,7 @@
 \alias{download_lead_data}
 \title{Download LEAD data from OpenEI}
 \usage{
-download_lead_data(dataset, vintage, verbose = FALSE)
+download_lead_data(dataset, vintage, states = NULL, verbose = FALSE)
 }
 \description{
 Download LEAD data from OpenEI

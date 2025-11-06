@@ -21,7 +21,17 @@ R package for analyzing household energy burden using the Net Energy Return (Nh)
 
 ### Why Net Energy Return?
 
-Energy burden (E_b = S/G) is a ratio that requires harmonic mean aggregation. The Net Energy Return transformation (Nh = (G-S)/S) allows proper weighted mean aggregation, then converts back to energy burden via E_b = 1/(Nh+1). This methodology is detailed in:
+Energy burden (E_b = S/G) is a ratio that requires harmonic mean aggregation. The Net Energy Return transformation (Nh = (G-S)/S) allows proper weighted mean aggregation using simple arithmetic mean, then converts back to energy burden via E_b = 1/(Nh+1).
+
+**Computational Advantage** (applies to **aggregation across households only**): When aggregating individual household data, the Nh method uses arithmetic mean (`weighted.mean(nh)`) instead of harmonic mean (`1/weighted.mean(1/eb)`), providing:
+- Simpler computation with standard functions
+- Better numerical stability (avoids division by very small EB values)
+- More interpretable results ("average net return per dollar")
+- Clear error prevention (makes it obvious you can't use arithmetic mean on EB directly)
+
+Note: For single household calculations, both methods are mathematically equivalent (NEB = EB). The advantage appears only when aggregating across multiple households.
+
+This methodology is detailed in:
 
 > **Net energy metrics reveal striking disparities across United States household energy burdens**
 
@@ -47,16 +57,35 @@ nc_tracts <- load_census_tract_data(states = "NC")
 # Load household cohort data by Area Median Income
 nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 
-# Calculate Net Energy Return (Nh)
+# === EXAMPLE 1: Single household calculation ===
 gross_income <- 50000
 energy_spending <- 3000
-nh <- ner_func(gross_income, energy_spending)
 
-# Convert to energy burden
-energy_burden <- 1 / (nh + 1)
-print(energy_burden)  # 0.06 or 6%
+# Method 1: Direct energy burden
+eb <- energy_burden_func(gross_income, energy_spending)  # 0.06
 
-# Analyze weighted metrics across groups
+# Method 2: Via Net Energy Return (mathematically identical)
+nh <- ner_func(gross_income, energy_spending)  # 15.67
+neb <- 1 / (nh + 1)  # 0.06 (same as eb)
+
+# === EXAMPLE 2: Individual household data aggregation ===
+# CORRECT: Use Nh method (arithmetic mean)
+incomes <- c(30000, 50000, 75000)
+spendings <- c(3000, 3500, 4000)
+households <- c(100, 150, 200)
+
+nh <- ner_func(incomes, spendings)
+nh_mean <- weighted.mean(nh, households)
+neb_correct <- 1 / (1 + nh_mean)  # Proper aggregation ✓
+
+# WRONG: Direct mean of energy burden (introduces 1-5% error)
+# neb_wrong <- weighted.mean(energy_burden_func(incomes, spendings), households)  # DON'T DO THIS!
+
+# === EXAMPLE 3: Cohort data aggregation ===
+# For pre-aggregated totals, direct ratio works
+neb_cohort <- sum(nc_ami$total_electricity_spend) / sum(nc_ami$total_income)  # Simple ✓
+
+# === EXAMPLE 4: Grouped analysis ===
 results <- calculate_weighted_metrics(
   graph_data = nc_ami,
   group_columns = "income_bracket",
@@ -75,11 +104,22 @@ results$formatted_median <- to_percent(results$metric_median)
 
 ### Energy Metrics
 
-- `energy_burden_func()` - Calculate energy burden (S/G)
-- `neb_func()` - Calculate Net Energy Burden (mathematically equivalent to energy burden, but emphasizes proper aggregation via Nh)
-- `ner_func()` - Calculate Net Energy Return ((G-S)/S)
-- `eroi_func()` - Calculate Energy Return on Investment (G/S)
-- `dear_func()` - Calculate Disposable Energy-Adjusted Resources
+**Household-level calculations** (all mathematically related):
+- `energy_burden_func(g, s)` - Energy Burden: **S/G**
+- `neb_func(g, s)` - Net Energy Burden: **S/G** (identical to EB, emphasizes proper aggregation)
+- `ner_func(g, s)` - Net Energy Return: **(G-S)/S** (use this for aggregation!)
+- `eroi_func(g, s)` - Energy Return on Investment: **G/Se**
+- `dear_func(g, s)` - Disposable Energy-Adjusted Resources: **(G-S)/G**
+
+**Key relationships**:
+- At household level: `neb_func() == energy_burden_func()` (identical)
+- Transformation: `neb = 1/(1+nh)` and `nh = (1/neb) - 1`
+- 6% energy burden threshold ↔ Nh ≥ 15.67
+
+**Aggregation guidance**:
+- **Individual household data**: Calculate `nh <- ner_func(income, spending)`, then `neb_aggregate <- 1/(1 + weighted.mean(nh, weights))` (arithmetic mean ✓)
+- **Cohort data** (pre-aggregated totals): Calculate `neb <- sum(total_spending) / sum(total_income)` (direct ratio ✓)
+- **NEVER use**: `weighted.mean(neb_func(...))` or `mean(energy_burden_func(...))` (arithmetic mean of ratios ✗ introduces 1-5% error)
 
 ### Statistical Analysis
 
@@ -137,16 +177,16 @@ source("analysis/scripts/nc_all_utilities_energy_burden.R")
 
 ## Data Requirements
 
-### Database Integration (Recommended)
+### Automatic Data Download
 
-As of version 0.2.0, energy burden data has been migrated to the `emrgi_db.sqlite` database for improved performance and integration. The package provides automatic fallback to CSV files for backward compatibility.
+The package automatically downloads LEAD Tool data from OpenEI on first use and caches it locally for fast subsequent access. No manual data setup required!
 
 **NEW in v0.3.0**: Support for both 2018 and 2022 LEAD Tool data vintages enables temporal analysis.
 
 **Loading data** (automatic database/CSV/OpenEI download fallback):
 
 ```r
-library(netenergyburden)
+library(emburden)
 
 # Check which data source is available
 check_data_sources()
@@ -227,7 +267,7 @@ Contributions are welcome! Please:
 
 ## Issues
 
-Report bugs or request features at: https://github.com/ericscheier/net_energy_equity/issues
+Report bugs or request features at: https://github.com/ScheierVentures/emburden/issues
 
 ## Development
 
@@ -282,7 +322,7 @@ install.packages(c("DBI", "RSQLite"))
 **Energy Burden Data** (automatic database/CSV/download fallback):
 
 ```r
-library(netenergyburden)
+library(emburden)
 
 # Load census tract data (tries database → CSV → automatic download)
 nc_tracts <- load_census_tract_data(states = "NC")
@@ -327,7 +367,7 @@ DBI::dbDisconnect(conn)
 See the vignette for complete examples:
 
 ```r
-vignette("integrating-utility-data", package = "netenergyburden")
+vignette("integrating-utility-data", package = "emburden")
 ```
 
 And the example script:

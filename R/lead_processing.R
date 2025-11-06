@@ -47,8 +47,8 @@ raw_to_lead <- function(data, vintage) {
                   by = "BLD",
                   all.x = TRUE)
 
-    # Identify income bracket column (AMI68, FPL15, SMI, etc.)
-    possible_colnames <- c("AMI68", "FPL15", "SMI")
+    # Identify income bracket column (AMI68, FPL15, FPL150, SMI, etc.)
+    possible_colnames <- c("AMI68", "FPL15", "FPL150", "SMI")
     income_bracket_colname <- names(data)[stringr::str_detect(names(data), paste(possible_colnames, collapse = "|"))]
 
     # Ensure geoid (FIP) is properly formatted as 11-digit character

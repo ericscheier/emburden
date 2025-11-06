@@ -1,3 +1,10 @@
+# Global variable bindings to satisfy R CMD check
+utils::globalVariables(c(
+  "total_electricity_spend", "total_gas_spend", "total_other_spend",
+  "total_income", "total_spend", "geoid", "state_abbr", "nh",
+  "vintage", "neb", ".data", "change_pp", "change_pct", "households"
+))
+
 #' Compare Energy Burden Between Years
 #'
 #' Compare household energy burden metrics across different data vintages,
@@ -12,7 +19,7 @@
 #' @param format Logical, if TRUE returns formatted percentages (default TRUE)
 #'
 #' @return A data.frame with energy burden comparison showing:
-#'   - neb_[year]: Net Energy Burden for each vintage
+#'   - neb_YYYY: Net Energy Burden for each vintage (where YYYY is the year)
 #'   - change_pp: Absolute change in percentage points
 #'   - change_pct: Relative percent change
 #'
@@ -61,19 +68,36 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
     verbose = FALSE
   )
 
+  # Select only required columns before combining
+  # This ensures both datasets have matching column sets regardless of vintage
+  required_cols <- c(
+    "geoid",
+    "income_bracket",
+    "households",
+    "total_income",
+    "total_electricity_spend",
+    "total_gas_spend",
+    "total_other_spend"
+  )
+
+  data_1 <- data_1 |>
+    dplyr::select(dplyr::all_of(required_cols))
+
+  data_2 <- data_2 |>
+    dplyr::select(dplyr::all_of(required_cols))
+
   # Combine datasets
   combined <- rbind(
     data_1 |> dplyr::mutate(vintage = vintage_1),
     data_2 |> dplyr::mutate(vintage = vintage_2)
   )
 
-  # Calculate NEB via Nh for each vintage
+  # Calculate total spend for each row
   combined <- combined |>
     dplyr::mutate(
       total_spend = total_electricity_spend +
         dplyr::coalesce(total_gas_spend, 0) +
-        dplyr::coalesce(total_other_spend, 0),
-      nh = (total_income - total_spend) / total_spend
+        dplyr::coalesce(total_other_spend, 0)
     )
 
   # Determine grouping variables
@@ -94,13 +118,19 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
   }
 
   # Aggregate by grouping variables
+  # For aggregated cohort data, sum totals directly rather than using Nh
   aggregated <- combined |>
     dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) |>
     dplyr::summarise(
-      neb = 1 / (1 + stats::weighted.mean(nh, households, na.rm = TRUE)),
+      total_income_sum = sum(total_income, na.rm = TRUE),
+      total_spend_sum = sum(total_spend, na.rm = TRUE),
       households = sum(households, na.rm = TRUE),
       .groups = "drop"
-    )
+    ) |>
+    dplyr::mutate(
+      neb = total_spend_sum / total_income_sum
+    ) |>
+    dplyr::select(-total_income_sum, -total_spend_sum)
 
   # Pivot to wide format for comparison
   result <- aggregated |>

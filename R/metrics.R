@@ -150,7 +150,7 @@ grouped_weighted_metrics <- function(graph_data,
         all(households == 0)) {
         NA
       } else {
-        spatstat.geom::weighted.quantile(
+        spatstat.univar::weighted.quantile(
           x = !!rlang::sym(metric_name), w = households,
           probs = c(.5), na.rm = TRUE
         )
@@ -159,7 +159,7 @@ grouped_weighted_metrics <- function(graph_data,
         all(households == 0)) {
         NA
       } else {
-        spatstat.geom::weighted.quantile(
+        spatstat.univar::weighted.quantile(
           x = !!rlang::sym(metric_name), w = households,
           probs = c(upper_quantile_view), na.rm = TRUE
         )
@@ -168,7 +168,7 @@ grouped_weighted_metrics <- function(graph_data,
         all(households == 0)) {
         NA
       } else {
-        spatstat.geom::weighted.quantile(
+        spatstat.univar::weighted.quantile(
           x = !!rlang::sym(metric_name), w = households,
           probs = c(lower_quantile_view), na.rm = TRUE
         )

@@ -86,6 +86,7 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
     data <- download_lead_data(
       dataset = dataset,
       vintage = vintage,
+      states = states,
       verbose = verbose
     )
 
@@ -347,6 +348,9 @@ try_load_from_database <- function(dataset, vintage, verbose = FALSE) {
     data <- DBI::dbReadTable(conn, table_name) |>
       tibble::as_tibble()
 
+    # Standardize column names (create total_* columns if needed)
+    data <- standardize_cohort_columns(data, dataset, vintage)
+
     if (verbose) {
       message("  \u2713 Loaded from database")
     }
@@ -412,6 +416,7 @@ try_load_from_csv <- function(dataset, vintage, verbose = FALSE) {
           show_col_types = FALSE,
           col_types = readr::cols(
             geoid = readr::col_character(),
+            FIP = readr::col_character(),  # Raw data uses FIP instead of geoid
             .default = readr::col_guess()
           )
         )
@@ -443,31 +448,84 @@ try_load_from_csv <- function(dataset, vintage, verbose = FALSE) {
 
 #' Download LEAD data from OpenEI
 #' @keywords internal
-download_lead_data <- function(dataset, vintage, verbose = FALSE) {
+download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE) {
 
   if (!requireNamespace("httr", quietly = TRUE)) {
     stop("Package 'httr' required for downloading from OpenEI. Install with: install.packages('httr')")
   }
 
-  # OpenEI submission URLs
-  openei_urls <- list(
-    "2018" = list(
-      ami = "https://data.openei.org/files/573/LEAD_Tract_AMI.csv",
-      fpl = "https://data.openei.org/files/573/LEAD_Tract_FPL.csv"
-    ),
-    "2022" = list(
-      ami = "https://data.openei.org/files/6219/lead_ami_tracts_2022.csv",
-      fpl = "https://data.openei.org/files/6219/lead_fpl_tracts_2022.csv"
-    )
-  )
+  # For 2018, data is distributed as state-specific ZIP files
+  # For 2022, data is available as direct CSV downloads
+  if (vintage == "2018") {
+    # 2018 requires state parameter
+    if (is.null(states) || length(states) == 0) {
+      stop("2018 vintage requires 'states' parameter (state abbreviation, e.g., 'NC')")
+    }
 
-  url <- openei_urls[[vintage]][[dataset]]
-  if (is.null(url)) {
-    stop("No OpenEI URL configured for ", dataset, " ", vintage)
-  }
+    # Use first state (2018 ZIP files are per-state)
+    state <- toupper(states[1])
 
-  if (verbose) {
-    message("  Downloading from: ", url)
+    # ZIP file URL pattern
+    zip_url <- paste0("https://data.openei.org/files/573/", state, "-2018-LEAD-data.zip")
+
+    #CSV file name inside ZIP
+    dataset_upper <- toupper(dataset)
+    csv_filename <- paste0(state, " ", dataset_upper, " Census Tracts 2018.csv")
+
+    if (verbose) {
+      message("  Downloading 2018 ZIP from: ", zip_url)
+      message("  Will extract: ", csv_filename)
+    }
+
+    url <- zip_url
+    is_zip <- TRUE
+
+  } else if (vintage == "2022") {
+    # 2022: AMI uses direct CSV, FPL uses state ZIP files
+    if (dataset == "fpl") {
+      # FPL data is only available in state ZIP files (like 2018)
+      if (is.null(states) || length(states) == 0) {
+        stop("2022 FPL data requires 'states' parameter (state abbreviation, e.g., 'NC')")
+      }
+
+      # Use first state
+      state <- toupper(states[1])
+
+      # ZIP file URL pattern for 2022
+      zip_url <- paste0("https://data.openei.org/files/6219/", state, "-2022-LEAD-data.zip")
+
+      # CSV file name inside ZIP (note the space in filename)
+      dataset_upper <- toupper(dataset)
+      csv_filename <- paste0(state, " ", dataset_upper, " Census Tracts 2022.csv")
+
+      if (verbose) {
+        message("  Downloading 2022 FPL ZIP from: ", zip_url)
+        message("  Will extract: ", csv_filename)
+      }
+
+      url <- zip_url
+      is_zip <- TRUE
+
+    } else {
+      # AMI: Direct CSV download
+      openei_urls_2022 <- list(
+        ami = "https://data.openei.org/files/6219/lead_ami_tracts_2022.csv"
+      )
+
+      url <- openei_urls_2022[[dataset]]
+      if (is.null(url)) {
+        stop("No OpenEI URL configured for ", dataset, " ", vintage)
+      }
+
+      if (verbose) {
+        message("  Downloading from: ", url)
+      }
+
+      is_zip <- FALSE
+    }
+
+  } else {
+    stop("Unsupported vintage: ", vintage, ". Supported: 2018, 2022")
   }
 
   # Get cache directory
@@ -477,14 +535,71 @@ download_lead_data <- function(dataset, vintage, verbose = FALSE) {
 
   # Download with progress
   tryCatch({
-    response <- httr::GET(
-      url,
-      httr::progress(),
-      httr::write_disk(temp_file, overwrite = TRUE)
-    )
+    if (is_zip) {
+      # Download ZIP file first
+      zip_file <- file.path(cache_dir, paste0("lead_", vintage, "_", dataset, "_temp.zip"))
 
-    if (httr::http_error(response)) {
-      stop("Download failed with status ", httr::status_code(response))
+      if (verbose) {
+        message("  Downloading ZIP file...")
+      }
+
+      response <- httr::GET(
+        url,
+        httr::progress(),
+        httr::write_disk(zip_file, overwrite = TRUE)
+      )
+
+      if (httr::http_error(response)) {
+        stop("Download failed with status ", httr::status_code(response))
+      }
+
+      # Extract specific CSV from ZIP
+      if (verbose) {
+        message("  Extracting: ", csv_filename)
+      }
+
+      # List files in ZIP to verify
+      zip_contents <- utils::unzip(zip_file, list = TRUE)
+
+      if (!csv_filename %in% zip_contents$Name) {
+        # Try to find a matching file (case-insensitive)
+        matching_files <- grep(csv_filename, zip_contents$Name, ignore.case = TRUE, value = TRUE)
+        if (length(matching_files) > 0) {
+          csv_filename <- matching_files[1]
+          if (verbose) {
+            message("  Using matched file: ", csv_filename)
+          }
+        } else {
+          stop("CSV file '", csv_filename, "' not found in ZIP. Available files: ",
+               paste(zip_contents$Name, collapse = ", "))
+        }
+      }
+
+      # Extract to temp_file location
+      utils::unzip(zip_file, files = csv_filename, exdir = cache_dir, overwrite = TRUE)
+
+      # Move extracted file to expected location
+      extracted_path <- file.path(cache_dir, csv_filename)
+      if (file.exists(extracted_path)) {
+        file.rename(extracted_path, temp_file)
+      } else {
+        stop("Failed to extract ", csv_filename, " from ZIP")
+      }
+
+      # Clean up ZIP file
+      unlink(zip_file)
+
+    } else {
+      # Direct CSV download (2022 behavior)
+      response <- httr::GET(
+        url,
+        httr::progress(),
+        httr::write_disk(temp_file, overwrite = TRUE)
+      )
+
+      if (httr::http_error(response)) {
+        stop("Download failed with status ", httr::status_code(response))
+      }
     }
 
     # Read the downloaded file
@@ -496,13 +611,15 @@ download_lead_data <- function(dataset, vintage, verbose = FALSE) {
       )
     )
 
-    # Check if data needs processing (has raw format columns like FIP, HINCP, ELEP)
-    # or if it's already processed (has geoid, income, electricity_spend)
-    needs_processing <- "FIP" %in% names(raw_data) || "HINCP" %in% names(raw_data)
+    # Check if data needs processing (has raw microdata format)
+    # Raw microdata has: FIP, HINCP, ELEP, GASP (individual records)
+    # Aggregated cohort has: FIP, HINCP*UNITS, ELEP*UNITS (pre-aggregated)
+    is_raw_microdata <- "HINCP" %in% names(raw_data) && !"HINCP*UNITS" %in% names(raw_data)
+    is_aggregated_cohort <- "FIP" %in% names(raw_data) && any(grepl("\\*UNITS$", names(raw_data)))
 
-    if (needs_processing) {
+    if (is_raw_microdata) {
       if (verbose) {
-        message("  Processing raw data into clean format...")
+        message("  Processing raw microdata into cohort format...")
       }
 
       # Process raw → clean format using the pipeline
@@ -512,6 +629,19 @@ download_lead_data <- function(dataset, vintage, verbose = FALSE) {
         vintage = vintage,
         aggregate_poverty = FALSE  # Keep cohort-level detail
       )
+
+    } else if (is_aggregated_cohort) {
+      if (verbose) {
+        message("  Data is aggregated cohort format, standardizing columns...")
+      }
+
+      # Data is already aggregated, just standardize column names
+      data <- standardize_cohort_columns(raw_data, dataset, vintage)
+
+      # Ensure geoid is character and properly padded
+      if ("geoid" %in% names(data)) {
+        data$geoid <- stringr::str_pad(as.character(data$geoid), width = 11, side = "left", pad = "0")
+      }
 
     } else {
       if (verbose) {
@@ -799,12 +929,6 @@ find_emrgi_db <- function() {
     return(env_path)
   }
 
-  # Check sibling directory (emrgi_data_public)
-  sibling_path <- file.path("..", "emrgi_data_public", "emrgi_db.sqlite")
-  if (file.exists(sibling_path)) {
-    return(normalizePath(sibling_path))
-  }
-
   # Check local data directory
   local_path <- file.path("data", "emrgi_db.sqlite")
   if (file.exists(local_path)) {
@@ -834,16 +958,92 @@ get_cache_dir <- function() {
 #' @keywords internal
 standardize_cohort_columns <- function(data, dataset, vintage) {
 
+  # Handle raw data that uses FIP instead of geoid
+  if ("FIP" %in% names(data) && !"geoid" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(geoid = FIP)
+  }
+
   # Ensure geoid is character
   if ("geoid" %in% names(data)) {
     data$geoid <- as.character(data$geoid)
   }
 
-  # Standardize income bracket column name
+  # Handle aggregated cohort format column names
+  # These columns come from 2022 FPL ZIP files (aggregated format)
+  if ("FPL150" %in% names(data) && !"income_bracket" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(income_bracket = FPL150)
+  }
+
+  if ("UNITS" %in% names(data) && !"households" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(households = UNITS)
+  }
+
+  if ("HINCP*UNITS" %in% names(data) && !"total_income" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(total_income = `HINCP*UNITS`)
+  }
+
+  if ("ELEP*UNITS" %in% names(data) && !"total_electricity_spend" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(total_electricity_spend = `ELEP*UNITS`)
+  }
+
+  if ("GASP*UNITS" %in% names(data) && !"total_gas_spend" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(total_gas_spend = `GASP*UNITS`)
+  }
+
+  if ("FULP*UNITS" %in% names(data) && !"total_other_spend" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(total_other_spend = `FULP*UNITS`)
+  }
+
+  # Standardize income bracket column name (for processed data)
   income_col <- if (dataset == "ami") "ami_bracket" else "fpl_bracket"
   if (income_col %in% names(data) && !"income_bracket" %in% names(data)) {
     data <- data |>
       dplyr::rename(income_bracket = !!income_col)
+  }
+
+  # Standardize income bracket values across vintages
+  # Map 2018 percentage-based brackets to 2022 categorical brackets
+  if ("income_bracket" %in% names(data)) {
+    data <- data |>
+      dplyr::mutate(
+        income_bracket = dplyr::case_when(
+          # Map 2018 AMI percentage brackets to standard categories
+          income_bracket == "0-30%" ~ "very_low",
+          income_bracket == "30-60%" ~ "low_mod",
+          income_bracket == "60-80%" ~ "low_mod",
+          income_bracket == "80-100%" ~ "mid_high",
+          income_bracket == "100%+" ~ "mid_high",
+          # Keep 2022 brackets as-is
+          income_bracket %in% c("very_low", "low_mod", "mid_high") ~ income_bracket,
+          # For FPL brackets, keep as-is (not standardizing FPL yet)
+          TRUE ~ income_bracket
+        )
+      )
+  }
+
+  # Create total_* columns from per-household columns if needed
+  # The "total" columns represent household-weighted sums for proper aggregation
+  if ("income" %in% names(data) && !"total_income" %in% names(data)) {
+    data$total_income <- data$income * data$households
+  }
+
+  if ("electricity_spend" %in% names(data) && !"total_electricity_spend" %in% names(data)) {
+    data$total_electricity_spend <- data$electricity_spend * data$households
+  }
+
+  if ("gas_spend" %in% names(data) && !"total_gas_spend" %in% names(data)) {
+    data$total_gas_spend <- data$gas_spend * data$households
+  }
+
+  if ("other_spend" %in% names(data) && !"total_other_spend" %in% names(data)) {
+    data$total_other_spend <- data$other_spend * data$households
   }
 
   # Ensure required columns exist

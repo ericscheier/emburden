@@ -1,4 +1,4 @@
-url: https://ericscheier.github.io/net_energy_equity/
+url: https://scheierventures.github.io/emburden/
 
 template:
   bootstrap: 5
@@ -14,14 +14,23 @@ reference:
     desc: "Core functions for calculating energy burden and related ratios"
     contents:
       - energy_burden_func
+      - neb_func
       - ner_func
       - eroi_func
       - dear_func
+
+  - title: "Data Loading"
+    desc: "Functions for loading LEAD Tool data"
+    contents:
+      - load_census_tract_data
+      - load_cohort_data
+      - check_data_sources
 
   - title: "Statistical Analysis"
     desc: "Weighted aggregation and group-level calculations"
     contents:
       - calculate_weighted_metrics
+      - compare_energy_burden
 
   - title: "Formatting Utilities"
     desc: "Format numbers for publication-ready tables"
@@ -56,7 +65,7 @@ navbar:
       href: news/index.html
     github:
       icon: fab fa-github fa-lg
-      href: https://github.com/ericscheier/net_energy_equity
+      href: https://github.com/ScheierVentures/emburden
 
 articles:
   - title: "Tutorials"

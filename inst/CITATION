@@ -1,0 +1,29 @@
+bibentry(
+  bibtype  = "Manual",
+  title    = "{emburden}: Energy Burden Analysis Using Net Energy Return Methodology",
+  author   = "Eric Scheier",
+  year     = "2025",
+  note     = "R package version 0.1.0",
+  url      = "https://github.com/ScheierVentures/emburden",
+  textVersion = paste(
+    "Scheier, Eric (2025).",
+    "emburden: Energy Burden Analysis Using Net Energy Return Methodology.",
+    "R package version 0.1.0.",
+    "https://github.com/ScheierVentures/emburden"
+  )
+)
+
+bibentry(
+  bibtype  = "Article",
+  title    = "Net energy metrics reveal striking disparities across United States household energy burdens",
+  author   = "Eric Scheier",
+  journal  = "In preparation",
+  year     = "2025",
+  note     = "Manuscript in preparation",
+  textVersion = paste(
+    "Scheier, Eric (2025).",
+    "Net energy metrics reveal striking disparities across United States household energy burdens.",
+    "Manuscript in preparation."
+  ),
+  header   = "To cite the methodology used in emburden:"
+)
