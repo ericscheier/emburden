@@ -31,6 +31,7 @@ reference:
     contents:
       - calculate_weighted_metrics
       - compare_energy_burden
+      - print.energy_burden_comparison
 
   - title: "Formatting Utilities"
     desc: "Format numbers for publication-ready tables"
