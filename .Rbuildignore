@@ -39,7 +39,11 @@
 ^ANALYSIS_COMPLETE\.md$
 
 # Rmd research files (not vignettes)
-^.*\.Rmd$
+# Exclude .Rmd files in specific directories, but NOT in vignettes/
+^research/.*\.Rmd$
+^analysis/.*\.Rmd$
+^\.dev/.*\.Rmd$
+^deprecated/.*\.Rmd$
 ^.*\.qmd$
 ^.*\.log$
 ^.*\.nav$
@@ -48,15 +52,30 @@
 ^.*\.tex$
 ^preamble-latex\.tex$
 
-# Generated outputs
-^.*\.pdf$
-^.*\.html$
+# Generated outputs (but not in vignettes/)
+^research/.*\.pdf$
+^analysis/.*\.pdf$
+^\.dev/.*\.pdf$
+^deprecated/.*\.pdf$
+^research/.*\.html$
+^analysis/.*\.html$
+^\.dev/.*\.html$
+^deprecated/.*\.html$
 ^.*\.docx$
 ^.*\.odt$
 ^.*\.pptx$
-^.*\.svg$
-^.*\.png$
-^.*\.jpg$
+^research/.*\.svg$
+^analysis/.*\.svg$
+^\.dev/.*\.svg$
+^deprecated/.*\.svg$
+^research/.*\.png$
+^analysis/.*\.png$
+^\.dev/.*\.png$
+^deprecated/.*\.png$
+^research/.*\.jpg$
+^analysis/.*\.jpg$
+^\.dev/.*\.jpg$
+^deprecated/.*\.jpg$
 
 # Shiny app (separate from package)
 ^ui\.R$
