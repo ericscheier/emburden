@@ -4,13 +4,13 @@
 [![R-CMD-check](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-R package for analyzing household energy burden using the Net Energy Return (Nh) methodology.
+R package for analyzing household energy burden - the percentage of income spent on energy costs.
 
 ## Overview
 
-**emburden** provides tools for calculating and analyzing household energy burden across geographic and demographic cohorts. The package implements proper aggregation methodology using Net Energy Return (Nh) as the preferred metric before converting back to energy burden ratios.
+**emburden** provides tools for calculating and analyzing household energy burden across different geographic areas and demographic groups. The package helps you aggregate energy burden data accurately using the Net Energy Return (Nh) method described in [Scheier & Kittner (2022)](#citation).
 
-**NEW**: Data downloads automatically from OpenEI on first use! No manual data setup required. Data is automatically imported to database for fast subsequent access.
+**NEW**: Data downloads automatically from OpenEI on first use! No manual setup required.
 
 ### Key Features
 
@@ -21,19 +21,18 @@ R package for analyzing household energy burden using the Net Energy Return (Nh)
 
 ### Why Net Energy Return?
 
-Energy burden (E_b = S/G) is a ratio that requires harmonic mean aggregation. The Net Energy Return transformation (Nh = (G-S)/S) allows proper weighted mean aggregation using simple arithmetic mean, then converts back to energy burden via E_b = 1/(Nh+1).
+When calculating energy burden for a single household, it's straightforward: divide energy spending by income. But when combining data from many households, simply averaging those percentages can introduce errors.
 
-**Computational Advantage** (applies to **aggregation across households only**): When aggregating individual household data, the Nh method uses arithmetic mean (`weighted.mean(nh)`) instead of harmonic mean (`1/weighted.mean(1/eb)`), providing:
-- Simpler computation with standard functions
-- Better numerical stability (avoids division by very small EB values)
-- More interpretable results ("average net return per dollar")
-- Clear error prevention (makes it obvious you can't use arithmetic mean on EB directly)
+**The challenge**: Energy burden is a ratio (spending ÷ income), and ratios don't behave well with simple averages. For example, if one household spends $100 of $1,000 income (10%) and another spends $50 of $10,000 income (0.5%), the simple average of 5.25% doesn't accurately represent the combined situation.
 
-Note: For single household calculations, both methods are mathematically equivalent (NEB = EB). The advantage appears only when aggregating across multiple households.
+**The solution**: The Net Energy Return (Nh) method transforms the data so you can use standard averaging techniques, then converts back to energy burden. Think of Nh as "how much money is left after energy costs, per dollar spent on energy." This transformation makes aggregation more accurate and interpretable.
 
-This methodology is detailed in:
+**When it matters**:
+- ✓ Combining data from many individual households
+- ✓ Calculating regional or demographic averages
+- For single households, both methods give identical results
 
-> **Net energy metrics reveal striking disparities across United States household energy burdens**
+This methodology is detailed in Scheier & Kittner (2022) - see [Citation](#citation) below.
 
 ## Installation
 
@@ -69,21 +68,21 @@ nh <- ner_func(gross_income, energy_spending)  # 15.67
 neb <- 1 / (nh + 1)  # 0.06 (same as eb)
 
 # === EXAMPLE 2: Individual household data aggregation ===
-# CORRECT: Use Nh method (arithmetic mean)
+# Recommended: Use Nh method for accurate aggregation
 incomes <- c(30000, 50000, 75000)
 spendings <- c(3000, 3500, 4000)
 households <- c(100, 150, 200)
 
 nh <- ner_func(incomes, spendings)
 nh_mean <- weighted.mean(nh, households)
-neb_correct <- 1 / (1 + nh_mean)  # Proper aggregation ✓
+neb_aggregate <- 1 / (1 + nh_mean)
 
-# WRONG: Direct mean of energy burden (introduces 1-5% error)
-# neb_wrong <- weighted.mean(energy_burden_func(incomes, spendings), households)  # DON'T DO THIS!
+# Note: Direct averaging of energy burden values can introduce errors
+# neb_naive <- weighted.mean(energy_burden_func(incomes, spendings), households)
 
 # === EXAMPLE 3: Cohort data aggregation ===
-# For pre-aggregated totals, direct ratio works
-neb_cohort <- sum(nc_ami$total_electricity_spend) / sum(nc_ami$total_income)  # Simple ✓
+# For pre-aggregated totals, you can use the direct ratio
+neb_cohort <- sum(nc_ami$total_electricity_spend) / sum(nc_ami$total_income)
 
 # === EXAMPLE 4: Grouped analysis ===
 results <- calculate_weighted_metrics(
@@ -117,9 +116,9 @@ results$formatted_median <- to_percent(results$metric_median)
 - 6% energy burden threshold ↔ Nh ≥ 15.67
 
 **Aggregation guidance**:
-- **Individual household data**: Calculate `nh <- ner_func(income, spending)`, then `neb_aggregate <- 1/(1 + weighted.mean(nh, weights))` (arithmetic mean ✓)
-- **Cohort data** (pre-aggregated totals): Calculate `neb <- sum(total_spending) / sum(total_income)` (direct ratio ✓)
-- **NEVER use**: `weighted.mean(neb_func(...))` or `mean(energy_burden_func(...))` (arithmetic mean of ratios ✗ introduces 1-5% error)
+- **Individual household data**: Calculate `nh <- ner_func(income, spending)`, then `neb_aggregate <- 1/(1 + weighted.mean(nh, weights))`
+- **Cohort data** (pre-aggregated totals): Calculate `neb <- sum(total_spending) / sum(total_income)`
+- **Note**: Direct averaging of energy burden values (`weighted.mean(neb_func(...))`) can introduce errors; use the Nh method for individual household data
 
 ### Statistical Analysis
 
@@ -244,10 +243,23 @@ Use `ner_func(g = 1, s = 0.06)` to calculate the Nh threshold for any energy bur
 
 ## Citation
 
-If you use this package in research, please cite:
+If you use this package or methodology in your research, please cite:
 
-```
-[Citation information to be added]
+**Scheier, E., & Kittner, N. (2022). A measurement strategy to address disparities across household energy burdens. _Nature Communications_, 13, 1717. https://doi.org/10.1038/s41467-021-27673-y**
+
+BibTeX:
+```bibtex
+@article{scheier2022measurement,
+  title={A measurement strategy to address disparities across household energy burdens},
+  author={Scheier, Eric and Kittner, Noah},
+  journal={Nature Communications},
+  volume={13},
+  number={1},
+  pages={1717},
+  year={2022},
+  publisher={Nature Publishing Group},
+  doi={10.1038/s41467-021-27673-y}
+}
 ```
 
 ## License
