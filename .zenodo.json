@@ -7,7 +7,7 @@
   "creators": [
     {
       "name": "Scheier, Eric",
-      "affiliation": "Scheier Ventures",
+      "affiliation": "Emergi Foundation, UNC Chapel Hill",
       "orcid": "0000-0001-9849-9089"
     }
   ],
@@ -21,6 +21,12 @@
     "R package"
   ],
   "related_identifiers": [
+    {
+      "relation": "isNewVersionOf",
+      "identifier": "10.5281/zenodo.5725912",
+      "resource_type": "dataset",
+      "scheme": "doi"
+    },
     {
       "relation": "isSupplementTo",
       "identifier": "",
