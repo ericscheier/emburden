@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
   methodology: methodology.html
-last_built: 2025-11-07T07:10Z
+last_built: 2025-11-07T07:17Z
 urls:
   reference: https://ericscheier.github.io/emburden/reference
   article: https://ericscheier.github.io/emburden/articles
