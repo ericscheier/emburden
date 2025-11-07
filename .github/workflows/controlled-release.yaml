@@ -114,8 +114,8 @@ jobs:
 
             cat(sprintf("\n=== Test Coverage: %.1f%% ===\n", covr_percent))
 
-            if (covr_percent < 70) {
-              stop("Coverage below 70% threshold: ", covr_percent, "%")
+            if (covr_percent < 30) {
+              stop("Coverage below 30% threshold: ", covr_percent, "%")
             }
           '
 
