@@ -118,3 +118,9 @@
 ^svjour3\.cls$
 ^usurdb\.db$
 ^NatureComm_figure-latex/
+
+# Package check fixes
+^\.zenodo\.json$
+^CODE_OF_CONDUCT\.md$
+^CONTRIBUTING\.md$
+^docs$
