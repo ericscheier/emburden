@@ -161,8 +161,8 @@ jobs:
           git remote add public https://x-access-token:${GITHUB_TOKEN}@github.com/${PUBLIC_REPO}.git
 
           # Push to public repository
-          # Use --force-with-lease for safety (won't overwrite if public has unexpected changes)
-          GIT_ASKPASS=true git push public HEAD:${PUBLIC_BRANCH} --force-with-lease
+          # Use --force since we're rewriting history and don't have remote tracking
+          GIT_ASKPASS=true git push public HEAD:${PUBLIC_BRANCH} --force
 
           echo ""
           echo "================================================================"
