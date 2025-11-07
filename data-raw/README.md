@@ -177,5 +177,5 @@ See `data-raw/LEAD_SCHEMA_COMPARISON.md` for detailed column definitions and vin
 ## Contact
 
 For data access issues or questions:
-- Package issues: https://github.com/ScheierVentures/emburden/issues
+- Package issues: https://github.com/ericscheier/emburden/issues
 - LEAD Tool questions: Contact DOE LEAD team via OpenEI

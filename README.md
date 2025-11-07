@@ -267,7 +267,7 @@ Contributions are welcome! Please:
 
 ## Issues
 
-Report bugs or request features at: https://github.com/ScheierVentures/emburden/issues
+Report bugs or request features at: https://github.com/ericscheier/emburden/issues
 
 ## Development
 

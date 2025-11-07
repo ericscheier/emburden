@@ -253,7 +253,7 @@ jobs:
           \`\`\`r
           # Install from GitHub
           # install.packages("remotes")
-          remotes::install_github("ScheierVentures/emburden@v$VERSION")
+          remotes::install_github("ericscheier/emburden@v$VERSION")
           \`\`\`
 
           ## Archive DOI

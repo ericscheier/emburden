@@ -22,7 +22,7 @@ This project adheres to a Code of Conduct (see CODE_OF_CONDUCT.md). By participa
 
 ### Reporting Bugs
 
-Before creating bug reports, please check the [issue tracker](https://github.com/ScheierVentures/emburden/issues) to avoid duplicates. When you create a bug report, include as many details as possible:
+Before creating bug reports, please check the [issue tracker](https://github.com/ericscheier/emburden/issues) to avoid duplicates. When you create a bug report, include as many details as possible:
 
 - **Use a clear and descriptive title**
 - **Describe the exact steps to reproduce the problem**
@@ -46,7 +46,7 @@ result <- ner_func(income, spending)
 
 ### Suggesting Enhancements
 
-Enhancement suggestions are tracked as [GitHub issues](https://github.com/ScheierVentures/emburden/issues). When creating an enhancement suggestion:
+Enhancement suggestions are tracked as [GitHub issues](https://github.com/ericscheier/emburden/issues). When creating an enhancement suggestion:
 
 - **Use a clear and descriptive title**
 - **Provide a step-by-step description of the suggested enhancement**
@@ -67,7 +67,7 @@ git clone https://github.com/YOUR-USERNAME/emburden.git
 cd emburden
 
 # Add the upstream repository
-git remote add upstream https://github.com/ScheierVentures/emburden.git
+git remote add upstream https://github.com/ericscheier/emburden.git
 ```
 
 ### 2. Install R and Dependencies
@@ -319,7 +319,7 @@ git push origin feature/your-feature-name
 
 ### 5. Create Pull Request
 
-1. Go to https://github.com/ScheierVentures/emburden
+1. Go to https://github.com/ericscheier/emburden
 2. Click "New Pull Request"
 3. Select your fork and branch
 4. Fill out the PR template:
@@ -398,8 +398,8 @@ devtools::check()   # 0 errors, 0 warnings
 
 ## Getting Help
 
-- **Documentation**: https://scheierventures.github.io/emburden/
-- **Issues**: https://github.com/ScheierVentures/emburden/issues
+- **Documentation**: https://ericscheier.github.io/emburden/
+- **Issues**: https://github.com/ericscheier/emburden/issues
 - **Email**: eric.scheier@gmail.com
 - **Discussions**: Use GitHub Discussions for questions
 

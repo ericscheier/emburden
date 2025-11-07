@@ -24,7 +24,7 @@ You can install emburden from GitHub:
 
 ```{r installation, eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("ScheierVentures/emburden")
+devtools::install_github("ericscheier/emburden")
 ```
 
 ```{r setup}
@@ -192,4 +192,4 @@ print(results)
 
 - **Paper**: "Net energy metrics reveal striking disparities across United States household energy burdens"
 - **LEAD Tool Data**: https://data.openei.org/
-- **GitHub**: https://github.com/ScheierVentures/emburden
+- **GitHub**: https://github.com/ericscheier/emburden
