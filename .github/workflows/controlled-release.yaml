@@ -122,11 +122,16 @@ jobs:
       - name: Build package tarball
         id: build
         run: |
-          TARBALL=$(Rscript -e 'cat(pkgbuild::build(dest_path = ".", binary = FALSE, vignettes = TRUE, manual = TRUE))')
+          # Build package and capture only the tarball path (last line of output)
+          TARBALL=$(Rscript -e 'path <- pkgbuild::build(dest_path = ".", binary = FALSE, vignettes = TRUE, manual = TRUE); cat(path, "\n", sep="", file=stderr()); cat(path)' 2>&1 | tail -1)
           echo "tarball=$TARBALL" >> $GITHUB_OUTPUT
-          echo "Built package: $TARBALL"
+          echo "Built package tarball: $TARBALL"
 
-          # Verify tarball
+          # Verify tarball exists and is valid
+          if [ ! -f "$TARBALL" ]; then
+            echo "Error: Tarball not found: $TARBALL"
+            exit 1
+          fi
           tar -tzf "$TARBALL" > /dev/null
           echo "✓ Tarball verification passed"
 
