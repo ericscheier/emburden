@@ -100,12 +100,7 @@
 ^_pkgdown\.yml$
 ^\.lintr$
 ^codecov\.yml$
-^GITHUB_SETUP\.md$
-^NEB_QUICKSTART\.md$
-^INTEGRATION_STATUS\.md$
-^LEAD_2016_INVESTIGATION\.md$
-^LEAD_2022_IMPLEMENTATION_SUMMARY\.md$
-^QUICK_COMPARISON_GUIDE\.md$
+^\.dev$
 
 # Additional project files
 ^PACKAGE_TRANSFORMATION\.md$
@@ -123,3 +118,9 @@
 ^svjour3\.cls$
 ^usurdb\.db$
 ^NatureComm_figure-latex/
+
+# Package check fixes
+^\.zenodo\.json$
+^CODE_OF_CONDUCT\.md$
+^CONTRIBUTING\.md$
+^docs$

@@ -1,4 +1,4 @@
-url: https://scheierventures.github.io/emburden/
+url: https://ericscheier.github.io/emburden/
 
 template:
   bootstrap: 5
@@ -66,7 +66,7 @@ navbar:
       href: news/index.html
     github:
       icon: fab fa-github fa-lg
-      href: https://github.com/ScheierVentures/emburden
+      href: https://github.com/ericscheier/emburden
 
 articles:
   - title: "Tutorials"

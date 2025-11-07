@@ -16,7 +16,7 @@ on:
   workflow_dispatch:    # Manual trigger from GitHub UI
 
 env:
-  PUBLIC_REPO: 'ericscheier/net_energy_burden'
+  PUBLIC_REPO: 'ericscheier/emburden'
   PUBLIC_BRANCH: 'main'
 
 jobs:

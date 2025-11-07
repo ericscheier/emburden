@@ -37,5 +37,5 @@ Suggests:
     kableExtra
 VignetteBuilder: knitr
 LazyData: true
-URL: https://github.com/ScheierVentures/emburden, https://scheierventures.github.io/emburden/
-BugReports: https://github.com/ScheierVentures/emburden/issues
+URL: https://github.com/ericscheier/emburden, https://ericscheier.github.io/emburden/
+BugReports: https://github.com/ericscheier/emburden/issues

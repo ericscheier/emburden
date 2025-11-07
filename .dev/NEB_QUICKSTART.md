@@ -111,7 +111,7 @@ high_burden_pct <- high_burden_count / sum(nc_data$households) * 100
 
 ```r
 # Install from GitHub
-devtools::install_github("ScheierVentures/emburden")
+devtools::install_github("ericscheier/emburden")
 
 # Or for development
 devtools::load_all()
@@ -186,7 +186,7 @@ For aggregation:
 - **Vignette**: `vignette("neb-proper-aggregation")`
 - **Full example**: `analysis/scripts/neb_example_nc.R`
 - **Paper**: "Net energy metrics reveal striking disparities across United States household energy burdens"
-- **Package docs**: https://github.com/ScheierVentures/emburden
+- **Package docs**: https://github.com/ericscheier/emburden
 
 ## Contact
 
