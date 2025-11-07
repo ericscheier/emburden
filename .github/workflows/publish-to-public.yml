@@ -32,6 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history for proper git operations
+          persist-credentials: false  # Don't persist GitHub Actions token
 
       - name: Configure git
         run: |
