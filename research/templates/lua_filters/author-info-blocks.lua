@@ -1,1 +1,0 @@
-research/templates/lua-filters/author-info-blocks.lua

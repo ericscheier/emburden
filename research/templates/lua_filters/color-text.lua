@@ -1,1 +1,0 @@
-research/templates/lua-filters/color-text.lua
