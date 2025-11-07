@@ -1,6 +1,29 @@
-# netenergyequity 0.1.0
+# emburden 0.1.1
 
-## Initial Release
+## Documentation and Infrastructure Improvements
+
+This patch release improves documentation accessibility and workflow infrastructure, with no code changes.
+
+### Documentation
+
+* Improved README accessibility and tone
+  - Simplified technical language with plain-language explanations
+  - Replaced prescriptive language ("WRONG", "NEVER") with educational tone ("Recommended", "Note")
+  - Added concrete examples explaining why simple averaging of ratios fails
+* Added complete Nature Communications citation
+  - Scheier, E., & Kittner, N. (2022). A measurement strategy to address disparities across household energy burdens
+  - Includes BibTeX format for easy reference
+
+### Infrastructure
+
+* Changed git author in publish-to-public workflow from "GitHub Actions Bot" to "Eric Scheier"
+  - Automated commits now appear as maintainer commits
+
+# emburden 0.1.0
+
+## Package Release
+
+Initial formal release with package renamed from `netenergyequity` to `emburden` for clarity and CRAN compatibility.
 
 This is the first release of the netenergyequity package, providing tools for household energy burden analysis using Net Energy Return methodology.
 
