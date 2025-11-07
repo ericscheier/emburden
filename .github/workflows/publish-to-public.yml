@@ -154,17 +154,14 @@ jobs:
 
       - name: Push to public repository
         env:
-          PUBLIC_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
-          # Configure git to use the token for authentication
-          git config --global url."https://x-access-token:${PUBLIC_TOKEN}@github.com/".insteadOf "https://github.com/"
-
-          # Add public remote
-          git remote add public https://github.com/${PUBLIC_REPO}.git
+          # Add public remote with token embedded
+          git remote add public https://x-access-token:${GITHUB_TOKEN}@github.com/${PUBLIC_REPO}.git
 
           # Push to public repository
           # Use --force-with-lease for safety (won't overwrite if public has unexpected changes)
-          git push public HEAD:${PUBLIC_BRANCH} --force-with-lease
+          GIT_ASKPASS=true git push public HEAD:${PUBLIC_BRANCH} --force-with-lease
 
           echo ""
           echo "================================================================"
