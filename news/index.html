@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,10 +35,92 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/v0.1.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1" id="emburden-011">emburden 0.1.1<a class="anchor" aria-label="anchor" href="#emburden-011"></a></h2>
+<div class="section level3">
+<h3 id="documentation-and-infrastructure-improvements-0-1-1">Documentation and Infrastructure Improvements<a class="anchor" aria-label="anchor" href="#documentation-and-infrastructure-improvements-0-1-1"></a></h3>
+<p>This patch release improves documentation accessibility and workflow infrastructure, with no code changes.</p>
+<div class="section level4">
+<h4 id="documentation-0-1-1">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-1-1"></a></h4>
+<ul><li>Improved README accessibility and tone
+<ul><li>Simplified technical language with plain-language explanations</li>
+<li>Replaced prescriptive language (“WRONG”, “NEVER”) with educational tone (“Recommended”, “Note”)</li>
+<li>Added concrete examples explaining why simple averaging of ratios fails</li>
+</ul></li>
+<li>Added complete Nature Communications citation
+<ul><li>Scheier, E., &amp; Kittner, N. (2022). A measurement strategy to address disparities across household energy burdens</li>
+<li>Includes BibTeX format for easy reference</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="infrastructure-0-1-1">Infrastructure<a class="anchor" aria-label="anchor" href="#infrastructure-0-1-1"></a></h4>
+<ul><li>Changed git author in publish-to-public workflow from “GitHub Actions Bot” to “Eric Scheier”
+<ul><li>Automated commits now appear as maintainer commits</li>
+</ul></li>
+</ul></div>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="emburden-010">emburden 0.1.0<a class="anchor" aria-label="anchor" href="#emburden-010"></a></h2>
+<div class="section level3">
+<h3 id="package-release-0-1-0">Package Release<a class="anchor" aria-label="anchor" href="#package-release-0-1-0"></a></h3>
+<p>Initial formal release with package renamed from <code>netenergyequity</code> to <code>emburden</code> for clarity and CRAN compatibility.</p>
+<p>This is the first release of the netenergyequity package, providing tools for household energy burden analysis using Net Energy Return methodology.</p>
+<div class="section level4">
+<h4 id="core-functionality-0-1-0">Core Functionality<a class="anchor" aria-label="anchor" href="#core-functionality-0-1-0"></a></h4>
+<ul><li>Energy metric calculations
+<ul><li>
+<code><a href="../reference/energy_burden_func.html">energy_burden_func()</a></code> - Calculate energy burden (S/G)</li>
+<li>
+<code><a href="../reference/ner_func.html">ner_func()</a></code> - Calculate Net Energy Return (Nh)</li>
+<li>
+<code><a href="../reference/eroi_func.html">eroi_func()</a></code> - Calculate Energy Return on Investment</li>
+<li>
+<code><a href="../reference/dear_func.html">dear_func()</a></code> - Calculate Disposable Energy-Adjusted Resources</li>
+</ul></li>
+<li>Statistical analysis
+<ul><li>
+<code><a href="../reference/calculate_weighted_metrics.html">calculate_weighted_metrics()</a></code> - Weighted aggregation with proper Nh methodology</li>
+<li>Automatic poverty rate calculations below specified thresholds</li>
+<li>Support for grouped analysis by geographic/demographic categories</li>
+</ul></li>
+<li>Formatting utilities
+<ul><li>
+<code><a href="../reference/to_percent.html">to_percent()</a></code>, <code><a href="../reference/to_dollar.html">to_dollar()</a></code>, <code><a href="../reference/to_big.html">to_big()</a></code> - Publication-ready formatting</li>
+<li>
+<code><a href="../reference/to_million.html">to_million()</a></code>, <code><a href="../reference/to_billion_dollar.html">to_billion_dollar()</a></code> - Compact number formats</li>
+<li>
+<code><a href="../reference/colorize.html">colorize()</a></code> - Output-aware color formatting for R Markdown</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="package-structure-0-1-0">Package Structure<a class="anchor" aria-label="anchor" href="#package-structure-0-1-0"></a></h4>
+<ul><li>Separated package code (<code>R/</code>) from analysis scripts (<code>analysis/</code>)</li>
+<li>Comprehensive documentation with roxygen2</li>
+<li>Test suite with testthat</li>
+<li>Example analysis scripts for NC electric utilities</li>
+</ul></div>
+<div class="section level4">
+<h4 id="known-issues-0-1-0">Known Issues<a class="anchor" aria-label="anchor" href="#known-issues-0-1-0"></a></h4>
+<ul><li>roxygen2 documentation generation requires manual NAMESPACE for now</li>
+<li>Large data files (1.1GB+) not included in package distribution</li>
+<li>Some analysis scripts need updating to use package functions</li>
+</ul></div>
+<div class="section level4">
+<h4 id="future-plans-0-1-0">Future Plans<a class="anchor" aria-label="anchor" href="#future-plans-0-1-0"></a></h4>
+<ul><li>Add vignettes demonstrating methodology</li>
+<li>Setup pkgdown website</li>
+<li>Configure GitHub Actions for CI/CD</li>
+<li>Consider CRAN submission</li>
+<li>Create companion data package or external data hosting solution</li>
+</ul></div>
+</div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

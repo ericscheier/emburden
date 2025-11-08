@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,12 +61,12 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>R package for analyzing household energy burden using the Net Energy Return (Nh) methodology.</p>
+<p>R package for analyzing household energy burden - the percentage of income spent on energy costs.</p>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p><strong>emburden</strong> provides tools for calculating and analyzing household energy burden across geographic and demographic cohorts. The package implements proper aggregation methodology using Net Energy Return (Nh) as the preferred metric before converting back to energy burden ratios.</p>
-<p><strong>NEW</strong>: Data downloads automatically from OpenEI on first use! No manual data setup required. Data is automatically imported to database for fast subsequent access.</p>
+<p><strong>emburden</strong> provides tools for calculating and analyzing household energy burden across different geographic areas and demographic groups. The package helps you aggregate energy burden data accurately using the Net Energy Return (Nh) method described in <a href="#citation">Scheier &amp; Kittner (2022)</a>.</p>
+<p><strong>NEW</strong>: Data downloads automatically from OpenEI on first use! No manual setup required.</p>
 <div class="section level3">
 <h3 id="key-features">Key Features<a class="anchor" aria-label="anchor" href="#key-features"></a>
 </h3>
@@ -84,13 +84,11 @@
 <div class="section level3">
 <h3 id="why-net-energy-return">Why Net Energy Return?<a class="anchor" aria-label="anchor" href="#why-net-energy-return"></a>
 </h3>
-<p>Energy burden (E_b = S/G) is a ratio that requires harmonic mean aggregation. The Net Energy Return transformation (Nh = (G-S)/S) allows proper weighted mean aggregation using simple arithmetic mean, then converts back to energy burden via E_b = 1/(Nh+1).</p>
-<p><strong>Computational Advantage</strong> (applies to <strong>aggregation across households only</strong>): When aggregating individual household data, the Nh method uses arithmetic mean (<code>weighted.mean(nh)</code>) instead of harmonic mean (<code>1/weighted.mean(1/eb)</code>), providing: - Simpler computation with standard functions - Better numerical stability (avoids division by very small EB values) - More interpretable results (“average net return per dollar”) - Clear error prevention (makes it obvious you can’t use arithmetic mean on EB directly)</p>
-<p>Note: For single household calculations, both methods are mathematically equivalent (NEB = EB). The advantage appears only when aggregating across multiple households.</p>
-<p>This methodology is detailed in:</p>
-<blockquote>
-<p><strong>Net energy metrics reveal striking disparities across United States household energy burdens</strong></p>
-</blockquote>
+<p>When calculating energy burden for a single household, it’s straightforward: divide energy spending by income. But when combining data from many households, simply averaging those percentages can introduce errors.</p>
+<p><strong>The challenge</strong>: Energy burden is a ratio (spending ÷ income), and ratios don’t behave well with simple averages. For example, if one household spends $100 of $1,000 income (10%) and another spends $50 of $10,000 income (0.5%), the simple average of 5.25% doesn’t accurately represent the combined situation.</p>
+<p><strong>The solution</strong>: The Net Energy Return (Nh) method transforms the data so you can use standard averaging techniques, then converts back to energy burden. Think of Nh as “how much money is left after energy costs, per dollar spent on energy.” This transformation makes aggregation more accurate and interpretable.</p>
+<p><strong>When it matters</strong>: - ✓ Combining data from many individual households - ✓ Calculating regional or demographic averages - For single households, both methods give identical results</p>
+<p>This methodology is detailed in Scheier &amp; Kittner (2022) - see <a href="#citation">Citation</a> below.</p>
 </div>
 </div>
 <div class="section level2">
@@ -127,21 +125,21 @@
 <span><span class="va">neb</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="va">nh</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span>  <span class="co"># 0.06 (same as eb)</span></span>
 <span></span>
 <span><span class="co"># === EXAMPLE 2: Individual household data aggregation ===</span></span>
-<span><span class="co"># CORRECT: Use Nh method (arithmetic mean)</span></span>
+<span><span class="co"># Recommended: Use Nh method for accurate aggregation</span></span>
 <span><span class="va">incomes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30000</span>, <span class="fl">50000</span>, <span class="fl">75000</span><span class="op">)</span></span>
 <span><span class="va">spendings</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3000</span>, <span class="fl">3500</span>, <span class="fl">4000</span><span class="op">)</span></span>
 <span><span class="va">households</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">150</span>, <span class="fl">200</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">nh</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ner_func.html">ner_func</a></span><span class="op">(</span><span class="va">incomes</span>, <span class="va">spendings</span><span class="op">)</span></span>
 <span><span class="va">nh_mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/weighted.mean.html" class="external-link">weighted.mean</a></span><span class="op">(</span><span class="va">nh</span>, <span class="va">households</span><span class="op">)</span></span>
-<span><span class="va">neb_correct</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">nh_mean</span><span class="op">)</span>  <span class="co"># Proper aggregation ✓</span></span>
+<span><span class="va">neb_aggregate</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">nh_mean</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># WRONG: Direct mean of energy burden (introduces 1-5% error)</span></span>
-<span><span class="co"># neb_wrong &lt;- weighted.mean(energy_burden_func(incomes, spendings), households)  # DON'T DO THIS!</span></span>
+<span><span class="co"># Note: Direct averaging of energy burden values can introduce errors</span></span>
+<span><span class="co"># neb_naive &lt;- weighted.mean(energy_burden_func(incomes, spendings), households)</span></span>
 <span></span>
 <span><span class="co"># === EXAMPLE 3: Cohort data aggregation ===</span></span>
-<span><span class="co"># For pre-aggregated totals, direct ratio works</span></span>
-<span><span class="va">neb_cohort</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">nc_ami</span><span class="op">$</span><span class="va">total_electricity_spend</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">nc_ami</span><span class="op">$</span><span class="va">total_income</span><span class="op">)</span>  <span class="co"># Simple ✓</span></span>
+<span><span class="co"># For pre-aggregated totals, you can use the direct ratio</span></span>
+<span><span class="va">neb_cohort</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">nc_ami</span><span class="op">$</span><span class="va">total_electricity_spend</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">nc_ami</span><span class="op">$</span><span class="va">total_income</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># === EXAMPLE 4: Grouped analysis ===</span></span>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_weighted_metrics.html">calculate_weighted_metrics</a></span><span class="op">(</span></span>
@@ -165,7 +163,7 @@
 </h3>
 <p><strong>Household-level calculations</strong> (all mathematically related): - <code>energy_burden_func(g, s)</code> - Energy Burden: <strong>S/G</strong> - <code>neb_func(g, s)</code> - Net Energy Burden: <strong>S/G</strong> (identical to EB, emphasizes proper aggregation) - <code>ner_func(g, s)</code> - Net Energy Return: <strong>(G-S)/S</strong> (use this for aggregation!) - <code>eroi_func(g, s)</code> - Energy Return on Investment: <strong>G/Se</strong> - <code>dear_func(g, s)</code> - Disposable Energy-Adjusted Resources: <strong>(G-S)/G</strong></p>
 <p><strong>Key relationships</strong>: - At household level: <code>neb_func() == energy_burden_func()</code> (identical) - Transformation: <code>neb = 1/(1+nh)</code> and <code>nh = (1/neb) - 1</code> - 6% energy burden threshold ↔︎ Nh ≥ 15.67</p>
-<p><strong>Aggregation guidance</strong>: - <strong>Individual household data</strong>: Calculate <code>nh &lt;- ner_func(income, spending)</code>, then <code>neb_aggregate &lt;- 1/(1 + weighted.mean(nh, weights))</code> (arithmetic mean ✓) - <strong>Cohort data</strong> (pre-aggregated totals): Calculate <code>neb &lt;- sum(total_spending) / sum(total_income)</code> (direct ratio ✓) - <strong>NEVER use</strong>: <code>weighted.mean(neb_func(...))</code> or <code>mean(energy_burden_func(...))</code> (arithmetic mean of ratios ✗ introduces 1-5% error)</p>
+<p><strong>Aggregation guidance</strong>: - <strong>Individual household data</strong>: Calculate <code>nh &lt;- ner_func(income, spending)</code>, then <code>neb_aggregate &lt;- 1/(1 + weighted.mean(nh, weights))</code> - <strong>Cohort data</strong> (pre-aggregated totals): Calculate <code>neb &lt;- sum(total_spending) / sum(total_income)</code> - <strong>Note</strong>: Direct averaging of energy burden values (<code>weighted.mean(neb_func(...))</code>) can introduce errors; use the Nh method for individual household data</p>
 </div>
 <div class="section level3">
 <h3 id="statistical-analysis">Statistical Analysis<a class="anchor" aria-label="anchor" href="#statistical-analysis"></a>
@@ -297,8 +295,20 @@
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<p>If you use this package in research, please cite:</p>
-<pre><code>[Citation information to be added]</code></pre>
+<p>If you use this package or methodology in your research, please cite:</p>
+<p><strong>Scheier, E., &amp; Kittner, N. (2022). A measurement strategy to address disparities across household energy burdens. <em>Nature Communications</em>, 13, 1717. <a href="https://doi.org/10.1038/s41467-021-27673-y" class="external-link uri">https://doi.org/10.1038/s41467-021-27673-y</a></strong></p>
+<p>BibTeX:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">scheier2022measurement</span>,</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="dt">title</span>={A measurement strategy to address disparities across household energy burdens},</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="dt">author</span>={Scheier, Eric and Kittner, Noah},</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="dt">journal</span>={Nature Communications},</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="dt">volume</span>={13},</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="dt">number</span>={1},</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="dt">pages</span>={1717},</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="dt">year</span>={2022},</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="dt">publisher</span>={Nature Publishing Group},</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="dt">doi</span>={10.1038/s41467-021-27673-y}</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
