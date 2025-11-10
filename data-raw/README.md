@@ -94,10 +94,10 @@ nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
 nc_2022 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2022")
 
 # Automated comparison
-comparison <- compare_vintages(
+comparison <- compare_energy_burden(
   dataset = "ami",
   states = "NC",
-  aggregate_by = "state"
+  group_by = "state"
 )
 ```
 

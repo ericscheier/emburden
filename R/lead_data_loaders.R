@@ -424,6 +424,22 @@ try_load_from_csv <- function(dataset, vintage, verbose = FALSE) {
         # Standardize column names
         data <- standardize_cohort_columns(data, dataset, vintage)
 
+        # Validate that income_bracket exists and has valid data
+        # Skip files where income_bracket is missing or all NA (incomplete processed files)
+        if (!"income_bracket" %in% names(data)) {
+          if (verbose) {
+            message("  \u2717 Skipping file (missing income_bracket column): ", basename(csv_file))
+          }
+          next
+        }
+
+        if (all(is.na(data$income_bracket))) {
+          if (verbose) {
+            message("  \u2717 Skipping file (income_bracket all NA): ", basename(csv_file))
+          }
+          next
+        }
+
         if (verbose) {
           message("  \u2713 Loaded from CSV")
         }
