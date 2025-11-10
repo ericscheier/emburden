@@ -1,0 +1,26 @@
+# Vignettes - track source files, ignore generated outputs
+
+# Track source files (negation with !)
+!*.Rmd
+!*.bib
+!*.csl
+!*.jpg
+!*.png
+
+# Ignore LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.bbl
+*.blg
+*.toc
+
+# Ignore generated outputs (will be built during package build)
+*.pdf
+*.html
+*.tex
+
+# R build artifacts
+*_cache/
+*_files/

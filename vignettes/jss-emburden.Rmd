@@ -1,0 +1,151 @@
+---
+title: "\\pkg{emburden}: Temporal Analysis of Household Energy Burden Using Net Energy Return Metrics"
+author:
+  - name: Eric Scheier
+    affiliation: Independent Researcher
+    address: |
+      | Durham, North Carolina
+    email: eric@scheier.org
+    url: https://github.com/ericscheier
+abstract: >
+  Energy burden---the proportion of household income spent on energy---is a critical metric for understanding energy poverty and inequity. However, traditional energy burden ratios present analytical challenges including difficulties with aggregation and visualization of extreme values. The \pkg{emburden} package for \proglang{R} implements Net Energy Return (Nh) methodology to address these limitations while enabling temporal analysis of household energy characteristics. This paper introduces the package's design and demonstrates its application to comparing Low-Income Energy Affordability Data (LEAD) Tool vintages from 2018 and 2022 across geographic and demographic dimensions. The package provides functions for downloading, processing, and analyzing census tract-level energy burden data for all U.S. states, with particular attention to proper weighted aggregation and schema normalization across data vintages. We demonstrate the package's capabilities through examples ranging from state-level summaries to fine-grained census tract comparisons, illustrating how policy-relevant insights can be extracted at multiple scales.
+keywords:
+  - energy burden
+  - energy poverty
+  - household energy
+  - net energy return
+  - temporal analysis
+  - R
+preamble: >
+  \usepackage{amsmath}
+output: rticles::jss_article
+bibliography: references.bib
+---
+
+# Introduction
+
+Household energy affordability is a persistent challenge affecting millions of households in the United States. Low-income households face disproportionate energy burdens, often spending more than 6% of their income on energy costs compared to 2-3% for higher-income households [@ross2018high; @drehobl2016lifting]. Understanding these disparities and tracking changes over time is essential for designing effective energy assistance programs and policies.
+
+The traditional energy burden metric---the ratio of energy expenditures ($S$) to gross income ($G$)---has several analytical limitations. As a ratio with income in the denominator, energy burden ($E_b = S/G$) approaches infinity for households with very low incomes, creating challenges for aggregation and visualization. Additionally, the metric requires harmonic mean aggregation rather than arithmetic means, which is not widely understood or consistently applied [@scheier2022measurement].
+
+The \pkg{emburden} package for \proglang{R} addresses these challenges by implementing the Net Energy Return (Nh) transformation:
+
+$$N_h = \frac{G - S}{S}$$
+
+This transformation, inspired by Net Energy Analysis in energy systems research [@hall2011eroi; @carbajalesdale2014better], allows for proper weighted mean aggregation while preserving the ability to convert back to energy burden via $E_b = 1/(N_h + 1)$.
+
+## The LEAD Tool and temporal analysis
+
+The U.S. Department of Energy's Low-Income Energy Affordability Data (LEAD) Tool [@ma2019lowincome] provides census tract-level estimates of household energy characteristics based on American Community Survey microdata. The tool uses iterative proportional fitting to allocate households to census tracts while calibrating to utility-reported sales and revenues.
+
+Multiple vintages of LEAD Tool data have been released:
+
+- **2018 Update**: Based on 2018 5-year ACS data, released July 2020
+- **2022 Update**: Based on 2022 5-year ACS data, released August 2024
+
+These vintages enable temporal analysis of energy burden trends, but require careful handling of schema differences and income bracket definitions.
+
+## Package design philosophy
+
+The \pkg{emburden} package is designed around several key principles:
+
+1. **Proper aggregation**: Implements weighted mean aggregation using Net Energy Return, with household counts as weights
+2. **Temporal consistency**: Normalizes schema differences between LEAD Tool vintages to enable valid comparisons
+3. **Flexible workflows**: Supports both database and CSV-based data access with automatic fallback
+4. **Geographic flexibility**: Enables analysis from national level down to individual census tracts
+
+# Package architecture
+
+The \pkg{emburden} package is organized into several functional modules:
+
+## Core functions
+
+```{r, eval=FALSE}
+library(emburden)
+
+# Energy metric calculations
+energy_burden_func(gross_income, energy_spending)
+ner_func(gross_income, energy_spending)  # Net Energy Return
+eroi_func(gross_income, energy_spending)  # EROI
+dear_func(gross_income, energy_spending)  # DEAR
+
+# Statistical aggregation
+calculate_weighted_metrics(
+  graph_data,
+  group_columns = "state",
+  metric_name = "ner"
+)
+```
+
+## Data loading functions
+
+The package provides automatic data downloading and caching:
+
+```{r, eval=FALSE}
+# Load census tract data (auto-downloads if not available)
+nc_tracts <- load_census_tract_data(states = "NC")
+
+# Load cohort data by income bracket
+nc_ami <- load_cohort_data(
+  dataset = "ami",
+  states = "NC",
+  vintage = "2022"
+)
+
+# Compare vintages
+comparison <- compare_vintages(
+  dataset = "ami",
+  states = "NC",
+  aggregate_by = "state"
+)
+```
+
+# Example: State-level comparison
+
+Here we demonstrate temporal analysis at the state level:
+
+```{r state-comparison, eval=FALSE}
+library(emburden)
+library(dplyr)
+
+# Load 2018 and 2022 data for North Carolina
+nc_2018 <- load_cohort_data(
+  dataset = "ami",
+  states = "NC",
+  vintage = "2018"
+)
+
+nc_2022 <- load_cohort_data(
+  dataset = "ami",
+  states = "NC",
+  vintage = "2022"
+)
+
+# Calculate aggregated metrics
+metrics_2018 <- calculate_weighted_metrics(
+  nc_2018,
+  group_columns = "state",
+  metric_name = "ner"
+)
+
+metrics_2022 <- calculate_weighted_metrics(
+  nc_2022,
+  group_columns = "state",
+  metric_name = "ner"
+)
+
+# Compare changes
+bind_rows(
+  metrics_2018 %>% mutate(vintage = "2018"),
+  metrics_2022 %>% mutate(vintage = "2022")
+) %>%
+  select(vintage, metric_mean, metric_median, poverty_rate)
+```
+
+# Conclusion
+
+The \pkg{emburden} package provides a robust framework for temporal analysis of household energy burden using proper Net Energy Return methodology. By automating data access, normalizing schema differences, and implementing correct aggregation methods, the package enables researchers and policymakers to track energy affordability trends across multiple scales.
+
+The package is available from GitHub at \url{https://github.com/ericscheier/emburden} and is licensed under AGPL-3+.
+
+# References

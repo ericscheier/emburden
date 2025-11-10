@@ -1,0 +1,612 @@
+\documentclass[
+]{jss}
+
+%% recommended packages
+\usepackage{orcidlink,thumbpdf,lmodern}
+
+\usepackage[utf8]{inputenc}
+
+\author{
+Eric Scheier\\Independent Researcher
+}
+\title{\pkg{emburden}: Temporal Analysis of Household Energy
+Burden Using Net Energy Return Metrics}
+
+\Plainauthor{Eric Scheier}
+\Plaintitle{emburden: Temporal Analysis of Household Energy
+Burden Using Net Energy Return Metrics}
+\Shorttitle{\pkg{emburden}: Energy Burden Analysis}
+
+
+\Abstract{
+Energy burden---the proportion of household income spent on energy---is
+a critical metric for understanding energy poverty and inequity.
+However, traditional energy burden ratios present analytical challenges
+including difficulties with aggregation and visualization of extreme
+values. The \pkg{emburden} package for \proglang{R} implements
+Net Energy Return (Nh) methodology to address these limitations while
+enabling temporal analysis of household energy characteristics. This
+paper introduces the package's design and demonstrates its application
+to comparing Low-Income Energy Affordability Data (LEAD) Tool vintages
+from 2018 and 2022 across geographic and demographic dimensions. The
+package provides functions for downloading, processing, and analyzing
+census tract-level energy burden data for all U.S. states, with
+particular attention to proper weighted aggregation and schema
+normalization across data vintages. We demonstrate the package's
+capabilities through examples ranging from state-level summaries to
+fine-grained census tract comparisons, illustrating how policy-relevant
+insights can be extracted at multiple scales.
+}
+
+\Keywords{energy burden, energy poverty, household energy, net energy
+return, temporal analysis, \proglang{R}}
+\Plainkeywords{energy burden, energy poverty, household energy, net
+energy return, temporal analysis, R}
+
+%% publication information
+%% \Volume{50}
+%% \Issue{9}
+%% \Month{June}
+%% \Year{2012}
+%% \Submitdate{}
+%% \Acceptdate{2012-06-04}
+
+\Address{
+    Eric Scheier\\
+    Durham, North Carolina\\
+  E-mail: \email{eric@scheier.org}\\
+  URL: \url{https://github.com/ericscheier}\\~\\
+  }
+
+
+% tightlist command for lists without linebreak
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+
+\usepackage{amsmath}
+
+\begin{document}
+
+
+
+\section{Introduction}\label{introduction}
+
+Household energy affordability is a persistent challenge affecting
+millions of households in the United States. Low-income households face
+disproportionate energy burdens, often spending more than 6\% of their
+income on energy costs compared to 2-3\% for higher-income households
+\citep{ross2018high, drehobl2016lifting}. Understanding these
+disparities and tracking changes over time is essential for designing
+effective energy assistance programs and policies.
+
+The traditional energy burden metric---the ratio of energy expenditures
+(\(S\)) to gross income (\(G\))---has several analytical limitations. As
+a ratio with income in the denominator, energy burden (\(E_b = S/G\))
+approaches infinity for households with very low incomes, creating
+challenges for aggregation and visualization. Additionally, the metric
+requires harmonic mean aggregation rather than arithmetic means, which
+is not widely understood or consistently applied
+\citep{scheier2022measurement}.
+
+The \pkg{emburden} package for \proglang{R} addresses these
+challenges by implementing the Net Energy Return (Nh) transformation:
+
+\[N_h = \frac{G - S}{S}\]
+
+This transformation, inspired by Net Energy Analysis in energy systems
+research \citep{hall2011eroi, carbajalesdale2014better}, allows for
+proper weighted mean aggregation while preserving the ability to convert
+back to energy burden via \(E_b = 1/(N_h + 1)\).
+
+\subsection{The LEAD Tool and temporal
+analysis}\label{the-lead-tool-and-temporal-analysis}
+
+The U.S. Department of Energy's Low-Income Energy Affordability Data
+(LEAD) Tool \citep{ma2019lowincome} provides census tract-level
+estimates of household energy characteristics based on American
+Community Survey microdata. The tool uses iterative proportional fitting
+to allocate households to census tracts while calibrating to
+utility-reported sales and revenues.
+
+Multiple vintages of LEAD Tool data have been released:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{2018 Update}: Based on 2018 5-year ACS data, released July
+  2020
+\item
+  \textbf{2022 Update}: Based on 2022 5-year ACS data, released August
+  2024
+\end{itemize}
+
+These vintages enable temporal analysis of energy burden trends, but
+require careful handling of schema differences and income bracket
+definitions.
+
+\subsection{Package design philosophy}\label{package-design-philosophy}
+
+The \pkg{emburden} package is designed around several key
+principles:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Proper aggregation}: Implements weighted mean aggregation
+  using Net Energy Return, with household counts as weights
+\item
+  \textbf{Temporal consistency}: Normalizes schema differences between
+  LEAD Tool vintages to enable valid comparisons
+\item
+  \textbf{Flexible workflows}: Supports both database and CSV-based data
+  access with automatic fallback
+\item
+  \textbf{Geographic flexibility}: Enables analysis from national level
+  down to individual census tracts
+\item
+  \textbf{Reproducibility}: All data can be downloaded from public
+  sources and processing is fully documented
+\end{enumerate}
+
+The remainder of this paper is organized as follows. Section 2 describes
+the Net Energy Return methodology and LEAD Tool data structure. Section
+3 details the package implementation. Sections 4-6 demonstrate package
+capabilities through progressively complex examples. Section 7 discusses
+limitations and future extensions.
+
+\section{Methodology}\label{methodology}
+
+\subsection{Net Energy Return
+formulas}\label{net-energy-return-formulas}
+
+The Net Energy Return (Nh) of a household with gross income \(G\) and
+energy spending \(S\) is defined as:
+
+\[N_h = \frac{G - S}{S} = \frac{G}{S} - 1\]
+
+This can be interpreted as the ratio of net income (after energy costs)
+to energy spending. A household with \(N_h = 15.67\) has approximately
+\$15.67 of net income per \$1 of energy spending, equivalent to a 6\%
+energy burden.
+
+The relationship to energy burden is:
+
+\[E_b = \frac{S}{G} = \frac{1}{N_h + 1}\]
+
+For aggregation across households, the weighted mean Net Energy Return
+is:
+
+\[\overline{N_h} = \frac{\sum_{i} w_i N_{h,i}}{\sum_{i} w_i}\]
+
+where \(w_i\) represents household weights (typically household counts
+or population). This aggregated value can then be converted to an
+aggregate energy burden via \(\overline{E_b} = 1/(\overline{N_h} + 1)\).
+
+\subsection{LEAD Tool data structure}\label{lead-tool-data-structure}
+
+The LEAD Tool provides data at multiple geographic levels (census tract,
+county, state) and by multiple income definitions:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{AMI}: Area Median Income (income relative to local median)
+\item
+  \textbf{FPL}: Federal Poverty Line (income relative to poverty
+  threshold)
+\item
+  \textbf{SMI}: State Median Income
+\item
+  \textbf{LLSI}: Lower Living Standard Income (2022 only)
+\end{itemize}
+
+For each household cohort (defined by location, income bracket, housing
+tenure, unit type, and other characteristics), the LEAD Tool estimates:
+
+\begin{itemize}
+\tightlist
+\item
+  Number of households
+\item
+  Mean income
+\item
+  Mean electricity expenditure
+\item
+  Mean gas expenditure
+\item
+  Mean other fuel expenditure
+\end{itemize}
+
+These estimates are based on ACS microdata calibrated to
+utility-reported totals.
+
+\subsection{Schema differences between
+vintages}\label{schema-differences-between-vintages}
+
+The 2018 and 2022 LEAD Tool releases have significant schema
+differences:
+
+\textbf{Income brackets}: - 2018 AMI: 5 brackets (0-30\%, 30-50\%,
+50-80\%, 80-100\%, 100\%+) - 2022 AMI: 6 brackets (0-30\%, 30-60\%,
+60-80\%, 80-100\%, 100-150\%, 150\%+)
+
+\textbf{Column structure}: - 2018: Separate columns for each attribute
+(TEN, YBL6, BLD, HFL) - 2022: Combined columns (TEN-YBL6, TEN-BLD,
+TEN-HFL)
+
+\textbf{New features in 2022}: - 12 demographic columns - LLSI income
+metric - Tribal area geographies - Frequency weights
+
+The \pkg{emburden} package handles these differences through
+schema normalization, mapping income brackets to common categories and
+parsing combined columns.
+
+\section{Package implementation}\label{package-implementation}
+
+\subsection{Package structure}\label{package-structure}
+
+The \pkg{emburden} package is organized into several functional
+modules:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Energy metrics} (\texttt{energy\_ratios.R}): Core calculations
+  for Nh, EROI, DEAR
+\item
+  \textbf{Data loading} (\texttt{lead\_data\_loaders.R},
+  \texttt{csv\_fallback.R}): Download and import LEAD data
+\item
+  \textbf{Database integration} (\texttt{emrgi\_data\_loaders.R}): Query
+  SQLite database
+\item
+  \textbf{Temporal comparison} (\texttt{compare\_burden.R}): Compare
+  vintages with normalization using \texttt{compare\_energy\_burden()}
+\item
+  \textbf{Statistical analysis} (\texttt{metrics.R}): Weighted
+  aggregation functions
+\item
+  \textbf{Formatting} (\texttt{formatting.R}): Output formatting for
+  tables and reports
+\end{itemize}
+
+\subsection{Core functions}\label{core-functions}
+
+\subsubsection{Data acquisition}\label{data-acquisition}
+
+The package provides functions to download LEAD Tool data directly from
+OpenEI:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> library("emburden")
+R> 
+R> # Download 2022 data for North Carolina
+R> files_2022 <- download_lead_data_from_openei(
++   vintage = "2022",
++   states = "NC"
++ )
+R> 
+R> # Process AMI census tract data
+R> nc_ami <- process_lead_cohort_data(
++   file_path = files_2022$NC["ami_tract"],
++   vintage = "2022",
++   income_metric = "ami"
++ )
+\end{CodeInput}
+\end{CodeChunk}
+
+\subsubsection{Data loading with
+fallback}\label{data-loading-with-fallback}
+
+For routine analysis, higher-level functions provide automatic
+database/CSV fallback:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Load latest data (tries database, falls back to CSV)
+R> nc_data <- load_cohort_data(
++   dataset = "ami",
++   states = "NC"
++ )
+R> 
+R> # Load specific vintage
+R> nc_2018 <- load_cohort_data(
++   dataset = "ami",
++   states = "NC",
++   vintage = "2018"
++ )
+\end{CodeInput}
+\end{CodeChunk}
+
+\subsubsection{Temporal comparison}\label{temporal-comparison}
+
+The core comparison function handles schema normalization and
+aggregation. The \texttt{compare\_energy\_burden()} function compares
+energy burden across vintages using proper aggregation methodology.
+For cohort data (pre-aggregated households), the function sums totals
+first, then calculates ratios: \(NEB = \sum S_i / \sum G_i\). This
+avoids division-by-zero issues with row-by-row calculations.
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Compare by income bracket (2018 vs 2022)
+R> comparison <- compare_energy_burden(
++   dataset = "ami",
++   states = "NC",
++   group_by = "income_bracket",
++   vintage_1 = "2018",
++   vintage_2 = "2022",
++   format = TRUE
++ )
+R>
+R> # View formatted results
+R> print(comparison)
+\end{CodeInput}
+\end{CodeChunk}
+
+\subsection{Design decisions}\label{design-decisions}
+
+Several key design decisions shape the package architecture:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Lazy evaluation}: Data is not downloaded/loaded until
+  explicitly requested
+\item
+  \textbf{Graceful degradation}: Database unavailability falls back to
+  CSV
+\item
+  \textbf{Explicit vintage specification}: Prevents accidental mixing of
+  vintages
+\item
+  \textbf{Comprehensive metadata}: All data includes vintage and source
+  information
+\item
+  \textbf{Memory efficiency}: State-by-state processing for large
+  analyses
+\end{enumerate}
+
+\section{Basic state-level
+comparison}\label{basic-state-level-comparison}
+
+We begin with a simple state-level comparison to illustrate basic
+package usage.
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> library("emburden")
+R> library("dplyr")
+R> 
+R> # Compare North Carolina: 2018 vs 2022
+R> nc_state <- compare_vintages(
++   dataset = "ami",
++   states = "NC",
++   aggregate_by = "state"
++ )
+R> 
+R> # Calculate energy burdens
+R> nc_state <- nc_state %>%
++   mutate(
++     burden_2018 = (total_electricity_spend_2018 +
++                    total_gas_spend_2018 +
++                    total_other_spend_2018) / total_income_2018,
++     burden_2022 = (total_electricity_spend_2022 +
++                    total_gas_spend_2022 +
++                    total_other_spend_2022) / total_income_2022,
++     burden_change_pp = (burden_2022 - burden_2018) * 100,
++     burden_change_pct = (burden_change_pp / (burden_2018 * 100)) * 100
++   )
+R> 
+R> # Display results
+R> print(nc_state[, c("state", "burden_2018", "burden_2022",
++                    "burden_change_pp", "burden_change_pct")])
+\end{CodeInput}
+\end{CodeChunk}
+
+The output shows the aggregate energy burden for North Carolina
+decreased from X\% in 2018 to Y\% in 2022, representing a relative
+change of Z\%.
+
+\section{Income bracket analysis}\label{income-bracket-analysis}
+
+Energy burden varies dramatically by income level. We demonstrate income
+bracket comparison:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Compare by income bracket
+R> nc_income <- compare_vintages(
++   dataset = "ami",
++   states = "NC",
++   aggregate_by = "income_bracket"
++ )
+R> 
+R> # Calculate burdens by bracket
+R> nc_income <- nc_income %>%
++   mutate(
++     burden_2018 = (total_electricity_spend_2018 +
++                    total_gas_spend_2018 +
++                    total_other_spend_2018) / total_income_2018,
++     burden_2022 = (total_electricity_spend_2022 +
++                    total_gas_spend_2022 +
++                    total_other_spend_2022) / total_income_2022
++   ) %>%
++   arrange(income_bracket)
+R> 
+R> # Visualize
+R> library("ggplot2")
+R> 
+R> ggplot(nc_income, aes(x = income_bracket)) +
++   geom_col(aes(y = burden_2018 * 100, fill = "2018"),
++            position = "dodge", alpha = 0.7) +
++   geom_col(aes(y = burden_2022 * 100, fill = "2022"),
++            position = "dodge", alpha = 0.7) +
++   labs(
++     title = "Energy Burden by Income Bracket: 2018 vs 2022",
++     subtitle = "North Carolina",
++     x = "Income Bracket (% of Area Median Income)",
++     y = "Energy Burden (%)",
++     fill = "Year"
++   ) +
++   theme_minimal() +
++   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+\end{CodeInput}
+\end{CodeChunk}
+
+This analysis reveals which income groups experienced the largest
+changes in energy burden, informing targeted policy interventions.
+
+\section{Census tract-level analysis}\label{census-tract-level-analysis}
+
+For local policy and program design, census tract-level analysis
+identifies specific communities with high burdens or large changes:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Get tract-level comparison
+R> nc_tracts <- compare_vintages(
++   dataset = "ami",
++   states = "NC",
++   aggregate_by = "tract"
++ )
+R> 
+R> # Calculate burden changes
+R> nc_tracts <- nc_tracts %>%
++   mutate(
++     burden_2018 = (total_electricity_spend_2018 +
++                    total_gas_spend_2018 +
++                    total_other_spend_2018) / total_income_2018,
++     burden_2022 = (total_electricity_spend_2022 +
++                    total_gas_spend_2022 +
++                    total_other_spend_2022) / total_income_2022,
++     burden_change = burden_2022 - burden_2018
++   )
+R> 
+R> # Identify tracts with largest increases
+R> worst_changes <- nc_tracts %>%
++   filter(burden_change > 0) %>%
++   arrange(desc(burden_change)) %>%
++   head(10)
+R> 
+R> print(worst_changes[, c("geoid", "burden_2018", "burden_2022",
++                          "burden_change", "households_2022")])
+\end{CodeInput}
+\end{CodeChunk}
+
+These tract-level results can be joined with census geography for
+mapping or with demographic data for further analysis.
+
+\section{Multi-state regional
+comparison}\label{multi-state-regional-comparison}
+
+The package efficiently handles multi-state analyses for regional
+comparisons:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Compare Southern states
+R> southern <- c("NC", "SC", "GA", "VA", "TN", "FL", "AL", "MS", "LA", "AR")
+R> 
+R> regional <- compare_vintages(
++   dataset = "ami",
++   states = southern,
++   aggregate_by = "state"
++ ) %>%
++   mutate(
++     burden_2018 = (total_electricity_spend_2018 +
++                    total_gas_spend_2018 +
++                    total_other_spend_2018) / total_income_2018,
++     burden_2022 = (total_electricity_spend_2022 +
++                    total_gas_spend_2022 +
++                    total_other_spend_2022) / total_income_2022,
++     burden_change = burden_2022 - burden_2018
++   ) %>%
++   arrange(desc(burden_change))
+R> 
+R> # Visualize regional patterns
+R> ggplot(regional, aes(x = reorder(state, burden_change))) +
++   geom_col(aes(y = burden_change * 100), fill = "steelblue") +
++   geom_hline(yintercept = 0, linetype = "dashed") +
++   coord_flip() +
++   labs(
++     title = "Change in Energy Burden: 2018 to 2022",
++     subtitle = "Southern States",
++     x = "State",
++     y = "Change (percentage points)"
++   ) +
++   theme_minimal()
+\end{CodeInput}
+\end{CodeChunk}
+
+\section{Discussion and limitations}\label{discussion-and-limitations}
+
+\subsection{Limitations}\label{limitations}
+
+Several limitations should be considered when using this package:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Data quality}: LEAD Tool estimates are based on statistical
+  modeling and inherit uncertainties from ACS microdata and utility
+  reporting
+\item
+  \textbf{Income bracket changes}: The different bracket definitions
+  between 2018 and 2022 require aggregation for exact comparison
+\item
+  \textbf{Missing tracts}: Some census tracts present in one vintage may
+  be absent in another due to boundary changes
+\item
+  \textbf{Temporal scope}: Only two comparison points (2018, 2022) are
+  currently available
+\end{enumerate}
+
+\subsection{Future extensions}\label{future-extensions}
+
+Planned enhancements include:
+
+\begin{itemize}
+\tightlist
+\item
+  Unit tests for all core functions
+\item
+  Integration of additional data sources (utility rates, emissions,
+  weather)
+\item
+  Spatial analysis functions using \pkg{sf}
+\item
+  Time series visualization when more vintages become available
+\item
+  Statistical significance testing for changes
+\end{itemize}
+
+\section{Summary}\label{summary}
+
+The \pkg{emburden} package provides comprehensive tools for
+analyzing household energy burden using Net Energy Return methodology.
+The package handles the complexity of temporal comparisons across LEAD
+Tool vintages while enabling analysis at multiple geographic and
+demographic scales. By implementing proper aggregation methods and
+schema normalization, the package facilitates policy-relevant research
+on energy poverty and inequity.
+
+\section{Acknowledgments}\label{acknowledgments}
+
+This work builds on the foundational LEAD Tool developed by the U.S.
+Department of Energy and the Nature Communications paper co-authored
+with Noah Kittner. The author thanks the reviewers for helpful comments.
+
+\renewcommand\refname{References}
+\bibliography{jss-netenergyequity.bib}
+
+
+
+\end{document}
