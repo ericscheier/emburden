@@ -179,6 +179,61 @@ jobs:
             git push public ${TAG_NAME} || echo "Note: Tag may already exist on public repo"
           fi
 
+      - name: Create GitHub release on public repo
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          GH_REPO: ${{ env.PUBLIC_REPO }}
+        run: |
+          # Extract version from tag
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG_NAME#v}
+
+          echo "Creating release for version: $VERSION"
+
+          # Extract release notes from NEWS.md
+          if [ -f "NEWS.md" ]; then
+            # Extract the section for this version
+            awk "/^# emburden $VERSION/,/^# emburden [0-9]/" NEWS.md | head -n -1 > /tmp/release-notes.md
+
+            # If no release notes found, use a default message
+            if [ ! -s /tmp/release-notes.md ]; then
+              echo "Release notes not found in NEWS.md for version $VERSION" > /tmp/release-notes.md
+            fi
+          else
+            echo "Release notes not available (NEWS.md not found)" > /tmp/release-notes.md
+          fi
+
+          # Append installation and citation information
+          cat >> /tmp/release-notes.md <<EOF
+
+          ---
+
+          ## Installation
+
+          \`\`\`r
+          # Install from GitHub
+          # install.packages("remotes")
+          remotes::install_github("${PUBLIC_REPO}@${TAG_NAME}")
+          \`\`\`
+
+          ## Citation
+
+          If you use this package or methodology in your research, please cite:
+
+          **Scheier, E., & Kittner, N. (2022). A measurement strategy to address disparities across household energy burdens. _Nature Communications_, 13, 1717. https://doi.org/10.1038/s41467-021-27673-y**
+          EOF
+
+          # Create the release on public repo
+          gh release create "${TAG_NAME}" \
+            --repo "${PUBLIC_REPO}" \
+            --title "emburden ${TAG_NAME}" \
+            --notes-file /tmp/release-notes.md \
+            --verify-tag
+
+          echo ""
+          echo "✅ GitHub release created: https://github.com/${PUBLIC_REPO}/releases/tag/${TAG_NAME}"
+
       - name: Summary
         run: |
           echo "## Publication Summary" >> $GITHUB_STEP_SUMMARY
@@ -190,6 +245,11 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             TAG_NAME=${GITHUB_REF#refs/tags/}
             echo "**Tag:** \`${TAG_NAME}\`" >> $GITHUB_STEP_SUMMARY
+
+            # If this is a version tag, include release link
+            if [[ "$TAG_NAME" == v* ]]; then
+              echo "**Release:** [${TAG_NAME}](https://github.com/${PUBLIC_REPO}/releases/tag/${TAG_NAME})" >> $GITHUB_STEP_SUMMARY
+            fi
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
