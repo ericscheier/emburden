@@ -61,6 +61,9 @@ navbar:
         href: articles/getting-started.html
       - text: Methodology
         href: articles/methodology.html
+      - text: -------
+      - text: JSS Package Manuscript
+        href: articles/jss-emburden.html
     news:
       text: News
       href: news/index.html
@@ -74,6 +77,10 @@ articles:
     contents:
     - getting-started
     - methodology
+  - title: "Package Documentation"
+    navbar: ~
+    contents:
+    - jss-emburden
 
 footer:
   structure:

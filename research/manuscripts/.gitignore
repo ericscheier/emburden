@@ -1,0 +1,29 @@
+# Manuscripts directory - override root .gitignore to track source files
+# Allow source files (negation with !)
+!*.Rmd
+!*.tex
+!*.bib
+!*.csl
+!jss-emburden/jsslogo.jpg
+
+# But still ignore LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.bbl
+*.blg
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+
+# Ignore rendered outputs (we'll build these)
+*.pdf
+*.html
+
+# R artifacts
+*_cache/
+*_files/
+.Rproj.user/
