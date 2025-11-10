@@ -181,6 +181,48 @@ print(results)
 4. **Data loading**: Automatic from OpenEI (2018 and 2022 vintages available)
 5. **Threshold**: 6% energy burden (Nh ≥ 15.67) identifies high burden households
 
+## Temporal Comparison
+
+The package provides a dedicated function for comparing energy burden across data vintages (2018 vs 2022):
+
+```{r temporal-comparison, eval=FALSE}
+# Compare by income bracket
+comparison <- compare_energy_burden(
+  dataset = "ami",
+  states = "NC",
+  group_by = "income_bracket"
+)
+
+# View results
+print(comparison)
+
+# The function automatically:
+# - Loads both 2018 and 2022 data
+# - Normalizes schema differences (4 vs 6 AMI brackets)
+# - Performs proper Nh-based aggregation
+# - Calculates changes in energy burden
+
+# Grouping options:
+# - "income_bracket": Compare by AMI/FPL brackets (default)
+# - "state": Compare multiple states
+# - "none": Overall state-level comparison
+
+# Example: State-level comparison
+state_comparison <- compare_energy_burden(
+  dataset = "ami",
+  states = "NC",
+  group_by = "none"
+)
+
+# Access specific metrics
+state_comparison$neb_2018         # 2018 energy burden
+state_comparison$neb_2022         # 2022 energy burden
+state_comparison$neb_change_pp    # Change in percentage points
+state_comparison$neb_change_pct   # Relative change percentage
+```
+
+This is much simpler than manually loading and aggregating both vintages!
+
 ## Next Steps
 
 - See `vignette("methodology")` for mathematical details

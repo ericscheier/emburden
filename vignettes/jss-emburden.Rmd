@@ -93,54 +93,50 @@ nc_ami <- load_cohort_data(
 )
 
 # Compare vintages
-comparison <- compare_vintages(
+comparison <- compare_energy_burden(
   dataset = "ami",
   states = "NC",
-  aggregate_by = "state"
+  group_by = "state"
 )
 ```
 
 # Example: State-level comparison
 
-Here we demonstrate temporal analysis at the state level:
+Here we demonstrate temporal analysis using the `compare_energy_burden()` function:
 
 ```{r state-comparison, eval=FALSE}
 library(emburden)
-library(dplyr)
 
-# Load 2018 and 2022 data for North Carolina
-nc_2018 <- load_cohort_data(
+# Compare NC energy burden between 2018 and 2022
+# Grouped by income bracket to see which cohorts changed most
+comparison <- compare_energy_burden(
   dataset = "ami",
   states = "NC",
-  vintage = "2018"
+  group_by = "income_bracket"
 )
 
-nc_2022 <- load_cohort_data(
+# View formatted results
+print(comparison)
+
+# Access specific metrics
+comparison$neb_2018  # 2018 energy burden by bracket
+comparison$neb_2022  # 2022 energy burden by bracket
+comparison$neb_change_pp  # Change in percentage points
+
+# For overall state-level comparison (no grouping)
+state_level <- compare_energy_burden(
   dataset = "ami",
   states = "NC",
-  vintage = "2022"
+  group_by = "none"
 )
-
-# Calculate aggregated metrics
-metrics_2018 <- calculate_weighted_metrics(
-  nc_2018,
-  group_columns = "state",
-  metric_name = "ner"
-)
-
-metrics_2022 <- calculate_weighted_metrics(
-  nc_2022,
-  group_columns = "state",
-  metric_name = "ner"
-)
-
-# Compare changes
-bind_rows(
-  metrics_2018 %>% mutate(vintage = "2018"),
-  metrics_2022 %>% mutate(vintage = "2022")
-) %>%
-  select(vintage, metric_mean, metric_median, poverty_rate)
 ```
+
+The function automatically:
+
+1. Loads both vintages (2018 and 2022)
+2. Normalizes schema differences between vintages
+3. Performs proper Nh-based aggregation
+4. Calculates energy burden and changes for comparison
 
 # Conclusion
 

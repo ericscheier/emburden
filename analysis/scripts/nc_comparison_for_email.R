@@ -11,7 +11,7 @@
 if (requireNamespace("devtools", quietly = TRUE)) {
   devtools::load_all()
 } else {
-  library(netenergyburden)
+  library(emburden)
 }
 
 library(dplyr)
@@ -25,39 +25,13 @@ cat("==================================================================\n\n")
 # STATE-LEVEL COMPARISON
 # ------------------------------------------------------------------------------
 
-cat("Loading data and running comparison...\n\n")
+cat("Loading data and running state-level comparison...\n\n")
 
-comparison_state <- compare_vintages(
+comparison_state <- compare_energy_burden(
   dataset = "ami",
   states = "NC",
-  aggregate_by = "state",
-  verbose = FALSE
+  group_by = "none"  # Overall state-level aggregation
 )
-
-# Calculate NEB properly via Nh for both years
-comparison_state <- comparison_state %>%
-  mutate(
-    # Total energy spending for each year
-    total_spend_2018 = total_electricity_spend_2018 +
-                       coalesce(total_gas_spend_2018, 0) +
-                       coalesce(total_other_spend_2018, 0),
-    total_spend_2022 = total_electricity_spend_2022 +
-                       coalesce(total_gas_spend_2022, 0) +
-                       coalesce(total_other_spend_2022, 0),
-
-    # Calculate Net Energy Return (Nh) for proper aggregation
-    nh_2018 = (total_income_2018 - total_spend_2018) / total_spend_2018,
-    nh_2022 = (total_income_2022 - total_spend_2022) / total_spend_2022,
-
-    # Convert to Net Energy Burden (NEB)
-    neb_2018 = 1 / (1 + nh_2018),
-    neb_2022 = 1 / (1 + nh_2022),
-
-    # Calculate changes
-    neb_change_pp = neb_2022 - neb_2018,
-    neb_change_pct = (neb_change_pp / neb_2018) * 100,
-    households_change_pct = (households_2022 - households_2018) / households_2018 * 100
-  )
 
 cat("STATE-LEVEL RESULTS:\n")
 cat("--------------------\n")
@@ -78,34 +52,11 @@ cat(sprintf("\n  Households: %s → %s (%+.1f%%)\n",
 cat("\n\nBY INCOME BRACKET:\n")
 cat("------------------\n")
 
-comparison_income <- compare_vintages(
+comparison_income <- compare_energy_burden(
   dataset = "ami",
   states = "NC",
-  aggregate_by = "income_bracket",
-  verbose = FALSE
-)
-
-# Calculate NEB for each income bracket
-comparison_income <- comparison_income %>%
-  mutate(
-    # Total energy spending for each year
-    total_spend_2018 = total_electricity_spend_2018 +
-                       coalesce(total_gas_spend_2018, 0) +
-                       coalesce(total_other_spend_2018, 0),
-    total_spend_2022 = total_electricity_spend_2022 +
-                       coalesce(total_gas_spend_2022, 0) +
-                       coalesce(total_other_spend_2022, 0),
-
-    # Calculate Nh and NEB
-    nh_2018 = (total_income_2018 - total_spend_2018) / total_spend_2018,
-    nh_2022 = (total_income_2022 - total_spend_2022) / total_spend_2022,
-    neb_2018 = 1 / (1 + nh_2018),
-    neb_2022 = 1 / (1 + nh_2022),
-
-    # Changes
-    neb_change_pp = neb_2022 - neb_2018,
-    neb_change_pct = (neb_change_pp / neb_2018) * 100
-  ) %>%
+  group_by = "income_bracket"
+) %>%
   arrange(income_bracket)
 
 # Print formatted table
@@ -130,7 +81,7 @@ cat("==================================================================\n\n")
 cat("Example text you can copy-paste:\n\n")
 cat("---BEGIN---\n\n")
 
-cat(sprintf("Using the netenergyburden R package, temporal analysis of North Carolina\n"))
+cat(sprintf("Using the emburden R package, temporal analysis of North Carolina\n"))
 cat(sprintf("shows household energy burden increased from %.2f%% (2018) to %.2f%% (2022),\n",
             comparison_state$neb_2018 * 100,
             comparison_state$neb_2022 * 100))
@@ -144,9 +95,9 @@ max_change_bracket <- comparison_income[max_change_idx, ]
 
 cat(sprintf("The burden increase was not uniform across income groups. The %s bracket\n",
             max_change_bracket$income_bracket))
-cat(sprintf("saw the largest relative change (%+.1f%%), while higher income households\n",
+cat(sprintf("saw the largest relative change (%+.1f%%), while other income households\n",
             max_change_bracket$neb_change_pct))
-cat(sprintf("experienced smaller percentage increases.\n\n"))
+cat(sprintf("experienced different percentage changes.\n\n"))
 
 cat(sprintf("Total NC households analyzed: %s (2018) → %s (2022)\n\n",
             format(round(sum(comparison_income$households_2018)), big.mark = ","),
@@ -163,16 +114,30 @@ cat("  TO REPRODUCE THIS ANALYSIS\n")
 cat("==================================================================\n\n")
 
 cat("# Install the package\n")
-cat("devtools::install_github(\"ericscheier/net_energy_burden\")\n\n")
+cat("remotes::install_github(\"ericscheier/emburden\")\n\n")
 
 cat("# Run this comparison script\n")
 cat("Rscript analysis/scripts/nc_comparison_for_email.R\n\n")
 
 cat("# Or use the comparison function directly\n")
-cat("library(netenergyburden)\n")
-cat("result <- compare_vintages(dataset = \"ami\", states = \"NC\", aggregate_by = \"state\")\n\n")
+cat("library(emburden)\n\n")
 
-cat("Data downloads automatically from Zenodo on first use.\n")
-cat("Uses proper Net Energy Return (Nh) aggregation methodology.\n\n")
+cat("# State-level comparison\n")
+cat("result_state <- compare_energy_burden(\n")
+cat("  dataset = \"ami\",\n")
+cat("  states = \"NC\",\n")
+cat("  group_by = \"none\"\n")
+cat(")\n\n")
+
+cat("# By income bracket\n")
+cat("result_income <- compare_energy_burden(\n")
+cat("  dataset = \"ami\",\n")
+cat("  states = \"NC\",\n")
+cat("  group_by = \"income_bracket\"\n")
+cat(")\n\n")
+
+cat("Data downloads automatically from OpenEI on first use.\n")
+cat("Uses proper Net Energy Return (Nh) aggregation methodology.\n")
+cat("Function handles schema differences between 2018 and 2022 vintages.\n\n")
 
 cat("==================================================================\n\n")

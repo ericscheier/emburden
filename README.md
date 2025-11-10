@@ -97,6 +97,22 @@ results <- calculate_weighted_metrics(
 # Format results for publication
 library(scales)
 results$formatted_median <- to_percent(results$metric_median)
+
+# === EXAMPLE 5: Temporal comparison ===
+# Compare energy burden between 2018 and 2022
+comparison <- compare_energy_burden(
+  dataset = "ami",
+  states = "NC",
+  group_by = "income_bracket"  # Options: "income_bracket", "state", "none"
+)
+
+# View results
+print(comparison)
+
+# Access specific columns
+comparison$neb_2018  # 2018 energy burden
+comparison$neb_2022  # 2022 energy burden
+comparison$neb_change_pp  # Change in percentage points
 ```
 
 ## Core Functions
@@ -125,6 +141,13 @@ results$formatted_median <- to_percent(results$metric_median)
 - `calculate_weighted_metrics()` - Weighted mean, median, quantiles with grouping
 - Automatically calculates poverty rates below specified thresholds
 - Handles missing data and small sample sizes
+
+### Temporal Comparison
+
+- `compare_energy_burden()` - Compare energy burden across data vintages (2018 vs 2022)
+- Automatically handles schema differences between vintages
+- Proper Nh-based aggregation built-in
+- Grouping options: `"income_bracket"`, `"state"`, or `"none"`
 
 ### Formatting
 
@@ -202,7 +225,7 @@ nc_ami_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018"
 nc_ami_2022 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2022")
 
 # Compare vintages for temporal analysis
-comparison <- compare_vintages(dataset = "ami", states = "NC", aggregate_by = "state")
+comparison <- compare_energy_burden(dataset = "ami", states = "NC", group_by = "state")
 ```
 
 **Data Loading Workflow:**
