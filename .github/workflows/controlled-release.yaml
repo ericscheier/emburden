@@ -272,7 +272,7 @@ jobs:
         id: create-release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         with:
           tag_name: v${{ needs.validate.outputs.version }}
           release_name: emburden v${{ needs.validate.outputs.version }}
@@ -283,7 +283,7 @@ jobs:
       - name: Upload tarball to release
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: ${{ needs.validate.outputs.tarball }}
@@ -293,7 +293,7 @@ jobs:
       - name: Upload validation report to release
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: validation-report.md
@@ -336,6 +336,7 @@ jobs:
       - name: Publish GitHub release
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PUBLIC_REPO_TOKEN }}
           script: |
             await github.rest.repos.updateRelease({
               owner: context.repo.owner,
