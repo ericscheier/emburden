@@ -9,6 +9,7 @@ using proper Net Energy Return (Nh) aggregation methodology.
 compare_energy_burden(
   dataset = c("ami", "fpl"),
   states = NULL,
+  counties = NULL,
   group_by = c("income_bracket", "state", "none"),
   vintage_1 = "2018",
   vintage_2 = "2022",
@@ -25,6 +26,11 @@ compare_energy_burden(
 - states:
 
   Character vector of state abbreviations to filter by (optional)
+
+- counties:
+
+  Character vector of county names or FIPS codes to filter by
+  (optional). Requires `states` to be specified.
 
 - group_by:
 
@@ -69,5 +75,9 @@ compare_energy_burden(dataset = "fpl", states = c("NC", "SC"), group_by = "none"
 # Custom vintage comparison
 compare_energy_burden(dataset = "ami", states = "CA",
                      vintage_1 = "2018", vintage_2 = "2022")
+
+# Compare specific counties
+compare_energy_burden(dataset = "fpl", states = "NC",
+                     counties = c("Orange", "Durham", "Wake"))
 } # }
 ```

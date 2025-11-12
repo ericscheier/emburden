@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,9 +37,75 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/v0.2.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="emburden-030">emburden 0.3.0<a class="anchor" aria-label="anchor" href="#emburden-030"></a></h2>
+<div class="section level3">
+<h3 id="major-improvements-0-3-0">Major Improvements<a class="anchor" aria-label="anchor" href="#major-improvements-0-3-0"></a></h3>
+<div class="section level4">
+<h4 id="openei-data-pipeline-fix-critical-0-3-0">OpenEI Data Pipeline Fix (Critical)<a class="anchor" aria-label="anchor" href="#openei-data-pipeline-fix-critical-0-3-0"></a></h4>
+<ul><li>
+<strong>Fixed critical bug</strong> where MVP demo <code>compare_energy_burden('fpl', 'NC', 'income_bracket')</code> failed on fresh installs
+<ul><li>Root cause: Raw OpenEI 2022 FPL data wasn’t being processed correctly</li>
+<li>OpenEI data uses period-based columns (<code>HINCP.UNITS</code>) not asterisk-based (<code>HINCP*UNITS</code>)</li>
+<li>Raw data has ~588k rows (one per housing characteristic combination) requiring aggregation</li>
+</ul></li>
+<li>
+<strong>New data processing pipeline</strong>:
+<ul><li>Added <code><a href="../reference/aggregate_cohort_data.html">aggregate_cohort_data()</a></code> function to aggregate raw data by census tract × income bracket</li>
+<li>Updated detection logic to recognize both <code>.UNITS</code> and <code>*UNITS</code> column formats</li>
+<li>Enhanced <code><a href="../reference/standardize_cohort_columns.html">standardize_cohort_columns()</a></code> to handle both <code>FPL150</code> (2022) and <code>FPL15</code> (2018)</li>
+<li>Reduces 588k rows → ~3.6k cohort records for NC</li>
+</ul></li>
+<li>
+<strong>Result</strong>: Fresh installations now work perfectly - download from OpenEI → aggregate → standardize → ready!</li>
+</ul></div>
+<div class="section level4">
+<h4 id="orange-county-sample-data-0-3-0">Orange County Sample Data<a class="anchor" aria-label="anchor" href="#orange-county-sample-data-0-3-0"></a></h4>
+<ul><li>
+<strong>NEW</strong>: Bundled sample data for instant demos and testing (94 KB)
+<ul><li>
+<code>data(orange_county_sample)</code> - No download required!</li>
+<li>Includes 4 datasets: <code>fpl_2018</code>, <code>fpl_2022</code>, <code>ami_2018</code>, <code>ami_2022</code>
+</li>
+<li>749 records across 42 census tracts (Orange County, NC)</li>
+<li>Perfect for vignettes, examples, and quick analysis</li>
+<li>Shows real data: 16.3% energy burden for lowest income vs 1.0% for highest</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="package-infrastructure-0-3-0">Package Infrastructure<a class="anchor" aria-label="anchor" href="#package-infrastructure-0-3-0"></a></h4>
+<ul><li>
+<strong>Renamed all internal references</strong>: <code>emrgi</code> → <code>emburden</code> for consistency
+<ul><li>
+<code>find_emrgi_db()</code> → <code><a href="../reference/find_emburden_db.html">find_emburden_db()</a></code>
+</li>
+<li>Database filename: <code>emrgi_db.sqlite</code> → <code>emburden_db.sqlite</code>
+</li>
+</ul></li>
+<li>
+<strong>Release automation</strong>:
+<ul><li>Added <code>.dev/RELEASE-PROCESS.md</code> - Comprehensive release workflow guide</li>
+<li>Added <code>.dev/create-release-tag.R</code> - Automated release tagging script</li>
+</ul></li>
+</ul></div>
+</div>
+<div class="section level3">
+<h3 id="documentation-0-3-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-3-0"></a></h3>
+<ul><li>Updated README with Orange County sample data section</li>
+<li>Added comprehensive documentation for <code>orange_county_sample</code>
+</li>
+<li>All examples now work out of the box with bundled sample data</li>
+</ul></div>
+<div class="section level3">
+<h3 id="testing-0-3-0">Testing<a class="anchor" aria-label="anchor" href="#testing-0-3-0"></a></h3>
+<ul><li>All 494 tests pass</li>
+<li>Verified OpenEI download and processing pipeline with real data</li>
+<li>Tested sample data access and analysis</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="emburden-020">emburden 0.2.0<a class="anchor" aria-label="anchor" href="#emburden-020"></a></h2>
 <div class="section level3">

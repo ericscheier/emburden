@@ -53,3 +53,12 @@ Format numbers for publication-ready tables
   : Format Dollar Amounts in Billions
 - [`colorize()`](https://ericscheier.github.io/emburden/reference/colorize.md)
   : Colorize Text for Knitted Documents
+
+## Sample Data
+
+Bundled datasets for examples and testing
+
+- [`orange_county_sample`](https://ericscheier.github.io/emburden/reference/orange_county_sample.md)
+  : Orange County NC Energy Burden Sample Data
+- [`nc_sample`](https://ericscheier.github.io/emburden/reference/nc_sample.md)
+  : North Carolina Complete Energy Burden Sample Data

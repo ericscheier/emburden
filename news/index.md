@@ -1,5 +1,67 @@
 # Changelog
 
+## emburden 0.3.0
+
+### Major Improvements
+
+#### OpenEI Data Pipeline Fix (Critical)
+
+- **Fixed critical bug** where MVP demo
+  `compare_energy_burden('fpl', 'NC', 'income_bracket')` failed on fresh
+  installs
+  - Root cause: Raw OpenEI 2022 FPL data wasn’t being processed
+    correctly
+  - OpenEI data uses period-based columns (`HINCP.UNITS`) not
+    asterisk-based (`HINCP*UNITS`)
+  - Raw data has ~588k rows (one per housing characteristic combination)
+    requiring aggregation
+- **New data processing pipeline**:
+  - Added
+    [`aggregate_cohort_data()`](https://ericscheier.github.io/emburden/reference/aggregate_cohort_data.md)
+    function to aggregate raw data by census tract × income bracket
+  - Updated detection logic to recognize both `.UNITS` and `*UNITS`
+    column formats
+  - Enhanced
+    [`standardize_cohort_columns()`](https://ericscheier.github.io/emburden/reference/standardize_cohort_columns.md)
+    to handle both `FPL150` (2022) and `FPL15` (2018)
+  - Reduces 588k rows → ~3.6k cohort records for NC
+- **Result**: Fresh installations now work perfectly - download from
+  OpenEI → aggregate → standardize → ready!
+
+#### Orange County Sample Data
+
+- **NEW**: Bundled sample data for instant demos and testing (94 KB)
+  - `data(orange_county_sample)` - No download required!
+  - Includes 4 datasets: `fpl_2018`, `fpl_2022`, `ami_2018`, `ami_2022`
+  - 749 records across 42 census tracts (Orange County, NC)
+  - Perfect for vignettes, examples, and quick analysis
+  - Shows real data: 16.3% energy burden for lowest income vs 1.0% for
+    highest
+
+#### Package Infrastructure
+
+- **Renamed all internal references**: `emrgi` → `emburden` for
+  consistency
+  - `find_emrgi_db()` →
+    [`find_emburden_db()`](https://ericscheier.github.io/emburden/reference/find_emburden_db.md)
+  - Database filename: `emrgi_db.sqlite` → `emburden_db.sqlite`
+- **Release automation**:
+  - Added `.dev/RELEASE-PROCESS.md` - Comprehensive release workflow
+    guide
+  - Added `.dev/create-release-tag.R` - Automated release tagging script
+
+### Documentation
+
+- Updated README with Orange County sample data section
+- Added comprehensive documentation for `orange_county_sample`
+- All examples now work out of the box with bundled sample data
+
+### Testing
+
+- All 494 tests pass
+- Verified OpenEI download and processing pipeline with real data
+- Tested sample data access and analysis
+
 ## emburden 0.2.0
 
 ### New Features

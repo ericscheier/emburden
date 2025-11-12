@@ -132,6 +132,43 @@ comparison$neb_2022  # 2022 energy burden
 comparison$neb_change_pp  # Change in percentage points
 ```
 
+## Sample Data (No Download Required!)
+
+**NEW in v0.3.0**: The package includes Orange County, NC sample data
+for instant demos and testing.
+
+``` r
+# Load sample data (instant - no download!)
+data(orange_county_sample)
+
+# Available datasets
+names(orange_county_sample)
+# [1] "fpl_2018" "fpl_2022" "ami_2018" "ami_2022"
+
+# Quick analysis
+library(dplyr)
+orange_county_sample$fpl_2022 %>%
+  group_by(income_bracket) %>%
+  summarise(
+    households = sum(households),
+    energy_burden = sum(total_electricity_spend + total_gas_spend + total_other_spend) /
+                    sum(total_income)
+  )
+# Shows 16.3% energy burden for lowest income vs 1.0% for highest income
+
+# Use in examples and vignettes
+comparison <- compare_energy_burden(
+  dataset = "fpl",
+  states = "NC",  # Will use sample data if full NC data not available
+  group_by = "income_bracket"
+)
+```
+
+**Sample data coverage**: - Orange County, NC (Chapel Hill, Carrboro,
+Hillsborough) - 42 census tracts (2022 vintage) - Both FPL and AMI
+cohorts - Both 2018 and 2022 vintages - Only 94 KB - perfect for testing
+and demos!
+
 ## Core Functions
 
 ### Energy Metrics
@@ -526,6 +563,15 @@ Format numbers for publication-ready tables
   : Format Dollar Amounts in Billions
 - [`colorize()`](https://ericscheier.github.io/emburden/reference/colorize.md)
   : Colorize Text for Knitted Documents
+
+## Sample Data
+
+Bundled datasets for examples and testing
+
+- [`orange_county_sample`](https://ericscheier.github.io/emburden/reference/orange_county_sample.md)
+  : Orange County NC Energy Burden Sample Data
+- [`nc_sample`](https://ericscheier.github.io/emburden/reference/nc_sample.md)
+  : North Carolina Complete Energy Burden Sample Data
 
 # Articles
 

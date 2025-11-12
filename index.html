@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -174,6 +174,37 @@
 <span><span class="va">comparison</span><span class="op">$</span><span class="va">neb_change_pp</span>  <span class="co"># Change in percentage points</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="sample-data-no-download-required">Sample Data (No Download Required!)<a class="anchor" aria-label="anchor" href="#sample-data-no-download-required"></a>
+</h2>
+<p><strong>NEW in v0.3.0</strong>: The package includes Orange County, NC sample data for instant demos and testing.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Load sample data (instant - no download!)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">orange_county_sample</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Available datasets</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">orange_county_sample</span><span class="op">)</span></span>
+<span><span class="co"># [1] "fpl_2018" "fpl_2022" "ami_2018" "ami_2022"</span></span>
+<span></span>
+<span><span class="co"># Quick analysis</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="va">orange_county_sample</span><span class="op">$</span><span class="va">fpl_2022</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">income_bracket</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    households <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">households</span><span class="op">)</span>,</span>
+<span>    energy_burden <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">total_electricity_spend</span> <span class="op">+</span> <span class="va">total_gas_spend</span> <span class="op">+</span> <span class="va">total_other_spend</span><span class="op">)</span> <span class="op">/</span></span>
+<span>                    <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">total_income</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co"># Shows 16.3% energy burden for lowest income vs 1.0% for highest income</span></span>
+<span></span>
+<span><span class="co"># Use in examples and vignettes</span></span>
+<span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compare_energy_burden.html">compare_energy_burden</a></span><span class="op">(</span></span>
+<span>  dataset <span class="op">=</span> <span class="st">"fpl"</span>,</span>
+<span>  states <span class="op">=</span> <span class="st">"NC"</span>,  <span class="co"># Will use sample data if full NC data not available</span></span>
+<span>  group_by <span class="op">=</span> <span class="st">"income_bracket"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><strong>Sample data coverage</strong>: - Orange County, NC (Chapel Hill, Carrboro, Hillsborough) - 42 census tracts (2022 vintage) - Both FPL and AMI cohorts - Both 2018 and 2022 vintages - Only 94 KB - perfect for testing and demos!</p>
+</div>
+<div class="section level2">
 <h2 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
 </h2>
 <div class="section level3">
@@ -250,7 +281,7 @@
 <strong><code>all_utilities_energy_burden.R</code></strong>: National-level analysis</li>
 </ul>
 <p>Run from project root:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load package for development</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -269,7 +300,7 @@
 <p>The package automatically downloads LEAD Tool data from OpenEI on first use and caches it locally for fast subsequent access. No manual data setup required!</p>
 <p><strong>NEW in v0.3.0</strong>: Support for both 2018 and 2022 LEAD Tool data vintages enables temporal analysis.</p>
 <p><strong>Loading data</strong> (automatic database/CSV/OpenEI download fallback):</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ericscheier/emburden" class="external-link">emburden</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check which data source is available</span></span>
@@ -328,17 +359,17 @@
 <p>If you use this package or methodology in your research, please cite:</p>
 <p><strong>Scheier, E., &amp; Kittner, N. (2022). A measurement strategy to address disparities across household energy burdens. <em>Nature Communications</em>, 13, 1717. <a href="https://doi.org/10.1038/s41467-021-27673-y" class="external-link uri">https://doi.org/10.1038/s41467-021-27673-y</a></strong></p>
 <p>BibTeX:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">scheier2022measurement</span>,</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="dt">title</span>={A measurement strategy to address disparities across household energy burdens},</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="dt">author</span>={Scheier, Eric and Kittner, Noah},</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="dt">journal</span>={Nature Communications},</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="dt">volume</span>={13},</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="dt">number</span>={1},</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="dt">pages</span>={1717},</span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="dt">year</span>={2022},</span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="dt">publisher</span>={Nature Publishing Group},</span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="dt">doi</span>={10.1038/s41467-021-27673-y}</span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">scheier2022measurement</span>,</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="dt">title</span>={A measurement strategy to address disparities across household energy burdens},</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="dt">author</span>={Scheier, Eric and Kittner, Noah},</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="dt">journal</span>={Nature Communications},</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="dt">volume</span>={13},</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="dt">number</span>={1},</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="dt">pages</span>={1717},</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="dt">year</span>={2022},</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="dt">publisher</span>={Nature Publishing Group},</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="dt">doi</span>={10.1038/s41467-021-27673-y}</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -365,7 +396,7 @@
 <div class="section level2">
 <h2 id="development">Development<a class="anchor" aria-label="anchor" href="#development"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load package during development</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -394,7 +425,7 @@
 <div class="section level3">
 <h3 id="installation-1">Installation<a class="anchor" aria-label="anchor" href="#installation-1"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install database packages</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DBI"</span>, <span class="st">"RSQLite"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -405,7 +436,7 @@
 <h3 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h3>
 <p><strong>Energy Burden Data</strong> (automatic database/CSV/download fallback):</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ericscheier/emburden" class="external-link">emburden</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Load census tract data (tries database → CSV → automatic download)</span></span>
@@ -426,7 +457,7 @@
 <span>  income_brackets <span class="op">=</span> <span class="st">"0-30% AMI"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><strong>Utility Rate Data</strong> (requires database connection):</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Connect to database (if available)</span></span>
 <span><span class="co"># Database integration requires separate setup - see Database Integration section</span></span>
 <span><span class="co"># conn &lt;- DBI::dbConnect(RSQLite::SQLite(), "/path/to/database.sqlite")</span></span>
@@ -447,10 +478,10 @@
 <h3 id="example-analyses">Example Analyses<a class="anchor" aria-label="anchor" href="#example-analyses"></a>
 </h3>
 <p>See the vignette for complete examples:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"integrating-utility-data"</span>, package <span class="op">=</span> <span class="st">"emburden"</span><span class="op">)</span></span></code></pre></div>
 <p>And the example script:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="st">"analysis/scripts/utility_rate_comparison.R"</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Benefits:</strong> - <strong>Faster data access</strong> - Database queries 10-50x faster than CSV parsing - <strong>Integrated analysis</strong> - Join burden data with utility rates and emissions in single query - <strong>Flexible filtering</strong> - Query only needed states/income brackets instead of loading full CSVs - <strong>Environmental justice</strong> - Link high-burden areas with high-emissions grid regions - <strong>Policy modeling</strong> - Scenario analysis with utility rate structures and demand projections</p>
 </div>
