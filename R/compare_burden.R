@@ -12,6 +12,8 @@ utils::globalVariables(c(
 #'
 #' @param dataset Character, either "ami" or "fpl" for cohort data type
 #' @param states Character vector of state abbreviations to filter by (optional)
+#' @param counties Character vector of county names or FIPS codes to filter by (optional).
+#'   Requires `states` to be specified.
 #' @param group_by Character, grouping variable: "income_bracket" (default),
 #'   "state", or "none" for overall comparison
 #' @param vintage_1 Character, first vintage year: "2018" or "2022" (default "2018")
@@ -39,9 +41,14 @@ utils::globalVariables(c(
 #' # Custom vintage comparison
 #' compare_energy_burden(dataset = "ami", states = "CA",
 #'                      vintage_1 = "2018", vintage_2 = "2022")
+#'
+#' # Compare specific counties
+#' compare_energy_burden(dataset = "fpl", states = "NC",
+#'                      counties = c("Orange", "Durham", "Wake"))
 #' }
 compare_energy_burden <- function(dataset = c("ami", "fpl"),
                                   states = NULL,
+                                  counties = NULL,
                                   group_by = c("income_bracket", "state", "none"),
                                   vintage_1 = "2018",
                                   vintage_2 = "2022",
@@ -56,6 +63,7 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
   data_1 <- load_cohort_data(
     dataset = dataset,
     states = states,
+    counties = counties,
     vintage = vintage_1,
     verbose = FALSE
   )
@@ -64,6 +72,7 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
   data_2 <- load_cohort_data(
     dataset = dataset,
     states = states,
+    counties = counties,
     vintage = vintage_2,
     verbose = FALSE
   )

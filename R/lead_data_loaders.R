@@ -12,6 +12,8 @@ utils::globalVariables(c("geoid", "income_bracket"))
 #' @param dataset Character, either "ami" (Area Median Income) or "fpl"
 #'   (Federal Poverty Line)
 #' @param states Character vector of state abbreviations to filter by (optional)
+#' @param counties Character vector of county names or FIPS codes to filter by (optional).
+#'   County names are matched case-insensitively. Requires `states` to be specified.
 #' @param vintage Character, data vintage: "2018" or "2022" (default "2022")
 #' @param income_brackets Character vector of income brackets to filter by (optional)
 #' @param verbose Logical, print status messages (default TRUE)
@@ -45,9 +47,24 @@ utils::globalVariables(c("geoid", "income_bracket"))
 #'   states = "NC",
 #'   income_brackets = c("0-30% AMI", "30-50% AMI")
 #' )
+#'
+#' # Filter to specific counties
+#' triangle <- load_cohort_data(
+#'   dataset = "fpl",
+#'   states = "NC",
+#'   counties = c("Orange", "Durham", "Wake")
+#' )
+#'
+#' # Or use county FIPS codes
+#' orange <- load_cohort_data(
+#'   dataset = "fpl",
+#'   states = "NC",
+#'   counties = "37135"
+#' )
 #' }
 load_cohort_data <- function(dataset = c("ami", "fpl"),
                               states = NULL,
+                              counties = NULL,
                               vintage = "2022",
                               income_brackets = NULL,
                               verbose = TRUE) {
@@ -114,6 +131,28 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
 
     if (verbose) {
       message("Filtered to state(s): ", paste(states, collapse = ", "))
+    }
+  }
+
+  # Filter by counties if requested
+  if (!is.null(counties)) {
+    if (is.null(states)) {
+      warning("County filtering requires 'states' parameter. Ignoring 'counties' parameter.")
+    } else {
+      # Extract county FIPS from geoid (characters 3-5)
+      # Support both county names and FIPS codes
+      county_fips <- get_county_fips(counties, states)
+
+      if (length(county_fips) > 0) {
+        data <- data |>
+          dplyr::filter(substr(as.character(geoid), 3, 5) %in% county_fips)
+
+        if (verbose) {
+          message("Filtered to ", length(county_fips), " county/counties")
+        }
+      } else {
+        warning("No matching counties found for the specified names/FIPS codes")
+      }
     }
   }
 
@@ -229,7 +268,7 @@ load_census_tract_data <- function(states = NULL, verbose = TRUE) {
 check_data_sources <- function(verbose = TRUE) {
 
   # Check database
-  db_path <- find_emrgi_db()
+  db_path <- find_emburden_db()
   db_available <- !is.null(db_path) && file.exists(db_path)
 
   if (db_available && requireNamespace("DBI", quietly = TRUE) &&
@@ -321,7 +360,7 @@ try_load_from_database <- function(dataset, vintage, verbose = FALSE) {
   }
 
   # Find database
-  db_path <- find_emrgi_db()
+  db_path <- find_emburden_db()
   if (is.null(db_path) || !file.exists(db_path)) {
     if (verbose) {
       message("  Database not found, trying CSV...")
@@ -662,9 +701,13 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
 
     # Check if data needs processing (has raw microdata format)
     # Raw microdata has: FIP, HINCP, ELEP, GASP (individual records)
-    # Aggregated cohort has: FIP, HINCP*UNITS, ELEP*UNITS (pre-aggregated)
-    is_raw_microdata <- "HINCP" %in% names(raw_data) && !"HINCP*UNITS" %in% names(raw_data)
-    is_aggregated_cohort <- "FIP" %in% names(raw_data) && any(grepl("\\*UNITS$", names(raw_data)))
+    # Aggregated cohort has: FIP, HINCP*UNITS or HINCP.UNITS (pre-aggregated)
+    # Note: 2022 data uses period (.) while some older formats use asterisk (*)
+    is_raw_microdata <- "HINCP" %in% names(raw_data) &&
+      !"HINCP*UNITS" %in% names(raw_data) &&
+      !"HINCP.UNITS" %in% names(raw_data)
+    is_aggregated_cohort <- "FIP" %in% names(raw_data) &&
+      (any(grepl("\\*UNITS$", names(raw_data))) || any(grepl("\\.UNITS$", names(raw_data))))
 
     if (is_raw_microdata) {
       if (verbose) {
@@ -681,11 +724,15 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
 
     } else if (is_aggregated_cohort) {
       if (verbose) {
-        message("  Data is aggregated cohort format, standardizing columns...")
+        message("  Data is aggregated cohort format, aggregating and standardizing...")
       }
 
-      # Data is already aggregated, just standardize column names
-      data <- standardize_cohort_columns(raw_data, dataset, vintage)
+      # First, aggregate data by census tract and income bracket
+      # (2022 data has multiple rows per tract/bracket for different housing characteristics)
+      data <- aggregate_cohort_data(raw_data, dataset, vintage, verbose = verbose)
+
+      # Then standardize column names
+      data <- standardize_cohort_columns(data, dataset, vintage)
 
       # Ensure geoid is character and properly padded
       if ("geoid" %in% names(data)) {
@@ -762,7 +809,7 @@ try_load_tracts_from_database <- function(verbose = FALSE) {
   }
 
   # Find database
-  db_path <- find_emrgi_db()
+  db_path <- find_emburden_db()
   if (is.null(db_path) || !file.exists(db_path)) {
     if (verbose) {
       message("  Database not found, trying CSV...")
@@ -915,10 +962,10 @@ try_import_to_database <- function(data, dataset, vintage, verbose = FALSE) {
   }
 
   # Find or create database
-  db_path <- find_emrgi_db()
+  db_path <- find_emburden_db()
   if (is.null(db_path)) {
     # Create in default location
-    db_path <- file.path("data", "emrgi_db.sqlite")
+    db_path <- file.path("data", "emburden_db.sqlite")
     dir.create("data", showWarnings = FALSE, recursive = TRUE)
   }
 
@@ -954,9 +1001,9 @@ try_import_tracts_to_database <- function(data, verbose = FALSE) {
     return(FALSE)
   }
 
-  db_path <- find_emrgi_db()
+  db_path <- find_emburden_db()
   if (is.null(db_path)) {
-    db_path <- file.path("data", "emrgi_db.sqlite")
+    db_path <- file.path("data", "emburden_db.sqlite")
     dir.create("data", showWarnings = FALSE, recursive = TRUE)
   }
 
@@ -981,9 +1028,9 @@ try_import_tracts_to_database <- function(data, verbose = FALSE) {
 }
 
 
-#' Find emrgi_db.sqlite database
+#' Find emburden_db.sqlite database
 #' @keywords internal
-find_emrgi_db <- function() {
+find_emburden_db <- function() {
 
   # Check environment variable first
   env_path <- Sys.getenv("EMBURDEN_DB_PATH")
@@ -992,7 +1039,7 @@ find_emrgi_db <- function() {
   }
 
   # Check local data directory
-  local_path <- file.path("data", "emrgi_db.sqlite")
+  local_path <- file.path("data", "emburden_db.sqlite")
   if (file.exists(local_path)) {
     return(local_path)
   }
@@ -1016,6 +1063,71 @@ get_cache_dir <- function() {
 }
 
 
+#' Aggregate cohort data by census tract and income bracket
+#' @keywords internal
+aggregate_cohort_data <- function(data, dataset, vintage, verbose = FALSE) {
+
+  # Determine income bracket column name
+  # FPL data uses FPL150, AMI data may use different column
+  income_col <- if ("FPL150" %in% names(data)) {
+    "FPL150"
+  } else if ("AMI" %in% names(data)) {
+    "AMI"
+  } else {
+    # Try to find any column that looks like an income bracket
+    grep("fpl|ami|income.*bracket", names(data), ignore.case = TRUE, value = TRUE)[1]
+  }
+
+  if (is.null(income_col) || !income_col %in% names(data)) {
+    if (verbose) {
+      message("  Warning: Could not identify income bracket column, skipping aggregation")
+    }
+    return(data)
+  }
+
+  # Identify the aggregation columns (columns ending with .UNITS or *UNITS)
+  units_cols <- grep("\\.(UNITS|HINCP|ELEP|GASP|FULP)$|\\.UNITS$|\\*UNITS$",
+                     names(data), value = TRUE)
+
+  if (length(units_cols) == 0) {
+    if (verbose) {
+      message("  Warning: No aggregation columns found, skipping aggregation")
+    }
+    return(data)
+  }
+
+  # Core aggregation columns
+  agg_cols <- c("UNITS", "HINCP.UNITS", "ELEP.UNITS", "GASP.UNITS", "FULP.UNITS",
+                "HINCP*UNITS", "ELEP*UNITS", "GASP*UNITS", "FULP*UNITS")
+  agg_cols <- intersect(agg_cols, names(data))
+
+  if (length(agg_cols) == 0) {
+    if (verbose) {
+      message("  Warning: No standard aggregation columns found, skipping aggregation")
+    }
+    return(data)
+  }
+
+  if (verbose) {
+    message("  Aggregating ", nrow(data), " rows by FIP and ", income_col, "...")
+  }
+
+  # Aggregate by summing across housing characteristics
+  aggregated <- data |>
+    dplyr::group_by(FIP, !!rlang::sym(income_col)) |>
+    dplyr::summarise(
+      dplyr::across(dplyr::all_of(agg_cols), ~sum(.x, na.rm = TRUE)),
+      .groups = "drop"
+    )
+
+  if (verbose) {
+    message("  Aggregated to ", nrow(aggregated), " rows")
+  }
+
+  return(aggregated)
+}
+
+
 #' Standardize cohort column names across vintages
 #' @keywords internal
 standardize_cohort_columns <- function(data, dataset, vintage) {
@@ -1032,33 +1144,57 @@ standardize_cohort_columns <- function(data, dataset, vintage) {
   }
 
   # Handle aggregated cohort format column names
-  # These columns come from 2022 FPL ZIP files (aggregated format)
+  # These columns come from ZIP files (aggregated format)
+  # Note: 2022 uses period (HINCP.UNITS), older formats use asterisk (HINCP*UNITS)
+
+  # Income bracket column (check multiple formats)
+  # 2022 FPL uses FPL150, 2018 FPL uses FPL15
   if ("FPL150" %in% names(data) && !"income_bracket" %in% names(data)) {
     data <- data |>
       dplyr::rename(income_bracket = FPL150)
+  } else if ("FPL15" %in% names(data) && !"income_bracket" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(income_bracket = FPL15)
   }
 
+  # Households column
   if ("UNITS" %in% names(data) && !"households" %in% names(data)) {
     data <- data |>
       dplyr::rename(households = UNITS)
   }
 
-  if ("HINCP*UNITS" %in% names(data) && !"total_income" %in% names(data)) {
+  # Total income column (check both period and asterisk formats)
+  if ("HINCP.UNITS" %in% names(data) && !"total_income" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(total_income = HINCP.UNITS)
+  } else if ("HINCP*UNITS" %in% names(data) && !"total_income" %in% names(data)) {
     data <- data |>
       dplyr::rename(total_income = `HINCP*UNITS`)
   }
 
-  if ("ELEP*UNITS" %in% names(data) && !"total_electricity_spend" %in% names(data)) {
+  # Total electricity spend column (check both formats)
+  if ("ELEP.UNITS" %in% names(data) && !"total_electricity_spend" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(total_electricity_spend = ELEP.UNITS)
+  } else if ("ELEP*UNITS" %in% names(data) && !"total_electricity_spend" %in% names(data)) {
     data <- data |>
       dplyr::rename(total_electricity_spend = `ELEP*UNITS`)
   }
 
-  if ("GASP*UNITS" %in% names(data) && !"total_gas_spend" %in% names(data)) {
+  # Total gas spend column (check both formats)
+  if ("GASP.UNITS" %in% names(data) && !"total_gas_spend" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(total_gas_spend = GASP.UNITS)
+  } else if ("GASP*UNITS" %in% names(data) && !"total_gas_spend" %in% names(data)) {
     data <- data |>
       dplyr::rename(total_gas_spend = `GASP*UNITS`)
   }
 
-  if ("FULP*UNITS" %in% names(data) && !"total_other_spend" %in% names(data)) {
+  # Total other fuel spend column (check both formats)
+  if ("FULP.UNITS" %in% names(data) && !"total_other_spend" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(total_other_spend = FULP.UNITS)
+  } else if ("FULP*UNITS" %in% names(data) && !"total_other_spend" %in% names(data)) {
     data <- data |>
       dplyr::rename(total_other_spend = `FULP*UNITS`)
   }
@@ -1148,4 +1284,64 @@ get_state_fips <- function(state_abbrs) {
   }
 
   return(unname(fips))
+}
+
+#' Convert county identifiers to FIPS codes
+#'
+#' Supports both 3-digit county FIPS codes and 5-digit state+county FIPS codes.
+#' County names can be matched from the orange_county_sample or nc_sample datasets.
+#'
+#' @param counties Character vector of county identifiers (FIPS codes or names)
+#' @param states Character vector of state abbreviations for context
+#'
+#' @return Character vector of 3-digit county FIPS codes
+#' @keywords internal
+get_county_fips <- function(counties, states) {
+
+  # NC county lookup table (for common counties)
+  nc_county_table <- c(
+    Orange = "135", Durham = "063", Wake = "183",
+    Mecklenburg = "119", Guilford = "081", Forsyth = "067",
+    Cumberland = "051", Buncombe = "021", Gaston = "071",
+    Union = "179", Iredell = "097", Cabarrus = "025",
+    Rowan = "159", Catawba = "035", Alamance = "001",
+    Randolph = "151", Johnston = "101", Davidson = "057",
+    Onslow = "133"
+  )
+
+  # Process each county identifier
+  fips_codes <- character(length(counties))
+
+  for (i in seq_along(counties)) {
+    county <- counties[i]
+
+    # Check if already a 3-digit FIPS code
+    if (grepl("^\\d{3}$", county)) {
+      fips_codes[i] <- county
+    }
+    # Check if 5-digit state+county FIPS (extract county part)
+    else if (grepl("^\\d{5}$", county)) {
+      fips_codes[i] <- substr(county, 3, 5)
+    }
+    # Try county name lookup (NC only for now)
+    else if ("NC" %in% toupper(states)) {
+      # Case-insensitive lookup
+      county_title <- tools::toTitleCase(tolower(county))
+      if (county_title %in% names(nc_county_table)) {
+        fips_codes[i] <- nc_county_table[county_title]
+      } else {
+        warning("County name '", county, "' not found in lookup table. Please use 3-digit FIPS code.")
+        fips_codes[i] <- NA_character_
+      }
+    }
+    else {
+      warning("County name lookups currently only supported for NC. Please use 3-digit FIPS code for '", county, "'.")
+      fips_codes[i] <- NA_character_
+    }
+  }
+
+  # Remove NAs
+  fips_codes <- fips_codes[!is.na(fips_codes)]
+
+  return(fips_codes)
 }

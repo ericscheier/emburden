@@ -10,5 +10,10 @@ utils::globalVariables(c(
   "group_households",
   "group_household_weights",
   "household_count",
-  "households_below_cutoff"
+  "households_below_cutoff",
+  "FPL15",
+  "HINCP.UNITS",
+  "ELEP.UNITS",
+  "GASP.UNITS",
+  "FULP.UNITS"
 ))
