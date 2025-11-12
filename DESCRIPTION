@@ -28,13 +28,17 @@ Imports:
     tibble,
     tidyr
 Suggests:
+    covr,
     DBI,
-    RSQLite,
+    httptest2,
+    kableExtra,
     knitr,
+    mockery,
     rmarkdown,
+    RSQLite,
     rticles,
     testthat (>= 3.0.0),
-    kableExtra
+    withr
 VignetteBuilder: knitr
 LazyData: true
 URL: https://github.com/ericscheier/emburden, https://ericscheier.github.io/emburden/

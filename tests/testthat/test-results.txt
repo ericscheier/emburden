@@ -1,0 +1,179 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | compare-energy-burden                                          
+⠇ |         19 | compare-energy-burden                                          
+✔ |         51 | compare-energy-burden
+
+⠏ |          0 | data-loaders                                                   
+✖ | 3    9   8 | data-loaders
+────────────────────────────────────────────────────────────────────────────────
+Failure ('test-data-loaders.R:36:3'): load_census_tract_data validates inputs
+`load_census_tract_data(dataset = "invalid", verbose = FALSE)` threw an error with unexpected message.
+Expected match: "should be one of"
+Actual message: "unused argument (dataset = \"invalid\")"
+Backtrace:
+    ▆
+ 1. └─testthat::expect_error(...) at test-data-loaders.R:36:3
+ 2.   └─testthat:::quasi_capture(...)
+ 3.     ├─testthat (local) .capture(...)
+ 4.     │ └─base::withCallingHandlers(...)
+ 5.     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+
+Failure ('test-data-loaders.R:41:3'): load_census_tract_data validates inputs
+`load_census_tract_data(dataset = "ami", vintage = "2015", verbose = FALSE)` threw an error with unexpected message.
+Expected match: "vintage must be '2018' or '2022'"
+Actual message: "unused arguments (dataset = \"ami\", vintage = \"2015\")"
+Backtrace:
+    ▆
+ 1. └─testthat::expect_error(...) at test-data-loaders.R:41:3
+ 2.   └─testthat:::quasi_capture(...)
+ 3.     ├─testthat (local) .capture(...)
+ 4.     │ └─base::withCallingHandlers(...)
+ 5.     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+
+Error ('test-data-loaders.R:48:3'): check_data_sources returns proper structure
+Error in `check_data_sources(dataset = "ami", states = "NC", vintage = "2022")`: unused arguments (dataset = "ami", states = "NC", vintage = "2022")
+────────────────────────────────────────────────────────────────────────────────
+
+⠏ |          0 | energy_ratios                                                  
+✔ |         21 | energy_ratios
+
+⠏ |          0 | energy-metrics                                                 
+✔ |         65 | energy-metrics
+
+⠏ |          0 | file-validation                                                
+⠙ |         52 | file-validation                                                
+✔ |         57 | file-validation
+
+⠏ |          0 | formatting                                                     
+✔ |         31 | formatting
+
+⠏ |          0 | jss-vignette                                                   
+✔ |          2 | jss-vignette
+
+⠏ |          0 | lead_processing                                                
+⠴ |         16 | lead_processing                                                
+⠴ |         36 | lead_processing                                                
+✔ |         40 | lead_processing
+
+⠏ |          0 | metrics                                                        
+⠦ |         27 | metrics                                                        
+✔ |         48 | metrics
+
+⠏ |          0 | neb-equivalence                                                
+⠙ |         22 | neb-equivalence                                                
+⠼ |         35 | neb-equivalence                                                
+⠧ |         38 | neb-equivalence                                                
+⠇ |         39 | neb-equivalence                                                
+✔ |         40 | neb-equivalence [1.2s]
+
+⠏ |          0 | utils                                                          
+⠇ |   2     17 | utils                                                          
+⠧ |   5     33 | utils                                                          
+✔ |   9     56 | utils
+────────────────────────────────────────────────────────────────────────────────
+Warning ('test-utils.R:61:3'): standardize_cohort_columns renames FIP to geoid
+Missing expected columns: income_bracket, total_income, total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(data, "ami", "2022") at test-utils.R:61:3
+
+Warning ('test-utils.R:74:3'): standardize_cohort_columns ensures geoid is character
+Missing expected columns: income_bracket, total_income, total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(data, "ami", "2022") at test-utils.R:74:3
+
+Warning ('test-utils.R:115:3'): standardize_cohort_columns renames dataset-specific income columns
+Missing expected columns: total_income, total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(ami_data, "ami", "2022") at test-utils.R:115:3
+
+Warning ('test-utils.R:127:3'): standardize_cohort_columns renames dataset-specific income columns
+Missing expected columns: total_income, total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(fpl_data, "fpl", "2022") at test-utils.R:127:3
+
+Warning ('test-utils.R:140:3'): standardize_cohort_columns maps 2018 AMI brackets to standard categories
+Missing expected columns: total_income, total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(data, "ami", "2018") at test-utils.R:140:3
+
+Warning ('test-utils.R:157:3'): standardize_cohort_columns preserves 2022 AMI brackets
+Missing expected columns: total_income, total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(data, "ami", "2022") at test-utils.R:157:3
+
+Warning ('test-utils.R:198:3'): standardize_cohort_columns does not overwrite existing total_* columns
+Missing expected columns: total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(data, "ami", "2022") at test-utils.R:198:3
+
+Warning ('test-utils.R:240:3'): standardize_cohort_columns handles empty dataframe
+Missing expected columns: total_income, total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(data, "ami", "2022") at test-utils.R:240:3
+
+Warning ('test-utils.R:255:3'): standardize_cohort_columns preserves non-target columns
+Missing expected columns: total_income, total_electricity_spend
+Backtrace:
+    ▆
+ 1. └─emburden:::standardize_cohort_columns(data, "ami", "2022") at test-utils.R:255:3
+────────────────────────────────────────────────────────────────────────────────
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 2.6 s
+
+── Skipped tests (9) ───────────────────────────────────────────────────────────
+• Aggregate poverty test requires actual FPL data or fixtures (1):
+  'test-data-loaders.R:147:3'
+• Corrupt data test requires withr for temp file manipulation (1):
+  'test-data-loaders.R:120:3'
+• Database fallback test requires database mocking with mockery (1):
+  'test-data-loaders.R:129:3'
+• Download fallback test requires HTTP mocking with httptest2 (1):
+  'test-data-loaders.R:138:3'
+• Income bracket filtering test requires actual data - implement with fixtures
+  (1): 'test-data-loaders.R:112:3'
+• No data directory found (1): 'test-data-loaders.R:77:3'
+• Schema handling test requires comparing 2018 vs 2022 data structures (1):
+  'test-data-loaders.R:155:3'
+• Skip network tests in non-interactive mode (1): 'test-data-loaders.R:20:3'
+• State filtering test requires actual data - implement with fixtures (1):
+  'test-data-loaders.R:101:3'
+
+── Failed tests ────────────────────────────────────────────────────────────────
+Failure ('test-data-loaders.R:36:3'): load_census_tract_data validates inputs
+`load_census_tract_data(dataset = "invalid", verbose = FALSE)` threw an error with unexpected message.
+Expected match: "should be one of"
+Actual message: "unused argument (dataset = \"invalid\")"
+Backtrace:
+    ▆
+ 1. └─testthat::expect_error(...) at test-data-loaders.R:36:3
+ 2.   └─testthat:::quasi_capture(...)
+ 3.     ├─testthat (local) .capture(...)
+ 4.     │ └─base::withCallingHandlers(...)
+ 5.     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+
+Failure ('test-data-loaders.R:41:3'): load_census_tract_data validates inputs
+`load_census_tract_data(dataset = "ami", vintage = "2015", verbose = FALSE)` threw an error with unexpected message.
+Expected match: "vintage must be '2018' or '2022'"
+Actual message: "unused arguments (dataset = \"ami\", vintage = \"2015\")"
+Backtrace:
+    ▆
+ 1. └─testthat::expect_error(...) at test-data-loaders.R:41:3
+ 2.   └─testthat:::quasi_capture(...)
+ 3.     ├─testthat (local) .capture(...)
+ 4.     │ └─base::withCallingHandlers(...)
+ 5.     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+
+Error ('test-data-loaders.R:48:3'): check_data_sources returns proper structure
+Error in `check_data_sources(dataset = "ami", states = "NC", vintage = "2022")`: unused arguments (dataset = "ami", states = "NC", vintage = "2022")
+
+[ FAIL 3 | WARN 9 | SKIP 9 | PASS 419 ]
