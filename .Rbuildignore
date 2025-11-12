@@ -22,7 +22,31 @@
 ^.*\.geojson$
 ^TRACT_ZIP\.csv$
 ^energy_burden_zip.*\.csv$
-^data/
+^data/.*\.csv$
+^data/.*\.xlsx$
+^data/.*\.xls$
+^data/.*\.db$
+^data/.*\.sqlite$
+^data/.*\.gdb$
+^data/.*\.shp$
+^data/.*\.dbf$
+^data/.*\.prj$
+^data/.*\.sbn$
+^data/.*\.sbx$
+^data/.*\.shx$
+^data/.*\.xml$
+^data/.*\.cpg$
+^data/.*\.pdf$
+^data/BIA_National_LAR_shp/
+^data/calenviroscreen40gdb_F_2021\.gdb/
+^data/dsire/
+^data/f8612018/
+^data/f8612022/
+^data/GRF21/
+^data/ICADisplay\.gdb/
+^data/nerc_regions\.gdb/
+^data/PGE_DIDF_Tables_Public/
+^data/PGE_POSTSR2A_3-1-2022\.gdb/
 
 # Analysis scripts and outputs (keep in repo but not package)
 ^analysis/

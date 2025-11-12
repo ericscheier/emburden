@@ -110,8 +110,10 @@ venv.bak/
 *.Rhistory
 *.RData
 
-# Data
-data/
+# Data - ignore CSV files but keep .rda package data
+data/*.csv
+data/*.sqlite
+data/*.db
 *.cpg
 *.dbf
 *.prj

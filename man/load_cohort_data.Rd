@@ -7,6 +7,7 @@
 load_cohort_data(
   dataset = c("ami", "fpl"),
   states = NULL,
+  counties = NULL,
   vintage = "2022",
   income_brackets = NULL,
   verbose = TRUE
@@ -17,6 +18,9 @@ load_cohort_data(
 (Federal Poverty Line)}
 
 \item{states}{Character vector of state abbreviations to filter by (optional)}
+
+\item{counties}{Character vector of county names or FIPS codes to filter by (optional).
+County names are matched case-insensitively. Requires \code{states} to be specified.}
 
 \item{vintage}{Character, data vintage: "2018" or "2022" (default "2022")}
 
@@ -62,6 +66,20 @@ low_income <- load_cohort_data(
   dataset = "ami",
   states = "NC",
   income_brackets = c("0-30\% AMI", "30-50\% AMI")
+)
+
+# Filter to specific counties
+triangle <- load_cohort_data(
+  dataset = "fpl",
+  states = "NC",
+  counties = c("Orange", "Durham", "Wake")
+)
+
+# Or use county FIPS codes
+orange <- load_cohort_data(
+  dataset = "fpl",
+  states = "NC",
+  counties = "37135"
 )
 }
 }

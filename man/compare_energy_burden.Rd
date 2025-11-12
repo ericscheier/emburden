@@ -7,6 +7,7 @@
 compare_energy_burden(
   dataset = c("ami", "fpl"),
   states = NULL,
+  counties = NULL,
   group_by = c("income_bracket", "state", "none"),
   vintage_1 = "2018",
   vintage_2 = "2022",
@@ -17,6 +18,9 @@ compare_energy_burden(
 \item{dataset}{Character, either "ami" or "fpl" for cohort data type}
 
 \item{states}{Character vector of state abbreviations to filter by (optional)}
+
+\item{counties}{Character vector of county names or FIPS codes to filter by (optional).
+Requires \code{states} to be specified.}
 
 \item{group_by}{Character, grouping variable: "income_bracket" (default),
 "state", or "none" for overall comparison}
@@ -53,5 +57,9 @@ compare_energy_burden(dataset = "fpl", states = c("NC", "SC"), group_by = "none"
 # Custom vintage comparison
 compare_energy_burden(dataset = "ami", states = "CA",
                      vintage_1 = "2018", vintage_2 = "2022")
+
+# Compare specific counties
+compare_energy_burden(dataset = "fpl", states = "NC",
+                     counties = c("Orange", "Durham", "Wake"))
 }
 }

@@ -115,7 +115,7 @@ data/
   CensusTractData.csv              # Census tract metadata (2018-based)
   CohortData_AreaMedianIncome.csv  # AMI cohort data (2018-based)
   CohortData_FederalPovertyLine.csv # FPL cohort data (2018-based)
-  emrgi_db.sqlite                  # Optional database (auto-generated)
+  emburden_db.sqlite               # Optional database (auto-generated)
 ```
 
 **Note on CSV files in data/**: These files are from the **2018 LEAD Tool vintage** and were originally published on Zenodo:

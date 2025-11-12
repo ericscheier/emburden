@@ -43,6 +43,12 @@ reference:
       - to_billion_dollar
       - colorize
 
+  - title: "Sample Data"
+    desc: "Bundled datasets for examples and testing"
+    contents:
+      - orange_county_sample
+      - nc_sample
+
 navbar:
   structure:
     left:  [home, reference, articles, news]
