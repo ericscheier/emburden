@@ -549,6 +549,19 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
   temp_file <- file.path(cache_dir, paste0("lead_", vintage, "_", dataset, "_raw.csv"))
   cache_file <- file.path(cache_dir, paste0("lead_", vintage, "_", dataset, ".csv"))
 
+  # Warn user about download size (first-time only)
+  if (is_zip) {
+    message("\nDownloading LEAD data from OpenEI...")
+    message("Note: ZIP files are typically 150-250 MB. This is a one-time download.")
+    message("Data will be cached at: ", cache_dir)
+    message("Subsequent uses will load from cache (much faster).\n")
+  } else {
+    message("\nDownloading LEAD data from OpenEI...")
+    message("Note: CSV files are typically 50-150 MB. This is a one-time download.")
+    message("Data will be cached at: ", cache_dir)
+    message("Subsequent uses will load from cache (much faster).\n")
+  }
+
   # Download with progress
   tryCatch({
     if (is_zip) {
@@ -566,7 +579,17 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
       )
 
       if (httr::http_error(response)) {
-        stop("Download failed with status ", httr::status_code(response))
+        status_code <- httr::status_code(response)
+        stop(
+          "Download failed with HTTP status ", status_code, "\n",
+          if (status_code == 404) {
+            "  File not found at OpenEI. The data may have been moved or is unavailable.\n"
+          } else if (status_code >= 500) {
+            "  OpenEI server error. Try again later.\n"
+          } else {
+            "  Check your internet connection and try again.\n"
+          }
+        )
       }
 
       # Extract specific CSV from ZIP
@@ -614,7 +637,17 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
       )
 
       if (httr::http_error(response)) {
-        stop("Download failed with status ", httr::status_code(response))
+        status_code <- httr::status_code(response)
+        stop(
+          "Download failed with HTTP status ", status_code, "\n",
+          if (status_code == 404) {
+            "  File not found at OpenEI. The data may have been moved or is unavailable.\n"
+          } else if (status_code >= 500) {
+            "  OpenEI server error. Try again later.\n"
+          } else {
+            "  Check your internet connection and try again.\n"
+          }
+        )
       }
     }
 
@@ -694,9 +727,22 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
     return(data)
 
   }, error = function(e) {
-    if (verbose) {
-      message("  Download error: ", e$message)
-    }
+    error_msg <- paste0(
+      "\n", strrep("=", 60), "\n",
+      "ERROR: Failed to download LEAD data\n",
+      strrep("=", 60), "\n\n",
+      "Details: ", e$message, "\n\n",
+      "Possible solutions:\n",
+      "  1. Check your internet connection\n",
+      "  2. Verify OpenEI data availability at https://data.openei.org/\n",
+      "  3. Try again later (OpenEI servers may be temporarily unavailable)\n",
+      "  4. Check if you need to install 'httr' package: install.packages('httr')\n\n",
+      "If the problem persists, please file an issue at:\n",
+      "  https://github.com/ericscheier/emburden/issues\n",
+      strrep("=", 60), "\n"
+    )
+
+    message(error_msg)
     return(NULL)
   })
 }

@@ -1,5 +1,5 @@
 \documentclass[
-]{jss}
+]{article}
 
 %% recommended packages
 \usepackage{orcidlink,thumbpdf,lmodern}
@@ -9,13 +9,9 @@
 \author{
 Eric Scheier\\Independent Researcher
 }
-\title{\pkg{emburden}: Temporal Analysis of Household Energy
-Burden Using Net Energy Return Metrics}
+\title{}
 
 \Plainauthor{Eric Scheier}
-\Plaintitle{emburden: Temporal Analysis of Household Energy
-Burden Using Net Energy Return Metrics}
-\Shorttitle{\pkg{emburden}: Energy Burden Analysis}
 
 
 \Abstract{
@@ -23,8 +19,8 @@ Energy burden---the proportion of household income spent on energy---is
 a critical metric for understanding energy poverty and inequity.
 However, traditional energy burden ratios present analytical challenges
 including difficulties with aggregation and visualization of extreme
-values. The \pkg{emburden} package for \proglang{R} implements
-Net Energy Return (Nh) methodology to address these limitations while
+values. The \pkg{emburden} package for \proglang{R} implements Net
+Energy Return (Nh) methodology to address these limitations while
 enabling temporal analysis of household energy characteristics. This
 paper introduces the package's design and demonstrates its application
 to comparing Low-Income Energy Affordability Data (LEAD) Tool vintages
@@ -38,10 +34,6 @@ fine-grained census tract comparisons, illustrating how policy-relevant
 insights can be extracted at multiple scales.
 }
 
-\Keywords{energy burden, energy poverty, household energy, net energy
-return, temporal analysis, \proglang{R}}
-\Plainkeywords{energy burden, energy poverty, household energy, net
-energy return, temporal analysis, R}
 
 %% publication information
 %% \Volume{50}
@@ -53,8 +45,9 @@ energy return, temporal analysis, R}
 
 \Address{
     Eric Scheier\\
+    Independent Researcher\\
     Durham, North Carolina\\
-  E-mail: \email{eric@scheier.org}\\
+  E-mail: \href{mailto:eric@scheier.org}{\nolinkurl{eric@scheier.org}}\\
   URL: \url{https://github.com/ericscheier}\\~\\
   }
 
@@ -91,15 +84,77 @@ requires harmonic mean aggregation rather than arithmetic means, which
 is not widely understood or consistently applied
 \citep{scheier2022measurement}.
 
-The \pkg{emburden} package for \proglang{R} addresses these
-challenges by implementing the Net Energy Return (Nh) transformation:
+\subsection{Mathematical foundations}\label{mathematical-foundations}
 
-\[N_h = \frac{G - S}{S}\]
+The \pkg{emburden} package for \proglang{R} addresses these challenges
+by implementing Net Energy Return (NER) methodology, adapted from
+macro-energy systems analysis
+\citep{hall2011eroi, brandtcalculating2013, carbajalesdale2014better}.
+Net energy analysis estimates the net energy return of a process as a
+relationship between gross resources extracted and embodied energy
+directed toward extraction:
 
-This transformation, inspired by Net Energy Analysis in energy systems
-research \citep{hall2011eroi, carbajalesdale2014better}, allows for
-proper weighted mean aggregation while preserving the ability to convert
-back to energy burden via \(E_b = 1/(N_h + 1)\).
+\[G = Gross\ Resource\ Extracted\]
+
+\[S = Spending\ on\ Extraction\ Process\]
+
+\[Net\ Energy\ Return\ (NER) = \frac{G - S}{S}\]
+
+For households extracting income from the economy, these ratios become:
+
+\[G_{income} = Gross\ Income\]
+
+\[S_{energy} = Spending\ on\ Energy\]
+
+\[NER_{household} = \frac{G_{income} - S_{energy}}{S_{energy}}\]
+
+This metric represents the net earnings a household receives for every
+dollar of expenditure on secondary energy. For notational simplicity, we
+use \(N_h\) to denote household Net Energy Return throughout this paper,
+where \(N_h = NER_{household}\).
+
+\subsubsection{Comparison with energy
+burden}\label{comparison-with-energy-burden}
+
+Energy burden, the traditional metric in energy poverty analysis, is
+defined as:
+
+\[Energy\ Burden = E_b = \frac{S_{energy}}{G_{income}}\]
+
+While energy burden is intuitive as a percentage, it has several
+mathematical limitations. The Net Energy Return transformation addresses
+these by preventing double-counting of energy expenditures (income in
+the numerator already includes the portion spent on energy) and enabling
+proper weighted mean aggregation:
+
+\[\overline{N_h} = \frac{\sum (N_h \times households)}{\sum households}\]
+
+In contrast, energy burden requires harmonic mean aggregation:
+
+\[\overline{E_b} = \frac{1}{\overline{1/E_b}}\]
+
+The two metrics are mathematically related through the transformation
+\(E_b = 1/(N_h + 1)\), allowing seamless conversion between
+representations.
+
+\subsubsection{Energy poverty threshold}\label{energy-poverty-threshold}
+
+Energy poverty is commonly defined as spending greater than 10\% of
+household income on energy \citep{bednarrecognition2020}:
+
+\[E_b^{*} = \frac{S_{energy}}{G_{income}} > 10\%\]
+
+Translated to Net Energy Return, the energy poverty threshold becomes:
+
+\[N_h^{*} < 9: Household\ at\ Energy\ Poverty\ Line\]
+
+This means a household earning less than \$9 of income for every dollar
+spent on secondary energy is considered to be in energy poverty by the
+traditional energy burden accounting method. A Net Energy Return of 9 or
+lower is equivalent to an energy burden of 10\% or higher. While this
+threshold is somewhat arbitrary and may not be suitable in all
+situations, it provides a useful benchmark for comparing results to the
+energy poverty literature.
 
 \subsection{The LEAD Tool and temporal
 analysis}\label{the-lead-tool-and-temporal-analysis}
@@ -129,8 +184,7 @@ definitions.
 
 \subsection{Package design philosophy}\label{package-design-philosophy}
 
-The \pkg{emburden} package is designed around several key
-principles:
+The \pkg{emburden} package is designed around several key principles:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -147,465 +201,756 @@ principles:
 \item
   \textbf{Geographic flexibility}: Enables analysis from national level
   down to individual census tracts
-\item
-  \textbf{Reproducibility}: All data can be downloaded from public
-  sources and processing is fully documented
 \end{enumerate}
-
-The remainder of this paper is organized as follows. Section 2 describes
-the Net Energy Return methodology and LEAD Tool data structure. Section
-3 details the package implementation. Sections 4-6 demonstrate package
-capabilities through progressively complex examples. Section 7 discusses
-limitations and future extensions.
 
 \section{Methodology}\label{methodology}
 
-\subsection{Net Energy Return
-formulas}\label{net-energy-return-formulas}
+\subsection{Data sources}\label{data-sources}
 
-The Net Energy Return (Nh) of a household with gross income \(G\) and
-energy spending \(S\) is defined as:
+The \pkg{emburden} package provides access to three primary datasets for
+household energy burden analysis:
 
-\[N_h = \frac{G - S}{S} = \frac{G}{S} - 1\]
+\subsubsection{LEAD Tool}\label{lead-tool}
 
-This can be interpreted as the ratio of net income (after energy costs)
-to energy spending. A household with \(N_h = 15.67\) has approximately
-\$15.67 of net income per \$1 of energy spending, equivalent to a 6\%
-energy burden.
+The Low-Income Energy Affordability Data (LEAD) Tool
+\citep{ma2019lowincome} portrays average income, electricity
+expenditures, gas expenditures, and other fuel expenditures for cohorts
+of households segmented by location (census tract, county, state) and
+household characteristics (ownership status, building age, number of
+units, attachment status, primary heating fuel).
 
-The relationship to energy burden is:
+The dataset is assembled using iterative proportional fitting (IPF), a
+widely used spatial microsimulation method to allocate households to
+census tracts while calibrating characteristics to known quantities. The
+IPF algorithm processes cross-tabulations of household responses from
+the American Community Survey (ACS) Public Use Microdata Samples,
+scaling them to match aggregate annual values from utility sales and
+revenues reported in Energy Information Administration forms 861
+(electricity) and 176 (natural gas).
 
-\[E_b = \frac{S}{G} = \frac{1}{N_h + 1}\]
-
-For aggregation across households, the weighted mean Net Energy Return
-is:
-
-\[\overline{N_h} = \frac{\sum_{i} w_i N_{h,i}}{\sum_{i} w_i}\]
-
-where \(w_i\) represents household weights (typically household counts
-or population). This aggregated value can then be converted to an
-aggregate energy burden via \(\overline{E_b} = 1/(\overline{N_h} + 1)\).
-
-\subsection{LEAD Tool data structure}\label{lead-tool-data-structure}
-
-The LEAD Tool provides data at multiple geographic levels (census tract,
-county, state) and by multiple income definitions:
+Multiple vintages are available:
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{AMI}: Area Median Income (income relative to local median)
+  \textbf{2018 Update}: Based on 2016 5-year ACS data (2012-2016),
+  released July 2020
 \item
-  \textbf{FPL}: Federal Poverty Line (income relative to poverty
-  threshold)
-\item
-  \textbf{SMI}: State Median Income
-\item
-  \textbf{LLSI}: Lower Living Standard Income (2022 only)
+  \textbf{2022 Update}: Based on 2018 5-year ACS data (2014-2018),
+  released August 2024
 \end{itemize}
 
-For each household cohort (defined by location, income bracket, housing
-tenure, unit type, and other characteristics), the LEAD Tool estimates:
+\subsubsection{REPLICA dataset}\label{replica-dataset}
+
+The Renewable Energy Potential of Low-Income Communities in America
+(REPLICA) dataset \citep{sigrinRooftopSolarTechnical2018} adds technical
+rooftop solar potential and additional techno-economic variables
+including demographics and electricity rates. The package can merge
+REPLICA data with LEAD data to enrich analyses with utility type, locale
+classification, and solar generation potential.
+
+\subsubsection{Schema normalization across
+vintages}\label{schema-normalization-across-vintages}
+
+A critical challenge in temporal analysis is handling schema differences
+between LEAD Tool vintages. The package implements automatic
+normalization through the following transformations:
+
+\textbf{Income bracket aggregation}: The LEAD Tool provides income as a
+fraction of Area Median Income (AMI) or Federal Poverty Level (FPL). For
+AMI data, the package can aggregate detailed brackets into simplified
+categories matching the REPLICA schema:
 
 \begin{itemize}
 \tightlist
 \item
-  Number of households
+  0-30\% AMI: Very Low Income
 \item
-  Mean income
+  30-80\% AMI: Low-to-Moderate Income
 \item
-  Mean electricity expenditure
-\item
-  Mean gas expenditure
-\item
-  Mean other fuel expenditure
+  ≥80\% AMI: Middle-to-High Income
 \end{itemize}
 
-These estimates are based on ACS microdata calibrated to
-utility-reported totals.
-
-\subsection{Schema differences between
-vintages}\label{schema-differences-between-vintages}
-
-The 2018 and 2022 LEAD Tool releases have significant schema
-differences:
-
-\textbf{Income brackets}: - 2018 AMI: 5 brackets (0-30\%, 30-50\%,
-50-80\%, 80-100\%, 100\%+) - 2022 AMI: 6 brackets (0-30\%, 30-60\%,
-60-80\%, 80-100\%, 100-150\%, 150\%+)
-
-\textbf{Column structure}: - 2018: Separate columns for each attribute
-(TEN, YBL6, BLD, HFL) - 2022: Combined columns (TEN-YBL6, TEN-BLD,
-TEN-HFL)
-
-\textbf{New features in 2022}: - 12 demographic columns - LLSI income
-metric - Tribal area geographies - Frequency weights
-
-The \pkg{emburden} package handles these differences through
-schema normalization, mapping income brackets to common categories and
-parsing combined columns.
-
-\section{Package implementation}\label{package-implementation}
-
-\subsection{Package structure}\label{package-structure}
-
-The \pkg{emburden} package is organized into several functional
-modules:
+For FPL data, the aggregation follows poverty line definitions:
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Energy metrics} (\texttt{energy\_ratios.R}): Core calculations
-  for Nh, EROI, DEAR
+  0-100\% FPL: In Poverty
 \item
-  \textbf{Data loading} (\texttt{lead\_data\_loaders.R},
-  \texttt{csv\_fallback.R}): Download and import LEAD data
-\item
-  \textbf{Database integration} (\texttt{emrgi\_data\_loaders.R}): Query
-  SQLite database
-\item
-  \textbf{Temporal comparison} (\texttt{compare\_burden.R}): Compare
-  vintages with normalization using \texttt{compare\_energy\_burden()}
-\item
-  \textbf{Statistical analysis} (\texttt{metrics.R}): Weighted
-  aggregation functions
-\item
-  \textbf{Formatting} (\texttt{formatting.R}): Output formatting for
-  tables and reports
+  ≥100\% FPL: Not In Poverty
 \end{itemize}
 
-\subsection{Core functions}\label{core-functions}
+\textbf{Building type simplification}: Housing units are classified as:
 
-\subsubsection{Data acquisition}\label{data-acquisition}
+\begin{itemize}
+\item
+  1 Unit: Single-Family
+\item
+  \begin{quote}
+  1 Unit: Multi-Family
+  \end{quote}
+\item
+  Other Unit: Excluded from analysis
+\end{itemize}
 
-The package provides functions to download LEAD Tool data directly from
-OpenEI:
+These normalizations enable valid temporal comparisons despite
+underlying schema evolution between vintages.
+
+\subsection{Data processing}\label{data-processing}
+
+The package processes raw LEAD Tool data through several stages:
+
+\subsubsection{Energy burden indicator
+calculation}\label{energy-burden-indicator-calculation}
+
+For each household cohort, the package calculates:
+
+\[s = electricity + natural\ gas + other\ fuels\]
+
+\[g = annual\ household\ income\]
+
+From these base metrics, all energy burden indicators are derived using
+the formulas presented in Section 1.1.
+
+\subsubsection{Weighted aggregation}\label{weighted-aggregation}
+
+The package implements proper weighted aggregation using household
+counts as weights. For Net Energy Return:
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> library("emburden")
-R> 
-R> # Download 2022 data for North Carolina
-R> files_2022 <- download_lead_data_from_openei(
-+   vintage = "2022",
-+   states = "NC"
-+ )
-R> 
-R> # Process AMI census tract data
-R> nc_ami <- process_lead_cohort_data(
-+   file_path = files_2022$NC["ami_tract"],
-+   vintage = "2022",
-+   income_metric = "ami"
+R> calculate_weighted_metrics(
++   data,
++   group_columns = c("state", "income_bracket"),
++   metric_name = "ner"
 + )
 \end{CodeInput}
 \end{CodeChunk}
 
-\subsubsection{Data loading with
-fallback}\label{data-loading-with-fallback}
-
-For routine analysis, higher-level functions provide automatic
-database/CSV fallback:
-
-\begin{CodeChunk}
-\begin{CodeInput}
-R> # Load latest data (tries database, falls back to CSV)
-R> nc_data <- load_cohort_data(
-+   dataset = "ami",
-+   states = "NC"
-+ )
-R> 
-R> # Load specific vintage
-R> nc_2018 <- load_cohort_data(
-+   dataset = "ami",
-+   states = "NC",
-+   vintage = "2018"
-+ )
-\end{CodeInput}
-\end{CodeChunk}
-
-\subsubsection{Temporal comparison}\label{temporal-comparison}
-
-The core comparison function handles schema normalization and
-aggregation. The \texttt{compare\_energy\_burden()} function compares
-energy burden across vintages using proper aggregation methodology.
-For cohort data (pre-aggregated households), the function sums totals
-first, then calculates ratios: \(NEB = \sum S_i / \sum G_i\). This
-avoids division-by-zero issues with row-by-row calculations.
-
-\begin{CodeChunk}
-\begin{CodeInput}
-R> # Compare by income bracket (2018 vs 2022)
-R> comparison <- compare_energy_burden(
-+   dataset = "ami",
-+   states = "NC",
-+   group_by = "income_bracket",
-+   vintage_1 = "2018",
-+   vintage_2 = "2022",
-+   format = TRUE
-+ )
-R>
-R> # View formatted results
-R> print(comparison)
-\end{CodeInput}
-\end{CodeChunk}
-
-\subsection{Design decisions}\label{design-decisions}
-
-Several key design decisions shape the package architecture:
+This function:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{Lazy evaluation}: Data is not downloaded/loaded until
-  explicitly requested
+  Filters data to specified groups
 \item
-  \textbf{Graceful degradation}: Database unavailability falls back to
-  CSV
+  Calculates weighted means using household counts
 \item
-  \textbf{Explicit vintage specification}: Prevents accidental mixing of
-  vintages
+  Computes poverty rates below specified thresholds
 \item
-  \textbf{Comprehensive metadata}: All data includes vintage and source
-  information
-\item
-  \textbf{Memory efficiency}: State-by-state processing for large
-  analyses
+  Returns summary statistics including quantiles and standard deviations
 \end{enumerate}
 
-\section{Basic state-level
-comparison}\label{basic-state-level-comparison}
+The key insight is that Net Energy Return allows arithmetic weighted
+means, while energy burden would require harmonic mean aggregation---a
+distinction that significantly impacts the validity and interpretability
+of aggregate statistics.
 
-We begin with a simple state-level comparison to illustrate basic
-package usage.
+\subsubsection{Data quality
+considerations}\label{data-quality-considerations}
+
+Iterative proportional fitting has limitations as an estimation
+procedure. The relationship between constraint variables tends toward
+the average of the initializing dataset, potentially depressing
+variations among otherwise similar regions. This may explain the large
+quantities of households estimated to have very low incomes. Validating
+these estimated data would require randomized surveys along the
+dimensions of interest.
+
+Additionally, the ``primary heating fuel'' category derives from the ACS
+question ``Which fuel is used most for heating this house, apartment, or
+mobile home?'' The predictive power of this question for energy
+expenditures is not fully understood and warrants caution in
+interpretation.
+
+Though REPLICA relies on a different LEAD vintage (2017) than recent
+analyses (2019, 2022), the package still enables useful cross-dataset
+analysis. However, inferring differences among annual estimates should
+account for the standard error of the data \citep{ma2019lowincome}.
+Rigorous temporal analysis benefits from comparing identically-processed
+vintages.
+
+\section{Package architecture}\label{package-architecture}
+
+The \pkg{emburden} package is organized into several functional modules:
+
+\subsection{Core functions}\label{core-functions}
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> library("emburden")
-R> library("dplyr")
+R> library(emburden)
 R> 
-R> # Compare North Carolina: 2018 vs 2022
-R> nc_state <- compare_vintages(
-+   dataset = "ami",
-+   states = "NC",
-+   aggregate_by = "state"
+R> # Energy metric calculations
+R> energy_burden_func(gross_income, energy_spending)
+R> ner_func(gross_income, energy_spending)  # Net Energy Return
+R> eroi_func(gross_income, energy_spending)  # EROI
+R> dear_func(gross_income, energy_spending)  # DEAR
+R> 
+R> # Statistical aggregation
+R> calculate_weighted_metrics(
++   graph_data,
++   group_columns = "state",
++   metric_name = "ner"
 + )
-R> 
-R> # Calculate energy burdens
-R> nc_state <- nc_state %>%
-+   mutate(
-+     burden_2018 = (total_electricity_spend_2018 +
-+                    total_gas_spend_2018 +
-+                    total_other_spend_2018) / total_income_2018,
-+     burden_2022 = (total_electricity_spend_2022 +
-+                    total_gas_spend_2022 +
-+                    total_other_spend_2022) / total_income_2022,
-+     burden_change_pp = (burden_2022 - burden_2018) * 100,
-+     burden_change_pct = (burden_change_pp / (burden_2018 * 100)) * 100
-+   )
-R> 
-R> # Display results
-R> print(nc_state[, c("state", "burden_2018", "burden_2022",
-+                    "burden_change_pp", "burden_change_pct")])
 \end{CodeInput}
 \end{CodeChunk}
 
-The output shows the aggregate energy burden for North Carolina
-decreased from X\% in 2018 to Y\% in 2022, representing a relative
-change of Z\%.
+\subsection{Data loading functions}\label{data-loading-functions}
 
-\section{Income bracket analysis}\label{income-bracket-analysis}
+The package provides automatic data downloading and caching:
 
-Energy burden varies dramatically by income level. We demonstrate income
-bracket comparison:
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Load census tract data (auto-downloads if not available)
+R> nc_tracts <- load_census_tract_data(states = "NC")
+R> 
+R> # Load cohort data by income bracket
+R> nc_ami <- load_cohort_data(
++   dataset = "ami",
++   states = "NC",
++   vintage = "2022"
++ )
+R> 
+R> # Compare vintages
+R> comparison <- compare_energy_burden(
++   dataset = "ami",
++   states = "NC",
++   group_by = "state"
++ )
+\end{CodeInput}
+\end{CodeChunk}
+
+\section{Analysis examples}\label{analysis-examples}
+
+The \pkg{emburden} package's primary contribution is enabling temporal
+analysis of energy burden through proper schema normalization and
+aggregation. This section demonstrates the package's capabilities
+through progressively detailed examples.
+
+\subsection{Temporal comparison
+workflow}\label{temporal-comparison-workflow}
+
+The \texttt{compare\_energy\_burden()} function provides the core
+temporal analysis functionality:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> library(emburden)
+R> 
+R> # Compare North Carolina energy burden: 2018 vs 2022
+R> nc_comparison <- compare_energy_burden(
++   dataset = "ami",
++   states = "NC",
++   group_by = "income_bracket"
++ )
+R> 
+R> # View formatted comparison table
+R> print(nc_comparison)
+\end{CodeInput}
+\end{CodeChunk}
+
+The function automatically:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Downloads both vintages if not cached locally
+\item
+  Normalizes schema differences between vintages
+\item
+  Performs proper \(N_h\)-based weighted aggregation
+\item
+  Calculates energy burden for both periods
+\item
+  Computes changes in percentage points
+\end{enumerate}
+
+\subsubsection{Understanding the output}\label{understanding-the-output}
+
+The comparison object contains multiple metrics:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Energy burden in 2018 and 2022
+R> nc_comparison$neb_2018
+R> nc_comparison$neb_2022
+R> 
+R> # Change in energy burden (percentage points)
+R> nc_comparison$neb_change_pp
+R> 
+R> # Net Energy Return values
+R> nc_comparison$ner_2018
+R> nc_comparison$ner_2022
+R> 
+R> # Household counts
+R> nc_comparison$households_2018
+R> nc_comparison$households_2022
+\end{CodeInput}
+\end{CodeChunk}
+
+\subsection{Example 1: State-level temporal
+analysis}\label{example-1-state-level-temporal-analysis}
+
+To examine overall state changes without grouping by demographic
+characteristics:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Overall state comparison
+R> nc_state <- compare_energy_burden(
++   dataset = "ami",
++   states = "NC",
++   group_by = "none"
++ )
+R> 
+R> # Extract key findings
+R> cat(sprintf(
++   "North Carolina energy burden changed from %.1f%% (2018) to %.1f%% (2022)\n",
++   nc_state$neb_2018 * 100,
++   nc_state$neb_2022 * 100
++ ))
+R> 
+R> cat(sprintf(
++   "Change: %+.2f percentage points\n",
++   nc_state$neb_change_pp * 100
++ ))
+\end{CodeInput}
+\end{CodeChunk}
+
+\subsection{Example 2: Income bracket
+analysis}\label{example-2-income-bracket-analysis}
+
+Disaggregating by income bracket reveals which populations experienced
+the largest changes:
 
 \begin{CodeChunk}
 \begin{CodeInput}
 R> # Compare by income bracket
-R> nc_income <- compare_vintages(
+R> nc_income <- compare_energy_burden(
 +   dataset = "ami",
 +   states = "NC",
-+   aggregate_by = "income_bracket"
++   group_by = "income_bracket"
 + )
 R> 
-R> # Calculate burdens by bracket
-R> nc_income <- nc_income %>%
-+   mutate(
-+     burden_2018 = (total_electricity_spend_2018 +
-+                    total_gas_spend_2018 +
-+                    total_other_spend_2018) / total_income_2018,
-+     burden_2022 = (total_electricity_spend_2022 +
-+                    total_gas_spend_2022 +
-+                    total_other_spend_2022) / total_income_2022
-+   ) %>%
-+   arrange(income_bracket)
+R> # Visualize changes
+R> library(ggplot2)
 R> 
-R> # Visualize
-R> library("ggplot2")
-R> 
-R> ggplot(nc_income, aes(x = income_bracket)) +
-+   geom_col(aes(y = burden_2018 * 100, fill = "2018"),
-+            position = "dodge", alpha = 0.7) +
-+   geom_col(aes(y = burden_2022 * 100, fill = "2022"),
-+            position = "dodge", alpha = 0.7) +
-+   labs(
-+     title = "Energy Burden by Income Bracket: 2018 vs 2022",
-+     subtitle = "North Carolina",
-+     x = "Income Bracket (% of Area Median Income)",
-+     y = "Energy Burden (%)",
-+     fill = "Year"
-+   ) +
-+   theme_minimal() +
-+   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-\end{CodeInput}
-\end{CodeChunk}
-
-This analysis reveals which income groups experienced the largest
-changes in energy burden, informing targeted policy interventions.
-
-\section{Census tract-level analysis}\label{census-tract-level-analysis}
-
-For local policy and program design, census tract-level analysis
-identifies specific communities with high burdens or large changes:
-
-\begin{CodeChunk}
-\begin{CodeInput}
-R> # Get tract-level comparison
-R> nc_tracts <- compare_vintages(
-+   dataset = "ami",
-+   states = "NC",
-+   aggregate_by = "tract"
-+ )
-R> 
-R> # Calculate burden changes
-R> nc_tracts <- nc_tracts %>%
-+   mutate(
-+     burden_2018 = (total_electricity_spend_2018 +
-+                    total_gas_spend_2018 +
-+                    total_other_spend_2018) / total_income_2018,
-+     burden_2022 = (total_electricity_spend_2022 +
-+                    total_gas_spend_2022 +
-+                    total_other_spend_2022) / total_income_2022,
-+     burden_change = burden_2022 - burden_2018
-+   )
-R> 
-R> # Identify tracts with largest increases
-R> worst_changes <- nc_tracts %>%
-+   filter(burden_change > 0) %>%
-+   arrange(desc(burden_change)) %>%
-+   head(10)
-R> 
-R> print(worst_changes[, c("geoid", "burden_2018", "burden_2022",
-+                          "burden_change", "households_2022")])
-\end{CodeInput}
-\end{CodeChunk}
-
-These tract-level results can be joined with census geography for
-mapping or with demographic data for further analysis.
-
-\section{Multi-state regional
-comparison}\label{multi-state-regional-comparison}
-
-The package efficiently handles multi-state analyses for regional
-comparisons:
-
-\begin{CodeChunk}
-\begin{CodeInput}
-R> # Compare Southern states
-R> southern <- c("NC", "SC", "GA", "VA", "TN", "FL", "AL", "MS", "LA", "AR")
-R> 
-R> regional <- compare_vintages(
-+   dataset = "ami",
-+   states = southern,
-+   aggregate_by = "state"
-+ ) %>%
-+   mutate(
-+     burden_2018 = (total_electricity_spend_2018 +
-+                    total_gas_spend_2018 +
-+                    total_other_spend_2018) / total_income_2018,
-+     burden_2022 = (total_electricity_spend_2022 +
-+                    total_gas_spend_2022 +
-+                    total_other_spend_2022) / total_income_2022,
-+     burden_change = burden_2022 - burden_2018
-+   ) %>%
-+   arrange(desc(burden_change))
-R> 
-R> # Visualize regional patterns
-R> ggplot(regional, aes(x = reorder(state, burden_change))) +
-+   geom_col(aes(y = burden_change * 100), fill = "steelblue") +
+R> ggplot(nc_income, aes(x = income_bracket, y = neb_change_pp * 100)) +
++   geom_col(fill = "steelblue") +
 +   geom_hline(yintercept = 0, linetype = "dashed") +
-+   coord_flip() +
 +   labs(
-+     title = "Change in Energy Burden: 2018 to 2022",
-+     subtitle = "Southern States",
-+     x = "State",
-+     y = "Change (percentage points)"
++     title = "Change in Energy Burden by Income Bracket",
++     subtitle = "North Carolina, 2018 to 2022",
++     x = "Income Bracket (% of Area Median Income)",
++     y = "Change in Energy Burden (percentage points)"
 +   ) +
 +   theme_minimal()
 \end{CodeInput}
 \end{CodeChunk}
 
-\section{Discussion and limitations}\label{discussion-and-limitations}
+Typical findings show that very low-income households (0-30\% AMI)
+experience the highest energy burdens and are most vulnerable to changes
+in energy costs or income levels.
 
-\subsection{Limitations}\label{limitations}
+\subsection{Example 3: Multi-state
+comparison}\label{example-3-multi-state-comparison}
 
-Several limitations should be considered when using this package:
+Comparing multiple states reveals regional patterns and policy impacts:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Compare Southern states
+R> southern_states <- compare_energy_burden(
++   dataset = "ami",
++   states = c("NC", "SC", "GA", "FL"),
++   group_by = "state"
++ )
+R> 
+R> # Which states improved most?
+R> southern_states %>%
++   arrange(neb_change_pp) %>%
++   select(state_abbr, neb_2018, neb_2022, neb_change_pp)
+R> 
+R> # Visualize state comparison
+R> ggplot(southern_states, aes(x = reorder(state_abbr, neb_2022),
++                              y = neb_2022 * 100)) +
++   geom_col(fill = "darkgreen") +
++   geom_point(aes(y = neb_2018 * 100), color = "red", size = 3) +
++   labs(
++     title = "Energy Burden by State: 2022 (bars) vs 2018 (points)",
++     x = "State",
++     y = "Energy Burden (%)"
++   ) +
++   theme_minimal()
+\end{CodeInput}
+\end{CodeChunk}
+
+\subsection{Example 4: Housing tenure
+analysis}\label{example-4-housing-tenure-analysis}
+
+Energy burden often varies significantly between renters and homeowners:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Compare by housing tenure
+R> nc_tenure <- compare_energy_burden(
++   dataset = "ami",
++   states = "NC",
++   group_by = "housing_tenure"
++ )
+R> 
+R> # Calculate the renter-owner gap
+R> gap_2018 <- nc_tenure$neb_2018[nc_tenure$housing_tenure == "RENTER"] -
++             nc_tenure$neb_2018[nc_tenure$housing_tenure == "OWNER"]
+R> 
+R> gap_2022 <- nc_tenure$neb_2022[nc_tenure$housing_tenure == "RENTER"] -
++             nc_tenure$neb_2022[nc_tenure$housing_tenure == "OWNER"]
+R> 
+R> cat(sprintf(
++   "Renter-Owner energy burden gap: %.2f pp (2018) → %.2f pp (2022)\n",
++   gap_2018 * 100,
++   gap_2022 * 100
++ ))
+\end{CodeInput}
+\end{CodeChunk}
+
+Renters typically face higher energy burdens due to split-incentive
+problems where landlords make efficiency investment decisions but
+tenants pay energy bills.
+
+\subsection{Example 5: Federal Poverty Line
+analysis}\label{example-5-federal-poverty-line-analysis}
+
+For policy applications targeting households below the federal poverty
+line:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Use FPL dataset instead of AMI
+R> nc_fpl <- compare_energy_burden(
++   dataset = "fpl",
++   states = "NC",
++   group_by = "income_bracket"
++ )
+R> 
+R> # Compare poverty vs non-poverty households
+R> nc_fpl %>%
++   filter(income_bracket %in% c("Below Federal Poverty Line",
++                                 "Above Federal Poverty Line")) %>%
++   select(income_bracket, neb_2018, neb_2022, neb_change_pp)
+\end{CodeInput}
+\end{CodeChunk}
+
+This analysis is particularly relevant for programs like the Low-Income
+Home Energy Assistance Program (LIHEAP) which target households below
+specific poverty thresholds.
+
+\subsection{Example 6: Census tract-level
+analysis}\label{example-6-census-tract-level-analysis}
+
+For fine-grained spatial analysis, load tract-level data directly:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Load 2022 census tract data
+R> nc_tracts_2022 <- load_census_tract_data(
++   states = "NC",
++   vintage = "2022"
++ )
+R> 
+R> # Calculate county-level statistics
+R> nc_counties <- calculate_weighted_metrics(
++   nc_tracts_2022,
++   group_columns = "county_name",
++   metric_name = "ner"
++ )
+R> 
+R> # Identify counties with highest energy burden
+R> nc_counties %>%
++   mutate(energy_burden = 1 / (ner + 1)) %>%
++   arrange(desc(energy_burden)) %>%
++   head(10) %>%
++   select(county_name, energy_burden, household_count)
+\end{CodeInput}
+\end{CodeChunk}
+
+Census tract data enables spatial analysis and mapping applications,
+revealing urban-rural disparities and identifying communities in need of
+targeted assistance.
+
+\section{Discussion}\label{discussion}
+
+\subsection{Policy implications}\label{policy-implications}
+
+The ability to track energy burden changes over time has important
+policy implications. Programs like LIHEAP (Low-Income Home Energy
+Assistance Program) and WAP (Weatherization Assistance Program) target
+households experiencing energy insecurity, but evaluating their
+effectiveness requires robust temporal analysis.
+
+The \pkg{emburden} package enables researchers and policymakers to:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{Data quality}: LEAD Tool estimates are based on statistical
-  modeling and inherit uncertainties from ACS microdata and utility
-  reporting
+  \textbf{Track program impacts}: Compare energy burden before and after
+  policy interventions
 \item
-  \textbf{Income bracket changes}: The different bracket definitions
-  between 2018 and 2022 require aggregation for exact comparison
+  \textbf{Identify vulnerable populations}: Disaggregate trends by
+  income, tenure, and geography
 \item
-  \textbf{Missing tracts}: Some census tracts present in one vintage may
-  be absent in another due to boundary changes
+  \textbf{Allocate resources effectively}: Target communities with
+  worsening energy affordability
 \item
-  \textbf{Temporal scope}: Only two comparison points (2018, 2022) are
-  currently available
+  \textbf{Benchmark across jurisdictions}: Compare state and local
+  policy outcomes
 \end{enumerate}
 
-\subsection{Future extensions}\label{future-extensions}
+\subsubsection{Split-incentive and principal-agent
+problems}\label{split-incentive-and-principal-agent-problems}
 
-Planned enhancements include:
+A persistent challenge in energy equity is the split-incentive problem:
+landlords make energy efficiency investment decisions, but tenants pay
+the energy bills. This misalignment of incentives leads to
+underinvestment in efficiency improvements for rental properties.
+
+The package's ability to analyze energy burden by housing tenure reveals
+the magnitude of this problem:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Quantify the renter-owner gap
+R> tenure_comparison <- compare_energy_burden(
++   dataset = "ami",
++   states = "all",  # National analysis
++   group_by = "housing_tenure"
++ )
+R> 
+R> # Calculate disparity
+R> renter_burden <- tenure_comparison$neb_2022[
++   tenure_comparison$housing_tenure == "RENTER"
++ ]
+R> owner_burden <- tenure_comparison$neb_2022[
++   tenure_comparison$housing_tenure == "OWNER"
++ ]
+R> 
+R> disparity_ratio <- renter_burden / owner_burden
+\end{CodeInput}
+\end{CodeChunk}
+
+Addressing this gap requires policy interventions such as:
 
 \begin{itemize}
 \tightlist
 \item
-  Unit tests for all core functions
+  On-bill financing programs
 \item
-  Integration of additional data sources (utility rates, emissions,
-  weather)
+  Landlord incentive programs
 \item
-  Spatial analysis functions using \pkg{sf}
+  Energy efficiency standards for rental properties
 \item
-  Time series visualization when more vintages become available
-\item
-  Statistical significance testing for changes
+  Community-scale renewable energy projects
 \end{itemize}
 
-\section{Summary}\label{summary}
+\subsection{Data limitations and
+considerations}\label{data-limitations-and-considerations}
 
-The \pkg{emburden} package provides comprehensive tools for
-analyzing household energy burden using Net Energy Return methodology.
-The package handles the complexity of temporal comparisons across LEAD
-Tool vintages while enabling analysis at multiple geographic and
-demographic scales. By implementing proper aggregation methods and
-schema normalization, the package facilitates policy-relevant research
-on energy poverty and inequity.
+Users should be aware of several data limitations:
 
-\section{Acknowledgments}\label{acknowledgments}
+\subsubsection{Iterative proportional fitting
+constraints}\label{iterative-proportional-fitting-constraints}
 
-This work builds on the foundational LEAD Tool developed by the U.S.
-Department of Energy and the Nature Communications paper co-authored
-with Noah Kittner. The author thanks the reviewers for helpful comments.
+The LEAD Tool uses IPF to allocate households to census tracts, which
+has important implications:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Regression toward the mean}: IPF tends to depress variations
+  among similar regions
+\item
+  \textbf{Estimation uncertainty}: Standard errors are substantial,
+  especially for small cohorts
+\item
+  \textbf{Temporal comparability}: Different ACS vintages may have
+  methodological differences
+\end{enumerate}
+
+\subsubsection{Income measurement
+challenges}\label{income-measurement-challenges}
+
+Household income as reported in the ACS has known limitations:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Underreporting}: Particularly for benefits and informal income
+\item
+  \textbf{Timing}: Income is annual but energy costs vary seasonally
+\item
+  \textbf{Household composition}: Per-capita income may be more relevant
+  for some analyses
+\end{itemize}
+
+\subsubsection{Energy expenditure
+estimation}\label{energy-expenditure-estimation}
+
+The ``primary heating fuel'' categorization derives from a single ACS
+question and may not fully capture:
+
+\begin{itemize}
+\tightlist
+\item
+  Mixed-fuel households
+\item
+  Behavioral patterns
+\item
+  Appliance efficiency variations
+\item
+  Climate variations within states
+\end{itemize}
+
+Despite these limitations, the LEAD Tool represents the most
+comprehensive spatial dataset available for energy burden analysis in
+the United States.
+
+\subsection{Future research
+directions}\label{future-research-directions}
+
+Several extensions would enhance the package's capabilities:
+
+\subsubsection{Additional vintages}\label{additional-vintages}
+
+As DOE releases new LEAD Tool vintages (potentially 2024, 2026, etc.),
+the package can incorporate them to enable longer-term trend analysis.
+This would support:
+
+\begin{itemize}
+\tightlist
+\item
+  Multi-year trend identification
+\item
+  Correlation with economic cycles
+\item
+  Climate change impact assessment
+\end{itemize}
+
+\subsubsection{Additional metrics}\label{additional-metrics}
+
+The package currently implements Net Energy Return, EROI, and DEAR.
+Future versions could add:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Disposable income ratios}: Accounting for essential expenses
+  beyond energy
+\item
+  \textbf{Energy poverty depth}: How far below thresholds households
+  fall
+\item
+  \textbf{Vulnerability indices}: Combining burden with demographic risk
+  factors
+\end{itemize}
+
+\subsubsection{Spatial analysis
+enhancements}\label{spatial-analysis-enhancements}
+
+Geographic extensions could include:
+
+\begin{itemize}
+\tightlist
+\item
+  Integration with climate zone data
+\item
+  Utility service territory analysis
+\item
+  Transportation energy burden incorporation
+\item
+  Built environment characteristics
+\end{itemize}
+
+\subsubsection{Causal analysis tools}\label{causal-analysis-tools}
+
+Methodological extensions for policy evaluation:
+
+\begin{itemize}
+\tightlist
+\item
+  Difference-in-differences estimation
+\item
+  Synthetic control methods
+\item
+  Regression discontinuity designs
+\item
+  Propensity score matching
+\end{itemize}
+
+\subsection{Comparison with existing
+tools}\label{comparison-with-existing-tools}
+
+Several tools exist for energy burden analysis, each with different
+strengths:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{LEAD Tool web interface}: Interactive but limited temporal
+  comparison
+\item
+  \textbf{State energy office tools}: Customized but not standardized
+  across states
+\item
+  \textbf{Academic datasets}: Rich but often one-time snapshots
+\item
+  \textbf{\pkg{emburden}}: Focused on temporal analysis with proper
+  aggregation methodology
+\end{itemize}
+
+The \pkg{emburden} package fills a gap by providing programmatic access
+to multiple vintages with automated schema normalization, enabling
+reproducible temporal analyses at scale.
+
+\section{Conclusion}\label{conclusion}
+
+The \pkg{emburden} package provides a robust framework for temporal
+analysis of household energy burden using proper Net Energy Return
+methodology. By automating data access, normalizing schema differences,
+and implementing correct aggregation methods, the package enables
+researchers and policymakers to track energy affordability trends across
+multiple scales.
+
+Key contributions include:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Mathematical foundations}: Proper Net Energy Return
+  aggregation avoiding double-counting
+\item
+  \textbf{Temporal consistency}: Automated schema normalization across
+  LEAD Tool vintages
+\item
+  \textbf{Flexible analysis}: Functions supporting national, state,
+  county, and tract-level analysis
+\item
+  \textbf{Policy relevance}: Direct support for energy assistance
+  program evaluation
+\end{enumerate}
+
+The package is available from GitHub at
+\url{https://github.com/ericscheier/emburden} and is licensed under
+AGPL-3+. Documentation, vignettes, and issue tracking are available
+through the package website.
 
 \renewcommand\refname{References}
-\bibliography{jss-netenergyequity.bib}
+\bibliography{references.bib}
 
 
 

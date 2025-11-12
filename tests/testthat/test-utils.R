@@ -55,7 +55,10 @@ test_that("get_state_fips errors on invalid state abbreviation", {
 test_that("standardize_cohort_columns renames FIP to geoid", {
   data <- data.frame(
     FIP = c("37183020100", "37051003400"),
-    households = c(100, 150)
+    income_bracket = c("very_low", "low_mod"),
+    households = c(100, 150),
+    total_income = c(2500000, 6000000),
+    total_electricity_spend = c(120000, 180000)
   )
 
   result <- standardize_cohort_columns(data, "ami", "2022")
@@ -68,7 +71,10 @@ test_that("standardize_cohort_columns renames FIP to geoid", {
 test_that("standardize_cohort_columns ensures geoid is character", {
   data <- data.frame(
     geoid = c(37183020100, 37051003400),  # Numeric
-    households = c(100, 150)
+    income_bracket = c("very_low", "low_mod"),
+    households = c(100, 150),
+    total_income = c(2500000, 6000000),
+    total_electricity_spend = c(120000, 180000)
   )
 
   result <- standardize_cohort_columns(data, "ami", "2022")
@@ -109,7 +115,9 @@ test_that("standardize_cohort_columns renames dataset-specific income columns", 
   ami_data <- data.frame(
     geoid = "37183020100",
     ami_bracket = "very_low",
-    households = 100
+    households = 100,
+    total_income = 2500000,
+    total_electricity_spend = 120000
   )
 
   ami_result <- standardize_cohort_columns(ami_data, "ami", "2022")
@@ -121,7 +129,9 @@ test_that("standardize_cohort_columns renames dataset-specific income columns", 
   fpl_data <- data.frame(
     geoid = "37183020100",
     fpl_bracket = "0-100%",
-    households = 100
+    households = 100,
+    total_income = 2500000,
+    total_electricity_spend = 120000
   )
 
   fpl_result <- standardize_cohort_columns(fpl_data, "fpl", "2022")
@@ -134,7 +144,9 @@ test_that("standardize_cohort_columns maps 2018 AMI brackets to standard categor
   data <- data.frame(
     geoid = rep("37183020100", 5),
     income_bracket = c("0-30%", "30-60%", "60-80%", "80-100%", "100%+"),
-    households = c(50, 60, 70, 80, 90)
+    households = c(50, 60, 70, 80, 90),
+    total_income = c(750000, 2400000, 4200000, 6400000, 9000000),
+    total_electricity_spend = c(60000, 72000, 84000, 96000, 108000)
   )
 
   result <- standardize_cohort_columns(data, "ami", "2018")
@@ -151,7 +163,9 @@ test_that("standardize_cohort_columns preserves 2022 AMI brackets", {
   data <- data.frame(
     geoid = rep("37183020100", 3),
     income_bracket = c("very_low", "low_mod", "mid_high"),
-    households = c(50, 60, 70)
+    households = c(50, 60, 70),
+    total_income = c(750000, 2400000, 4200000),
+    total_electricity_spend = c(60000, 72000, 84000)
   )
 
   result <- standardize_cohort_columns(data, "ami", "2022")
@@ -192,7 +206,8 @@ test_that("standardize_cohort_columns does not overwrite existing total_* column
     income_bracket = "very_low",
     households = 100,
     income = 25000,
-    total_income = 3000000  # Pre-existing, different value
+    total_income = 3000000,  # Pre-existing, different value
+    total_electricity_spend = 120000
   )
 
   result <- standardize_cohort_columns(data, "ami", "2022")
@@ -234,7 +249,9 @@ test_that("standardize_cohort_columns handles empty dataframe", {
   data <- data.frame(
     geoid = character(),
     income_bracket = character(),
-    households = numeric()
+    households = numeric(),
+    total_income = numeric(),
+    total_electricity_spend = numeric()
   )
 
   result <- standardize_cohort_columns(data, "ami", "2022")
@@ -248,6 +265,8 @@ test_that("standardize_cohort_columns preserves non-target columns", {
     geoid = "37183020100",
     income_bracket = "very_low",
     households = 100,
+    total_income = 2500000,
+    total_electricity_spend = 120000,
     custom_column = "test_value",
     another_col = 42
   )

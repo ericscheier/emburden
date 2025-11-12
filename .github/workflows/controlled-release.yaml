@@ -88,17 +88,40 @@ jobs:
           extra-packages: any::rcmdcheck, any::pkgbuild, any::covr
           needs: check
 
-      - name: Verify version consistency
+      - name: Verify version consistency across all metadata files
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          DESC_VERSION=$(Rscript -e "cat(as.character(desc::desc_get_version()))")
 
-          if [ "$VERSION" != "$DESC_VERSION" ]; then
-            echo "ERROR: Tag version ($VERSION) does not match DESCRIPTION version ($DESC_VERSION)"
+          echo "=== Comprehensive Version Validation ==="
+          echo "Expected version (from tag): $VERSION"
+          echo ""
+
+          # Run our comprehensive version consistency checker
+          Rscript .dev/check-version-consistency.R
+
+          if [ $? -ne 0 ]; then
+            echo ""
+            echo "ERROR: Version consistency check failed!"
+            echo "All metadata files must have matching versions before release."
             exit 1
           fi
 
-          echo "✓ Version consistency check passed"
+          # Verify tag matches DESCRIPTION
+          DESC_VERSION=$(Rscript -e "cat(as.character(desc::desc_get_version()))")
+
+          if [ "$VERSION" != "$DESC_VERSION" ]; then
+            echo ""
+            echo "ERROR: Git tag version ($VERSION) does not match DESCRIPTION version ($DESC_VERSION)"
+            echo "Ensure the tag matches the version in DESCRIPTION file."
+            exit 1
+          fi
+
+          echo ""
+          echo "✓ All version validation checks passed"
+          echo "  - DESCRIPTION version matches tag"
+          echo "  - CITATION versions consistent"
+          echo "  - .zenodo.json version consistent"
+          echo "  - All metadata files in sync"
 
       - name: Run R CMD check
         uses: r-lib/actions/check-r-package@v2
