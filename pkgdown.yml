@@ -3,8 +3,9 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
+  jss-emburden: jss-emburden.html
   methodology: methodology.html
-last_built: 2025-11-10T18:51Z
+last_built: 2025-11-12T05:58Z
 urls:
   reference: https://ericscheier.github.io/emburden/reference
   article: https://ericscheier.github.io/emburden/articles

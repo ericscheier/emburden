@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,8 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/getting-started.html">Getting Started</a></li>
     <li><a class="dropdown-item" href="articles/methodology.html">Methodology</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="articles/jss-emburden.html">JSS Package Manuscript</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
@@ -153,7 +155,23 @@
 <span></span>
 <span><span class="co"># Format results for publication</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://scales.r-lib.org" class="external-link">scales</a></span><span class="op">)</span></span>
-<span><span class="va">results</span><span class="op">$</span><span class="va">formatted_median</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/to_percent.html">to_percent</a></span><span class="op">(</span><span class="va">results</span><span class="op">$</span><span class="va">metric_median</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">results</span><span class="op">$</span><span class="va">formatted_median</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/to_percent.html">to_percent</a></span><span class="op">(</span><span class="va">results</span><span class="op">$</span><span class="va">metric_median</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># === EXAMPLE 5: Temporal comparison ===</span></span>
+<span><span class="co"># Compare energy burden between 2018 and 2022</span></span>
+<span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compare_energy_burden.html">compare_energy_burden</a></span><span class="op">(</span></span>
+<span>  dataset <span class="op">=</span> <span class="st">"ami"</span>,</span>
+<span>  states <span class="op">=</span> <span class="st">"NC"</span>,</span>
+<span>  group_by <span class="op">=</span> <span class="st">"income_bracket"</span>  <span class="co"># Options: "income_bracket", "state", "none"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># View results</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Access specific columns</span></span>
+<span><span class="va">comparison</span><span class="op">$</span><span class="va">neb_2018</span>  <span class="co"># 2018 energy burden</span></span>
+<span><span class="va">comparison</span><span class="op">$</span><span class="va">neb_2022</span>  <span class="co"># 2022 energy burden</span></span>
+<span><span class="va">comparison</span><span class="op">$</span><span class="va">neb_change_pp</span>  <span class="co"># Change in percentage points</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
@@ -173,6 +191,18 @@
 <code><a href="reference/calculate_weighted_metrics.html">calculate_weighted_metrics()</a></code> - Weighted mean, median, quantiles with grouping</li>
 <li>Automatically calculates poverty rates below specified thresholds</li>
 <li>Handles missing data and small sample sizes</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="temporal-comparison">Temporal Comparison<a class="anchor" aria-label="anchor" href="#temporal-comparison"></a>
+</h3>
+<ul>
+<li>
+<code><a href="reference/compare_energy_burden.html">compare_energy_burden()</a></code> - Compare energy burden across data vintages (2018 vs 2022)</li>
+<li>Automatically handles schema differences between vintages</li>
+<li>Proper Nh-based aggregation built-in</li>
+<li>Grouping options: <code>"income_bracket"</code>, <code>"state"</code>, or <code>"none"</code>
+</li>
 </ul>
 </div>
 <div class="section level3">
@@ -257,7 +287,7 @@
 <span><span class="va">nc_ami_2022</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_cohort_data.html">load_cohort_data</a></span><span class="op">(</span>dataset <span class="op">=</span> <span class="st">"ami"</span>, states <span class="op">=</span> <span class="st">"NC"</span>, vintage <span class="op">=</span> <span class="st">"2022"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compare vintages for temporal analysis</span></span>
-<span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu">compare_vintages</span><span class="op">(</span>dataset <span class="op">=</span> <span class="st">"ami"</span>, states <span class="op">=</span> <span class="st">"NC"</span>, aggregate_by <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compare_energy_burden.html">compare_energy_burden</a></span><span class="op">(</span>dataset <span class="op">=</span> <span class="st">"ami"</span>, states <span class="op">=</span> <span class="st">"NC"</span>, group_by <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Data Loading Workflow:</strong></p>
 <p>On first use, <code><a href="reference/load_cohort_data.html">load_cohort_data()</a></code> automatically: 1. <strong>Tries local database</strong> for fast access 2. <strong>Falls back to local CSV</strong> files if database unavailable 3. <strong>Downloads from OpenEI</strong> (DOE LEAD dataset) if neither exists 4. <strong>Imports to database</strong> automatically for subsequent fast access 5. Returns the requested data - no manual steps required!</p>
 <p>Data sources: - <strong>OpenEI 2018</strong>: <a href="https://data.openei.org/submissions/573" class="external-link uri">https://data.openei.org/submissions/573</a> (4 AMI brackets) - <strong>OpenEI 2022</strong>: <a href="https://data.openei.org/submissions/6219" class="external-link uri">https://data.openei.org/submissions/6219</a> (6 AMI brackets)</p>

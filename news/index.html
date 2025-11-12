@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,8 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started</a></li>
     <li><a class="dropdown-item" href="../articles/methodology.html">Methodology</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/jss-emburden.html">JSS Package Manuscript</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -38,6 +40,83 @@
       <small>Source: <a href="https://github.com/ericscheier/emburden/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="emburden-020">emburden 0.2.0<a class="anchor" aria-label="anchor" href="#emburden-020"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-2-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-2-0"></a></h3>
+<div class="section level4">
+<h4 id="jss-manuscript-vignette-0-2-0">JSS Manuscript Vignette<a class="anchor" aria-label="anchor" href="#jss-manuscript-vignette-0-2-0"></a></h4>
+<ul><li>Added Journal of Statistical Software (JSS) manuscript as package vignette
+<ul><li>
+<code>vignettes/jss-emburden.Rmd</code> - Complete JSS article format</li>
+<li>Demonstrates package usage with reproducible examples</li>
+<li>Includes bibliography and proper JSS formatting</li>
+<li>Test suite ensures vignette builds correctly in CI</li>
+</ul></li>
+<li>Created manuscript development infrastructure
+<ul><li>
+<code>research/manuscripts/jss-draft/</code> - LaTeX build output</li>
+<li>
+<code>research/manuscripts/build-jss.R</code> - Build script for PDF generation</li>
+<li>Separate from vignettes for flexible editing workflow</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="enhanced-temporal-comparison-0-2-0">Enhanced Temporal Comparison<a class="anchor" aria-label="anchor" href="#enhanced-temporal-comparison-0-2-0"></a></h4>
+<ul><li>Prominently featured <code><a href="../reference/compare_energy_burden.html">compare_energy_burden()</a></code> function across all documentation
+<ul><li>README now includes temporal comparison section (Example 5)</li>
+<li>Getting Started vignette has comprehensive temporal comparison section</li>
+<li>JSS vignette demonstrates function instead of manual calculations</li>
+<li>Replaces 37-line manual comparison with elegant 12-line function call</li>
+</ul></li>
+</ul></div>
+</div>
+<div class="section level3">
+<h3 id="bug-fixes-0-2-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-2-0"></a></h3>
+<ul><li>Fixed FPL (Federal Poverty Line) data loading (<a href="https://github.com/ericscheier/emburden/issues/15" class="external-link">#15</a>)
+<ul><li>Added validation to skip files with missing or all-NA <code>income_bracket</code> columns</li>
+<li>Loader now properly falls through to raw OpenEI files with complete data</li>
+<li>Prevents “Element <code>income_bracket</code> doesn’t exist” errors</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-improvements-0-2-0">Documentation Improvements<a class="anchor" aria-label="anchor" href="#documentation-improvements-0-2-0"></a></h3>
+<ul><li>Emphasized <code><a href="../reference/compare_energy_burden.html">compare_energy_burden()</a></code> usage across 7 files
+<ul><li>
+<code>README.md</code> - Added temporal comparison section</li>
+<li>
+<code>vignettes/jss-emburden.Rmd</code> - Replaced manual code with function call</li>
+<li>
+<code>vignettes/getting-started.Rmd</code> - Added comprehensive section</li>
+<li>
+<code>analysis/scripts/nc_comparison_for_email.R</code> - Complete rewrite (179→144 lines)</li>
+<li>
+<code>data-raw/README.md</code> - Fixed function references</li>
+<li>
+<code>research/manuscripts/jss-draft/jss-emburden.Rmd</code> - Updated examples</li>
+</ul></li>
+<li>Added pkgdown configuration for JSS vignette
+<ul><li>Vignette appears in website navigation</li>
+<li>Organized under “Package Documentation” section</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="infrastructure-0-2-0">Infrastructure<a class="anchor" aria-label="anchor" href="#infrastructure-0-2-0"></a></h3>
+<ul><li>Added pre-commit hook for running package tests
+<ul><li>
+<code>.git/hooks/pre-commit</code> - Runs all 238 tests before each commit</li>
+<li>Prevents committing broken code</li>
+<li>Can be bypassed with <code>--no-verify</code> if needed</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="internal-changes-0-2-0">Internal Changes<a class="anchor" aria-label="anchor" href="#internal-changes-0-2-0"></a></h3>
+<ul><li>Improved data validation in <code><a href="../reference/load_cohort_data.html">load_cohort_data()</a></code>
+<ul><li>Better handling of incomplete processed CSV files</li>
+<li>More informative verbose messaging</li>
+</ul></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="emburden-011">emburden 0.1.1<a class="anchor" aria-label="anchor" href="#emburden-011"></a></h2>
 <div class="section level3">
