@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/ericscheier/emburden/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/ericscheier/emburden/blob/v0.3.0/inst/CITATION)
 
 Scheier, Eric (2025). emburden: Energy Burden Analysis Using Net Energy
 Return Methodology. R package version 0.3.0
