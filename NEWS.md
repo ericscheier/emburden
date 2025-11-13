@@ -1,3 +1,86 @@
+# emburden 0.4.6
+
+## CRAN Preparation Fixes
+
+* **Fixed R CMD check WARNINGs and NOTEs**:
+  - Excluded JSON data files (579MB) from package build via .Rbuildignore
+  - Excluded top-level presentation/poster files (25+ non-standard files)
+  - Added vignette metadata to jss-emburden.Rmd (VignetteEngine, VignetteIndexEntry)
+  - Package now builds cleanly under 5MB for CRAN submission
+
+* **Next steps for CRAN**: Implement Zenodo data hosting to fully separate data from methods package
+
+# emburden 0.4.5
+
+## New Features
+
+* **Metadata discovery functions** for easier data exploration:
+  - `list_income_brackets(dataset, vintage)`: Show available income brackets
+  - `list_states()`: Show all 51 available state abbreviations
+  - `list_cohort_columns(dataset, vintage)`: Show column names, descriptions, and data types
+  - `get_dataset_info()`: Show metadata about all available datasets
+  - Enables programmatic discovery of data structure
+
+# emburden 0.4.4
+
+## Breaking Changes
+
+* **Parameter reordering in `compare_energy_burden()`**: `group_by` now comes before `counties`
+  - **New order**: `compare_energy_burden(dataset, states, group_by, counties, ...)`
+  - Makes intuitive syntax work: `compare_energy_burden('fpl', 'NC', 'income_bracket')`
+  - Named parameters unaffected: `compare_energy_burden(dataset='fpl', counties=c('Orange'))`
+
+## New Features
+
+* **Dynamic grouping in `compare_energy_burden()`**: `group_by` now accepts custom column names
+  - Use keywords: "income_bracket", "state", "none" (as before)
+  - OR custom columns: `group_by = "geoid"` for tract-level comparison
+  - OR multiple columns: `group_by = c("state_abbr", "income_bracket")`
+  - Enables flexible analysis patterns for full USA data
+
+# emburden 0.4.3
+
+## New Features
+
+* **Dynamic filtering in `load_cohort_data()`**: Now accepts `...` parameter for flexible filtering
+  - Filter by any column using tidyverse syntax
+  - Example: `load_cohort_data("ami", states = "NC", households > 100, total_income > 50000)`
+  - Complements existing `states`, `counties`, `income_brackets` parameters
+  - First step toward full USA data package architecture
+
+# emburden 0.4.2
+
+## Bug Fixes
+
+* Fixed confusing warnings when using `compare_energy_burden('fpl', 'NC', 'income_bracket')`
+* Function now silently handles common mistake of passing 'income_bracket', 'state', or 'none' as counties argument
+* Eliminates "County name 'income_bracket' not found" warnings while maintaining correct behavior
+
+## Improvements
+
+* Improved documentation with clearer examples distinguishing between `group_by` and `counties` parameters
+
+# emburden 0.4.1
+
+## Improvements
+
+* Updated contact email from eric.scheier@gmail.com to eric@scheier.org across all documentation
+
+# emburden 0.4.0
+
+## New Features
+
+### Fully Automated Release Workflow
+
+* **Zero-touch releases**: GitHub releases now created automatically when version bumps are merged
+  - Detects DESCRIPTION version changes automatically
+  - Runs all quality checks (R CMD check, tests, coverage)
+  - Generates release notes from NEWS.md
+  - Creates git tags and GitHub releases with package tarball
+  - No manual intervention required!
+
+* **Workflow**: Simply bump version in DESCRIPTION, update NEWS.md, merge PR → release happens automatically
+
 # emburden 0.3.0
 
 ## Major Improvements

@@ -10,7 +10,8 @@ load_cohort_data(
   counties = NULL,
   vintage = "2022",
   income_brackets = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
@@ -27,6 +28,10 @@ County names are matched case-insensitively. Requires \code{states} to be specif
 \item{income_brackets}{Character vector of income brackets to filter by (optional)}
 
 \item{verbose}{Logical, print status messages (default TRUE)}
+
+\item{...}{Additional filter expressions passed to dplyr::filter() for dynamic filtering.
+Allows filtering by any column in the dataset using tidyverse syntax.
+Example: \verb{households > 100, total_income > 50000}}
 }
 \value{
 A tibble with columns:
@@ -80,6 +85,14 @@ orange <- load_cohort_data(
   dataset = "fpl",
   states = "NC",
   counties = "37135"
+)
+
+# Use dynamic filtering for custom criteria
+high_burden <- load_cohort_data(
+  dataset = "ami",
+  states = "NC",
+  households > 100,
+  total_electricity_spend / total_income > 0.06
 )
 }
 }
