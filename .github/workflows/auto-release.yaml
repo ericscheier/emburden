@@ -86,6 +86,8 @@ jobs:
           r-version: ${{ env.R_VERSION }}
           use-public-rspm: true
 
+      - uses: r-lib/actions/setup-tinytex@v2
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::pkgbuild, any::covr, any::desc
