@@ -479,8 +479,6 @@ try_load_from_csv <- function(dataset, vintage, verbose = FALSE) {
           csv_file,
           show_col_types = FALSE,
           col_types = readr::cols(
-            geoid = readr::col_character(),
-            FIP = readr::col_character(),  # Raw data uses FIP instead of geoid
             .default = readr::col_guess()
           )
         )
