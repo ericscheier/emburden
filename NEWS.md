@@ -1,4 +1,4 @@
-# emburden 0.4.7 (Development)
+# emburden 0.4.7
 
 ## Data Hosting Infrastructure
 
