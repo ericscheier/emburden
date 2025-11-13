@@ -17,6 +17,9 @@ utils::globalVariables(c("geoid", "income_bracket"))
 #' @param vintage Character, data vintage: "2018" or "2022" (default "2022")
 #' @param income_brackets Character vector of income brackets to filter by (optional)
 #' @param verbose Logical, print status messages (default TRUE)
+#' @param ... Additional filter expressions passed to dplyr::filter() for dynamic filtering.
+#'   Allows filtering by any column in the dataset using tidyverse syntax.
+#'   Example: `households > 100, total_income > 50000`
 #'
 #' @return A tibble with columns:
 #'   - geoid: Census tract identifier
@@ -61,13 +64,22 @@ utils::globalVariables(c("geoid", "income_bracket"))
 #'   states = "NC",
 #'   counties = "37135"
 #' )
+#'
+#' # Use dynamic filtering for custom criteria
+#' high_burden <- load_cohort_data(
+#'   dataset = "ami",
+#'   states = "NC",
+#'   households > 100,
+#'   total_electricity_spend / total_income > 0.06
+#' )
 #' }
 load_cohort_data <- function(dataset = c("ami", "fpl"),
                               states = NULL,
                               counties = NULL,
                               vintage = "2022",
                               income_brackets = NULL,
-                              verbose = TRUE) {
+                              verbose = TRUE,
+                              ...) {
 
   # Validate inputs
   dataset <- match.arg(dataset)
@@ -163,6 +175,19 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
 
     if (verbose) {
       message("Filtered to ", length(income_brackets), " income bracket(s)")
+    }
+  }
+
+  # Apply dynamic filters if provided
+  filter_exprs <- rlang::enquos(...)
+  if (length(filter_exprs) > 0) {
+    for (filter_expr in filter_exprs) {
+      data <- data |>
+        dplyr::filter(!!filter_expr)
+    }
+
+    if (verbose) {
+      message("Applied ", length(filter_exprs), " custom filter(s)")
     }
   }
 

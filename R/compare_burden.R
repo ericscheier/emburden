@@ -12,10 +12,12 @@ utils::globalVariables(c(
 #'
 #' @param dataset Character, either "ami" or "fpl" for cohort data type
 #' @param states Character vector of state abbreviations to filter by (optional)
+#' @param group_by Character or character vector. Use keywords "income_bracket" (default),
+#'   "state", or "none" for standard groupings. Or provide custom column name(s)
+#'   for dynamic grouping (e.g., "geoid" for tract-level, c("state_abbr", "income_bracket")
+#'   for multi-level grouping). Custom columns must exist in the loaded data.
 #' @param counties Character vector of county names or FIPS codes to filter by (optional).
 #'   Requires `states` to be specified.
-#' @param group_by Character, grouping variable: "income_bracket" (default),
-#'   "state", or "none" for overall comparison
 #' @param vintage_1 Character, first vintage year: "2018" or "2022" (default "2018")
 #' @param vintage_2 Character, second vintage year: "2018" or "2022" (default "2022")
 #' @param format Logical, if TRUE returns formatted percentages (default TRUE)
@@ -30,33 +32,56 @@ utils::globalVariables(c(
 #' @examples
 #' \dontrun{
 #' # Compare NC energy burden by income bracket (2018 vs 2022)
-#' compare_energy_burden(dataset = "ami", states = "NC")
+#' # Note: New parameter order makes this intuitive!
+#' compare_energy_burden("ami", "NC", "income_bracket")
 #'
 #' # State-level comparison
-#' compare_energy_burden(dataset = "ami", states = "NC", group_by = "state")
+#' compare_energy_burden("fpl", states = c("NC", "SC"), group_by = "state")
 #'
 #' # Overall comparison (no grouping)
-#' compare_energy_burden(dataset = "fpl", states = c("NC", "SC"), group_by = "none")
-#'
-#' # Custom vintage comparison
-#' compare_energy_burden(dataset = "ami", states = "CA",
-#'                      vintage_1 = "2018", vintage_2 = "2022")
+#' compare_energy_burden("ami", "NC", "none")
 #'
 #' # Compare specific counties
-#' compare_energy_burden(dataset = "fpl", states = "NC",
-#'                      counties = c("Orange", "Durham", "Wake"))
+#' compare_energy_burden("fpl", "NC", counties = c("Orange", "Durham", "Wake"))
+#'
+#' # Custom grouping by tract-level geoid
+#' compare_energy_burden("ami", "NC", group_by = "geoid")
+#'
+#' # Multi-level custom grouping (requires joining with tract data)
+#' # compare_energy_burden("fpl", "NC", group_by = c("state_abbr", "income_bracket"))
 #' }
 compare_energy_burden <- function(dataset = c("ami", "fpl"),
                                   states = NULL,
+                                  group_by = "income_bracket",
                                   counties = NULL,
-                                  group_by = c("income_bracket", "state", "none"),
                                   vintage_1 = "2018",
                                   vintage_2 = "2022",
                                   format = TRUE) {
 
   # Validate inputs
   dataset <- match.arg(dataset)
-  group_by <- match.arg(group_by)
+
+  # Handle group_by - can be keyword ("income_bracket", "state", "none")
+  # or custom column name(s)
+  valid_keywords <- c("income_bracket", "state", "none")
+
+  if (length(group_by) == 1 && group_by %in% valid_keywords) {
+    # Using standard keyword
+    grouping_method <- group_by
+  } else {
+    # Using custom column name(s) - validate later when we have data
+    grouping_method <- "custom"
+    custom_group_cols <- group_by
+  }
+
+  # Handle common mistake: passing group_by keywords as counties argument
+  # (though with new parameter order this is less likely)
+  if (!is.null(counties)) {
+    if (any(tolower(counties) %in% valid_keywords)) {
+      # User likely meant group_by parameter - just ignore counties
+      counties <- NULL
+    }
+  }
 
   # Load both vintages
   message("Loading ", vintage_1, " data...")
@@ -109,10 +134,10 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
         dplyr::coalesce(total_other_spend, 0)
     )
 
-  # Determine grouping variables
-  if (group_by == "income_bracket") {
+  # Determine grouping variables based on grouping method
+  if (grouping_method == "income_bracket") {
     group_vars <- c("vintage", "income_bracket")
-  } else if (group_by == "state") {
+  } else if (grouping_method == "state") {
     # Need to join with census tract data to get state
     tracts <- load_census_tract_data(states = states, verbose = FALSE)
     combined <- combined |>
@@ -121,9 +146,22 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
         by = "geoid"
       )
     group_vars <- c("vintage", "state_abbr")
-  } else {
-    # group_by == "none"
+  } else if (grouping_method == "none") {
     group_vars <- "vintage"
+  } else {
+    # Custom column grouping
+    group_vars <- c("vintage", custom_group_cols)
+
+    # Validate that custom columns exist in the data
+    missing_cols <- setdiff(custom_group_cols, names(combined))
+    if (length(missing_cols) > 0) {
+      stop(
+        "Custom grouping column(s) not found in data: ",
+        paste(missing_cols, collapse = ", "),
+        "\nAvailable columns: ",
+        paste(names(combined), collapse = ", ")
+      )
+    }
   }
 
   # Aggregate by grouping variables

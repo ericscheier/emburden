@@ -26,6 +26,14 @@ reference:
       - load_cohort_data
       - check_data_sources
 
+  - title: "Metadata Discovery"
+    desc: "Functions for exploring available data structure"
+    contents:
+      - list_income_brackets
+      - list_states
+      - list_cohort_columns
+      - get_dataset_info
+
   - title: "Statistical Analysis"
     desc: "Weighted aggregation and group-level calculations"
     contents:

@@ -18,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Eric Scheier \email{eric.scheier@gmail.com}
+\strong{Maintainer}: Eric Scheier \email{eric@scheier.org}
 
 }
 \keyword{internal}

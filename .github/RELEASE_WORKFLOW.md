@@ -433,7 +433,7 @@ If you encounter issues with the release workflow:
 1. Check this documentation first
 2. Review GitHub Actions logs for error details
 3. Open an issue in the repository
-4. Contact the package maintainer: eric.scheier@gmail.com
+4. Contact the package maintainer: eric@scheier.org
 
 ---
 

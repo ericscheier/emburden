@@ -37,6 +37,7 @@
 ^data/.*\.xml$
 ^data/.*\.cpg$
 ^data/.*\.pdf$
+^data/.*\.json$
 ^data/BIA_National_LAR_shp/
 ^data/calenviroscreen40gdb_F_2021\.gdb/
 ^data/dsire/
@@ -130,8 +131,11 @@
 # Lua filters
 ^.*\.lua$
 
-# Bibliography
-^.*\.bib$
+# Bibliography (exclude from non-vignette directories)
+^research/.*\.bib$
+^analysis/.*\.bib$
+^deprecated/.*\.bib$
+^\.dev/.*\.bib$
 ^.*\.csl$
 ^.*\.bst$
 
@@ -167,3 +171,20 @@
 ^CODE_OF_CONDUCT\.md$
 ^CONTRIBUTING\.md$
 ^docs$
+
+# Top-level presentation/poster files (not part of package)
+^.*_poster\.html$
+^.*_poster\.knit\.html$
+^.*_poster\.pdf$
+^.*_slides\.pdf$
+^.*_poster_map\.svg$
+^.*_poster_map\.pdf$
+^poster_.*\.svg$
+^.*_dashboard\.html$
+^.*_snapshot\.html$
+^net_energy_equity.*\.pdf$
+^UNC_logo.*\.(png|svg)$
+^qr\.svg$
+^Rplots\.pdf$
+^state_prosumer_ratios.*\.png$
+^.*_region_poster_map\.svg$
