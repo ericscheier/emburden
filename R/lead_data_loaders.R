@@ -107,17 +107,31 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
     )
   }
 
-  # If CSV fails, download from OpenEI
+  # If CSV fails, try Zenodo first (faster, more reliable), then OpenEI
   if (is.null(data)) {
     if (verbose) {
-      message("Data not found locally. Downloading from OpenEI...")
+      message("Data not found locally.")
     }
-    data <- download_lead_data(
+
+    # Try Zenodo first (pre-processed, compressed, faster)
+    data <- download_from_zenodo(
       dataset = dataset,
       vintage = vintage,
-      states = states,
       verbose = verbose
     )
+
+    # If Zenodo fails, fall back to OpenEI (original source)
+    if (is.null(data)) {
+      if (verbose) {
+        message("Downloading from OpenEI (original source)...")
+      }
+      data <- download_lead_data(
+        dataset = dataset,
+        vintage = vintage,
+        states = states,
+        verbose = verbose
+      )
+    }
 
     # Try to import to database for future use
     if (!is.null(data)) {
@@ -239,12 +253,22 @@ load_census_tract_data <- function(states = NULL, verbose = TRUE) {
     data <- try_load_tracts_from_csv(verbose = verbose)
   }
 
-  # If CSV fails, download from OpenEI
+  # If CSV fails, try Zenodo first, then OpenEI
   if (is.null(data)) {
     if (verbose) {
-      message("Data not found locally. Downloading from OpenEI...")
+      message("Data not found locally.")
     }
-    data <- download_census_tract_data(verbose = verbose)
+
+    # Try Zenodo first
+    data <- download_tracts_from_zenodo(verbose = verbose)
+
+    # If Zenodo fails, fall back to OpenEI
+    if (is.null(data)) {
+      if (verbose) {
+        message("Downloading from OpenEI (original source)...")
+      }
+      data <- download_census_tract_data(verbose = verbose)
+    }
 
     # Try to import to database for future use
     if (!is.null(data)) {

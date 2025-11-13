@@ -1,3 +1,29 @@
+# emburden 0.4.7 (Development)
+
+## Data Hosting Infrastructure
+
+* **Implemented Zenodo data hosting** with OpenEI fallback:
+  - New `R/zenodo.R` module for downloading from Zenodo repository
+  - Faster downloads via Zenodo CDN vs OpenEI
+  - MD5 checksum verification for data integrity
+  - Gzip decompression support for smaller downloads
+  - Automatic fallback to OpenEI if Zenodo unavailable
+
+* **Updated download cascade** in `load_cohort_data()` and `load_census_tract_data()`:
+  1. Database (SQLite) - fastest, local
+  2. CSV (cached files) - fast, local
+  3. **Zenodo (NEW!)** - faster, more reliable
+  4. OpenEI (fallback) - original source
+
+* **Added maintainer documentation**: `.dev/ZENODO_UPLOAD_GUIDE.md`
+  - Complete workflow for preparing and uploading datasets
+  - Compression and checksum procedures
+  - Testing and versioning guidelines
+
+**Benefits**: Nationwide data testing ready, package stays under CRAN 5MB limit (currently 1.9MB), improved download reliability
+
+**Next steps**: Upload processed datasets to Zenodo, update DOI configuration, ready for CRAN submission
+
 # emburden 0.4.6
 
 ## CRAN Preparation Fixes
