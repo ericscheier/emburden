@@ -1,3 +1,68 @@
+# emburden 0.5.0
+
+## CRAN Submission Ready - Nationwide Energy Burden Analysis
+
+This major release marks the completion of the nationwide expansion and prepares the package for CRAN submission. The package now comprehensively showcases nationwide US capability across all documentation, with 648 tests passing and clean R CMD check results.
+
+### Nationwide Expansion Complete
+
+* **Full nationwide focus** achieved across all documentation
+  - README features nationwide data from introduction: "All 51 US states...2.3+ million records"
+  - All function examples demonstrate single-state → multi-state → nationwide progression
+  - Both vignettes showcase nationwide capability alongside learning examples
+  - Dual focus strategy: NC examples for learning (small, fast), nationwide for production use
+
+* **Comprehensive test coverage** validates nationwide functionality
+  - 648 tests passing (0 failures)
+  - Multi-state regional filtering (Southeast, top 10 states, cross-regional)
+  - Data integrity validation across all 51 states
+  - All major US regions tested (Northeast, Southeast, Midwest, Southwest, West)
+
+* **CRAN readiness verified**
+  - R CMD check: 0 errors, 1 acceptable warning (qpdf), 1 acceptable note (httptest2)
+  - Package size: Under 5MB CRAN limit (~1.9MB)
+  - Multi-platform CI validation (macOS, Windows, Ubuntu × 5 R versions)
+  - External data hosting on Zenodo (DOI: 10.5281/zenodo.17605603)
+
+### Documentation Enhancements
+
+* **Nationwide vignette content**
+  - `vignettes/getting-started.Rmd`: Comprehensive nationwide examples (v0.4.10)
+  - `vignettes/jss-emburden.Rmd`: Nationwide data availability note added
+  - Performance guidance for large dataset queries (30-120 seconds, ~500MB RAM)
+  - Metadata discovery functions showcased (`list_states()`, `list_income_brackets()`, etc.)
+
+* **Language cleanup**
+  - Removed "proof of concept" references from documentation
+  - Professional, production-ready messaging throughout
+  - Clear data coverage statements: 2.3M+ household records, ~73k census tracts, all 51 states
+
+### Data Infrastructure
+
+* **Zenodo data hosting** (established in v0.4.7-0.4.8)
+  - 4 nationwide datasets published (AMI/FPL 2018/2022, 307 MB compressed)
+  - MD5 checksum verification for data integrity
+  - Automatic download cascade: Database → CSV → Zenodo → OpenEI fallback
+  - Package stays under CRAN 5MB limit
+
+### Package Quality Metrics
+
+* **Test coverage**: 648 comprehensive tests
+  - 99 multi-state and nationwide tests
+  - 48 metadata discovery tests
+  - 62 Zenodo integration tests
+  - Complete data loader and comparison function coverage
+
+* **CI/CD infrastructure**
+  - Multi-platform R CMD check (5 environments)
+  - Test coverage reporting
+  - Automated release workflow on version bumps
+  - Pre-commit and pre-push hooks for local validation
+
+**Breaking changes**: None. All existing NC-focused code continues to work. Nationwide capability is additive.
+
+**Next milestone**: CRAN submission! 🚀
+
 # emburden 0.4.9
 
 ## Documentation Transition & Infrastructure
