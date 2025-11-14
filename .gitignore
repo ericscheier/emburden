@@ -164,3 +164,8 @@ rsconnect/.env
 
 # Package build artifacts
 *.tar.gz
+*.Rcheck/
+
+# Zenodo upload staging
+zenodo-upload/
+zenodo-upload-nationwide/

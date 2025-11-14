@@ -153,6 +153,8 @@
 ^PACKAGE_TRANSFORMATION\.md$
 ^QUICK_START\.md$
 ^STATUS\.md$
+^zenodo-upload$
+^zenodo-upload-nationwide$
 ^cleanup_conflicts\.R$
 ^helpers\.R$
 ^ratios\.R$

@@ -1,3 +1,68 @@
+# emburden 0.4.9
+
+## Documentation Transition & Infrastructure
+
+* **NC→Nationwide transition (Phase 1)**: Package documentation now showcases nationwide US capability
+  - Updated `README.md` with multi-state and nationwide examples alongside NC examples
+  - Updated all function examples (`compare_energy_burden()`, `load_cohort_data()`, `load_census_tract_data()`)
+  - Added test validating all 51 US states are supported (614 tests passing)
+  - **Data coverage**: 2.3M household cohort records, ~73k census tracts, all 51 states
+  - Follows "dual focus" strategy: NC examples for learning, nationwide examples for production use
+  - See `.dev/NC-TO-NATIONWIDE-TRANSITION.md` for comprehensive transition plan
+
+* **pkgdown build fix**: Resolved recurring CI failure
+  - Changed `backup_db()` and `clear_test_environment()` from `@export` to `@keywords internal`
+  - Added pkgdown reference index check to pre-commit hook to prevent recurrence
+  - Hook provides helpful hints about `@export` vs `@keywords internal`
+
+**No breaking changes**: All NC-focused examples continue to work. Nationwide data access is additive.
+
+# emburden 0.4.8
+
+## Database Protection & Testing Infrastructure
+
+* **Production database protection** to prevent accidental data loss:
+  - New `R/database-helpers.R` module with safe database operations
+  - `delete_db()` requires explicit `confirm = TRUE` for production database
+  - `backup_db()` creates timestamped backups before risky operations
+  - `clear_test_environment()` safely clears only test data
+  - Separate test (`emburden_test_db.sqlite`) and production (`emburden_db.sqlite`) databases
+  - All database helpers fully documented with roxygen2
+
+* **Zenodo integration completed** with NATIONWIDE data publication:
+  - Updated `R/zenodo.R` with published Zenodo record (DOI: 10.5281/zenodo.17605603)
+  - **4 NATIONWIDE datasets uploaded** (AMI/FPL 2018/2022, 307 MB compressed, all 51 US states)
+  - 2.3+ million cohort records covering ~73,000 census tracts
+  - All download functions now use real Zenodo URLs
+  - MD5 checksum verification for all downloads
+  - Automated Zenodo upload and R code update scripts
+  - Comprehensive test suite (48 new metadata tests + 62 zenodo tests = 604 total tests)
+
+* **Comprehensive test coverage** for Zenodo infrastructure:
+  - `tests/testthat/test-zenodo-integration.R`: Configuration and database protection tests
+  - `tests/testthat/test-zenodo-download.R`: Download functionality tests
+  - Fixed `tests/testthat/test-data-loaders.R` for Zenodo download cascade
+  - All 556 tests passing (0 failures, 3 expected offline skips)
+
+* **Development tools** for data management:
+  - `.dev/upload-to-zenodo-nationwide.sh`: Automated nationwide Zenodo upload via REST API
+  - `.dev/update-zenodo-config.R`: Auto-update R/zenodo.R from upload output
+  - `.dev/prepare-zenodo-data-nationwide.R`: Script for preparing all 51 states
+  - `.dev/NC-TO-NATIONWIDE-TRANSITION.md`: Comprehensive transition plan
+  - `.dev/TEST_ZENODO_DOWNLOAD.md`: Complete testing guide
+  - Updated `.gitignore` for build artifacts
+
+* **Metadata discovery functions** with comprehensive tests:
+  - `list_states()`: Returns all 51 US state abbreviations
+  - `list_income_brackets()`: Income brackets by dataset/vintage
+  - `list_cohort_columns()`: Column names and descriptions
+  - `get_dataset_info()`: Complete dataset metadata
+  - 48 new tests in `tests/testthat/test-metadata.R`
+
+**Testing workflow**: Safe TDD workflow established with test database isolation
+
+**Next steps**: Transition documentation from NC-focused to nationwide (see `.dev/NC-TO-NATIONWIDE-TRANSITION.md`), ready for CRAN submission
+
 # emburden 0.4.7
 
 ## Data Hosting Infrastructure

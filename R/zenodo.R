@@ -11,47 +11,48 @@
 #' @keywords internal
 get_zenodo_config <- function() {
   # Zenodo record for emburden processed datasets
-  # This record contains pre-processed, CRAN-friendly datasets
-  # for all years and cohort types
+  # Published: 2025-11-13
+  # Scope: US Nationwide (51 states + DC)
+  # This record contains pre-processed, analysis-ready datasets
   list(
     # Main repository DOI (concept DOI - always points to latest version)
-    concept_doi = "10.5281/zenodo.XXXXXXX",  # TODO: Update after upload
+    concept_doi = "10.5281/zenodo.17605602",
 
     # Version-specific DOI (for reproducibility)
-    version_doi = "10.5281/zenodo.XXXXXXX",  # TODO: Update after upload
+    version_doi = "10.5281/zenodo.17605603",
 
     # Direct download URLs for each dataset
     # Format: zenodo_baseurl/records/RECORD_ID/files/FILENAME
     files = list(
-      # 2022 Cohort Data
+      # 2022 Cohort Data (US Nationwide)
       ami_2022 = list(
         filename = "lead_ami_cohorts_2022_us.csv.gz",
-        url = NULL,  # Will be constructed from DOI
-        size_mb = NULL,  # To be filled after upload
-        md5 = NULL  # MD5 checksum for verification
+        url = "https://zenodo.org/records/17605603/files/lead_ami_cohorts_2022_us.csv.gz",
+        size_mb = 148.14,
+        md5 = "5c2655cb5a698fb9744adbc6c567d91c"
       ),
       fpl_2022 = list(
         filename = "lead_fpl_cohorts_2022_us.csv.gz",
-        url = NULL,
-        size_mb = NULL,
-        md5 = NULL
+        url = "https://zenodo.org/records/17605603/files/lead_fpl_cohorts_2022_us.csv.gz",
+        size_mb = 52.05,
+        md5 = "a41dc1ba743d2d6a2f037f1b67f92597"
       ),
 
-      # 2018 Cohort Data
+      # 2018 Cohort Data (US Nationwide)
       ami_2018 = list(
         filename = "lead_ami_cohorts_2018_us.csv.gz",
-        url = NULL,
-        size_mb = NULL,
-        md5 = NULL
+        url = "https://zenodo.org/records/17605603/files/lead_ami_cohorts_2018_us.csv.gz",
+        size_mb = 54.03,
+        md5 = "117870dae2661e7b0ec931e39743b7f9"
       ),
       fpl_2018 = list(
         filename = "lead_fpl_cohorts_2018_us.csv.gz",
-        url = NULL,
-        size_mb = NULL,
-        md5 = NULL
+        url = "https://zenodo.org/records/17605603/files/lead_fpl_cohorts_2018_us.csv.gz",
+        size_mb = 52.64,
+        md5 = "e2f3acf38c331924f1f70eda24737dfd"
       ),
 
-      # Census Tract Data
+      # Census Tract Data (not yet uploaded)
       census_tracts = list(
         filename = "census_tract_data.csv.gz",
         url = NULL,
@@ -61,7 +62,7 @@ get_zenodo_config <- function() {
     ),
 
     # Metadata
-    description = "Pre-processed DOE LEAD Tool data for emburden R package",
+    description = "Pre-processed DOE LEAD Tool data for emburden R package (US Nationwide)",
     license = "CC-BY-4.0",
     source = "DOE Low-Income Energy Affordability Data (LEAD) Tool"
   )
