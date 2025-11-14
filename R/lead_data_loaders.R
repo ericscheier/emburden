@@ -35,14 +35,17 @@ utils::globalVariables(c("geoid", "income_bracket"))
 #'
 #' @examples
 #' \dontrun{
-#' # Load latest (2022) NC AMI data - auto-downloads if needed!
+#' # Single state (fast, good for learning)
 #' nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 #'
-#' # Load specific vintage
-#' nc_ami_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
+#' # Multiple states (regional analysis)
+#' southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
 #'
-#' # Load multiple states
-#' southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA"))
+#' # Nationwide (all 51 states - no filter)
+#' us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
+#'
+#' # Load specific vintage
+#' nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
 #'
 #' # Filter to specific income brackets
 #' low_income <- load_cohort_data(
@@ -51,7 +54,7 @@ utils::globalVariables(c("geoid", "income_bracket"))
 #'   income_brackets = c("0-30% AMI", "30-50% AMI")
 #' )
 #'
-#' # Filter to specific counties
+#' # Filter to specific counties within a state
 #' triangle <- load_cohort_data(
 #'   dataset = "fpl",
 #'   states = "NC",
@@ -233,11 +236,14 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
 #'
 #' @examples
 #' \dontrun{
-#' # Load all NC census tracts
+#' # Single state
 #' nc_tracts <- load_census_tract_data(states = "NC")
 #'
-#' # Load multiple states
-#' southeast <- load_census_tract_data(states = c("NC", "SC", "GA"))
+#' # Multiple states (regional)
+#' southeast <- load_census_tract_data(states = c("NC", "SC", "GA", "FL"))
+#'
+#' # Nationwide (all ~73,000 census tracts)
+#' us_tracts <- load_census_tract_data()  # No filter = all states
 #' }
 load_census_tract_data <- function(states = NULL, verbose = TRUE) {
 

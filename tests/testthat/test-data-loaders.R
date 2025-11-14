@@ -1,5 +1,9 @@
 # Phase 2: Data Loader Tests
 # Tests for load_cohort_data, load_census_tract_data, and related functions
+#
+# Data Coverage: Package supports all 51 US states (50 states + DC) with ~73,000 census tracts
+# and 2.3+ million cohort records. Tests use mocked data for speed but validate
+# nationwide functionality.
 
 test_that("load_cohort_data validates dataset parameter", {
   expect_error(
@@ -19,6 +23,9 @@ test_that("load_cohort_data handles missing data with download fallback", {
   # Mock all local sources to fail (simulating no local data)
   mockery::stub(load_cohort_data, "try_load_from_database", NULL)
   mockery::stub(load_cohort_data, "try_load_from_csv", NULL)
+
+  # Mock Zenodo to fail (so we test OpenEI fallback)
+  mockery::stub(load_cohort_data, "download_from_zenodo", NULL)
 
   # Mock successful download as fallback
   fallback_data <- data.frame(
@@ -47,6 +54,7 @@ test_that("load_cohort_data fails gracefully when all sources unavailable", {
   # Mock all sources to fail
   mockery::stub(load_cohort_data, "try_load_from_database", NULL)
   mockery::stub(load_cohort_data, "try_load_from_csv", NULL)
+  mockery::stub(load_cohort_data, "download_from_zenodo", NULL)
   mockery::stub(load_cohort_data, "download_lead_data", NULL)
 
   # Should error with informative message
@@ -219,6 +227,9 @@ test_that("load_cohort_data handles corrupt data files", {
   # Mock try_load_from_csv to simulate corrupt file (return NULL)
   mockery::stub(load_cohort_data, "try_load_from_csv", NULL)
 
+  # Mock Zenodo to fail (so we test OpenEI fallback)
+  mockery::stub(load_cohort_data, "download_from_zenodo", NULL)
+
   # Mock download_lead_data to return valid data (fallback)
   valid_data <- data.frame(
     geoid = c("37051003400"),
@@ -267,6 +278,9 @@ test_that("download fallback works when local data unavailable", {
   # Mock all local sources to fail
   mockery::stub(load_cohort_data, "try_load_from_database", NULL)
   mockery::stub(load_cohort_data, "try_load_from_csv", NULL)
+
+  # Mock Zenodo to fail (so we test OpenEI fallback)
+  mockery::stub(load_cohort_data, "download_from_zenodo", NULL)
 
   # Mock successful download
   download_data <- data.frame(
@@ -531,4 +545,26 @@ test_that("load_cohort_data returns columns with correct types", {
   expect_true(is.numeric(result$households))
   expect_type(result$total_income, "double")
   expect_type(result$total_electricity_spend, "double")
+})
+
+test_that("Package supports all 51 US states (nationwide coverage)", {
+  # Verify that all 51 states (50 states + DC) are supported
+  all_states <- list_states()
+
+  expect_length(all_states, 51)
+  expect_type(all_states, "character")
+
+  # Check key states are included
+  expect_true("NC" %in% all_states)
+  expect_true("CA" %in% all_states)
+  expect_true("TX" %in% all_states)
+  expect_true("NY" %in% all_states)
+  expect_true("DC" %in% all_states)
+
+  # Verify PR is NOT included (not in LEAD data)
+  expect_false("PR" %in% all_states)
+
+  # All should be 2-character uppercase codes
+  expect_true(all(nchar(all_states) == 2))
+  expect_true(all(all_states == toupper(all_states)))
 })

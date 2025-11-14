@@ -31,17 +31,26 @@ utils::globalVariables(c(
 #'
 #' @examples
 #' \dontrun{
-#' # Compare NC energy burden by income bracket (2018 vs 2022)
-#' # Note: New parameter order makes this intuitive!
-#' compare_energy_burden("ami", "NC", "income_bracket")
+#' # Single state comparison (fast, good for learning)
+#' nc_comparison <- compare_energy_burden("ami", "NC", "income_bracket")
 #'
-#' # State-level comparison
-#' compare_energy_burden("fpl", states = c("NC", "SC"), group_by = "state")
+#' # Multi-state regional comparison
+#' southeast <- compare_energy_burden(
+#'   dataset = "fpl",
+#'   states = c("NC", "SC", "GA", "FL"),
+#'   group_by = "state"
+#' )
+#'
+#' # Nationwide comparison by income bracket (all 51 states)
+#' us_comparison <- compare_energy_burden(
+#'   dataset = "ami",
+#'   group_by = "income_bracket"  # No states filter = all states
+#' )
 #'
 #' # Overall comparison (no grouping)
 #' compare_energy_burden("ami", "NC", "none")
 #'
-#' # Compare specific counties
+#' # Compare specific counties within a state
 #' compare_energy_burden("fpl", "NC", counties = c("Orange", "Durham", "Wake"))
 #'
 #' # Custom grouping by tract-level geoid
