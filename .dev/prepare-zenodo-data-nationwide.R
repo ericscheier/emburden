@@ -24,7 +24,10 @@
 #     checksums.txt
 #     state-manifest.json
 
-library(emburden)
+# Load development version of emburden (includes list_states() and validation functions)
+library(devtools)
+load_all(".")
+
 library(dplyr)
 library(readr)
 library(jsonlite)
@@ -87,8 +90,130 @@ manifest <- list(
   statistics = list()
 )
 
+# Function to validate dataset before saving
+validate_dataset <- function(data, expected_scope, dataset_name, vintage) {
+  cat("\n  === Validating Dataset ===\n")
+
+  # Check 1: Data exists and has rows
+  if (is.null(data) || nrow(data) == 0) {
+    stop("VALIDATION FAILED: Dataset is NULL or empty!")
+  }
+  cat("  ✓ Data exists (", format(nrow(data), big.mark = ","), " rows)\n", sep = "")
+
+  # Check 2: Required columns exist
+  required_cols <- c("geoid", "income_bracket", "households",
+                     "total_income", "total_electricity_spend")
+  missing_cols <- setdiff(required_cols, names(data))
+  if (length(missing_cols) > 0) {
+    stop("VALIDATION FAILED: Missing required columns: ",
+         paste(missing_cols, collapse = ", "))
+  }
+  cat("  ✓ Required columns present\n")
+
+  # Check 3: For nationwide datasets, verify state coverage
+  if (expected_scope == "nationwide") {
+    # Check for state_abbr column - if missing, try to add it from geoid
+    if (!"state_abbr" %in% names(data)) {
+      cat("  ⚠️  WARNING: state_abbr column missing, attempting to add from geoid...\n")
+
+      if (!"geoid" %in% names(data)) {
+        stop("VALIDATION FAILED: Cannot add state_abbr - geoid column also missing!")
+      }
+
+      # Get state FIPS from geoid (first 2 characters)
+      data$state_fips <- substr(data$geoid, 1, 2)
+
+      # Map FIPS to state abbreviations
+      fips_to_state <- setNames(
+        c("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID",
+          "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS",
+          "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK",
+          "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV",
+          "WI", "WY", "DC"),
+        c("01", "02", "04", "05", "06", "08", "09", "10", "12", "13", "15", "16",
+          "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28",
+          "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+          "41", "42", "44", "45", "46", "47", "48", "49", "50", "51", "53", "54",
+          "55", "56", "11")
+      )
+
+      data$state_abbr <- fips_to_state[data$state_fips]
+
+      # Check if we successfully added it
+      if (all(is.na(data$state_abbr))) {
+        stop("VALIDATION FAILED: Could not map FIPS codes to state abbreviations!")
+      }
+
+      cat("  ✓ Successfully added state_abbr column from geoid\n")
+    }
+
+    # Get unique states
+    states_present <- unique(data$state_abbr)
+    states_present <- states_present[!is.na(states_present)]
+    n_states <- length(states_present)
+
+    cat("  ✓ state_abbr column exists\n")
+    cat("  ✓ States found:", n_states, "\n")
+
+    # Must have exactly 51 states (50 + DC)
+    if (n_states != 51) {
+      cat("  ❌ ERROR: Expected 51 states, found", n_states, "\n")
+      cat("  Missing states:", paste(setdiff(list_states(), states_present), collapse = ", "), "\n")
+      cat("  Extra states:", paste(setdiff(states_present, list_states()), collapse = ", "), "\n")
+      stop("VALIDATION FAILED: Nationwide dataset does not have all 51 states!")
+    }
+    cat("  ✓ All 51 US states/territories present\n")
+
+    # Verify minimum row count (nationwide should have 100k+ rows)
+    min_rows_nationwide <- 100000
+    if (nrow(data) < min_rows_nationwide) {
+      warning("Nationwide dataset has fewer rows than expected: ",
+              nrow(data), " < ", min_rows_nationwide)
+    }
+  }
+
+  # Check 4: For state datasets, verify single state
+  if (expected_scope != "nationwide" && "state_abbr" %in% names(data)) {
+    states_present <- unique(data$state_abbr)
+    states_present <- states_present[!is.na(states_present)]
+
+    if (length(states_present) != 1 || states_present[1] != expected_scope) {
+      stop("VALIDATION FAILED: State dataset has wrong states. Expected: ",
+           expected_scope, ", Found: ", paste(states_present, collapse = ", "))
+    }
+    cat("  ✓ Single state (", expected_scope, ") verified\n", sep = "")
+  }
+
+  # Check 5: Test that data can be used with emburden functions
+  tryCatch({
+    # Try calculating energy burden on a sample
+    sample_data <- head(data, 100)
+    if ("total_income" %in% names(sample_data) &&
+        "total_electricity_spend" %in% names(sample_data)) {
+      test_burden <- sum(sample_data$total_electricity_spend, na.rm = TRUE) /
+                     sum(sample_data$total_income, na.rm = TRUE)
+      if (!is.finite(test_burden)) {
+        warning("Sample energy burden calculation returned non-finite value")
+      }
+    }
+    cat("  ✓ Data compatible with emburden calculations\n")
+  }, error = function(e) {
+    stop("VALIDATION FAILED: Data incompatible with emburden functions: ", e$message)
+  })
+
+  cat("  ✅ All validation checks passed!\n\n")
+  return(TRUE)
+}
+
 # Function to compress and save
-compress_and_save <- function(data, output_file, desc) {
+compress_and_save <- function(data, output_file, desc, expected_scope = NULL,
+                               dataset_name = NULL, vintage = NULL) {
+
+  # Validate before saving (if validation params provided)
+  if (!is.null(expected_scope)) {
+    validate_dataset(data, expected_scope, dataset_name, vintage)
+  }
+
   cat("  Saving:", basename(output_file), "\n")
 
   # Save uncompressed
@@ -162,6 +287,14 @@ if (!nationwide_only) {
         next
       }
 
+      # Manual filter by state (in case load_cohort_data didn't filter properly)
+      if ("state_abbr" %in% names(data)) {
+        data <- data %>% filter(state_abbr == state)
+        cat("    Filtered to", state, ":", format(nrow(data), big.mark = ","), "rows\n")
+      } else {
+        cat("    WARNING: No state_abbr column, cannot verify state filtering\n")
+      }
+
       # Save state-specific dataset
       state_file <- file.path(
         state_output_dir,
@@ -171,7 +304,10 @@ if (!nationwide_only) {
       file_info <- compress_and_save(
         data,
         state_file,
-        sprintf("%s %s cohort data for %s", vintage, toupper(dataset_name), state)
+        sprintf("%s %s cohort data for %s", vintage, toupper(dataset_name), state),
+        expected_scope = state,
+        dataset_name = dataset_name,
+        vintage = vintage
       )
 
       state_manifest$datasets[[paste0(dataset_name, "_", vintage)]] <- file_info
@@ -203,39 +339,118 @@ if (!states_only) {
 
     cat("  Loading all states...\n")
 
-    # Load all states
-    all_data <- tryCatch({
-      load_cohort_data(
-        dataset = dataset_name,
-        vintage = vintage,
-        states = all_states,
-        verbose = TRUE
-      )
-    }, error = function(e) {
-      cat("  ERROR:", e$message, "\n\n")
-      return(NULL)
-    })
+    # Self-healing retry loop
+    max_retries <- 2
+    retry_count <- 0
+    success <- FALSE
 
-    if (is.null(all_data) || nrow(all_data) == 0) {
-      cat("  SKIPPED: No data available\n\n")
-      next
+    while (!success && retry_count < max_retries) {
+      # Load all states
+      all_data <- tryCatch({
+        load_cohort_data(
+          dataset = dataset_name,
+          vintage = vintage,
+          states = all_states,
+          verbose = TRUE
+        )
+      }, error = function(e) {
+        cat("  ERROR:", e$message, "\n\n")
+        return(NULL)
+      })
+
+      if (is.null(all_data) || nrow(all_data) == 0) {
+        cat("  SKIPPED: No data available\n\n")
+        break
+      }
+
+      cat("\n  Combined data loaded successfully!\n")
+      cat("    Total rows:", format(nrow(all_data), big.mark = ","), "\n")
+      cat("    Total states:", length(unique(all_data$state_abbr)), "\n\n")
+
+      # Save nationwide dataset (with validation)
+      nationwide_file <- file.path(
+        nationwide_dir,
+        sprintf("lead_%s_cohorts_%s_us.csv", dataset_name, vintage)
+      )
+
+      # Try to save with validation
+      file_info <- tryCatch({
+        compress_and_save(
+          all_data,
+          nationwide_file,
+          sprintf("%s %s cohort data (all US states)", vintage, toupper(dataset_name)),
+          expected_scope = "nationwide",
+          dataset_name = dataset_name,
+          vintage = vintage
+        )
+      }, error = function(e) {
+        # Validation failed - likely corrupted database data
+        cat("\n  ❌ VALIDATION FAILED:", e$message, "\n")
+
+        # Check if this is due to incomplete database data
+        if (grepl("state|VALIDATION FAILED", e$message, ignore.case = TRUE)) {
+          cat("\n  🔧 SELF-HEALING: Detected corrupted database data\n")
+          cat("     Deleting database table to force reload from CSV/OpenEI...\n")
+
+          # Delete corrupted database table
+          db_path <- rappdirs::user_data_dir('emburden', 'emburden')
+          db_file <- file.path(db_path, 'emburden_db.sqlite')
+
+          if (file.exists(db_file)) {
+            # Connect and drop the table
+            conn <- tryCatch({
+              DBI::dbConnect(RSQLite::SQLite(), db_file)
+            }, error = function(e2) NULL)
+
+            if (!is.null(conn)) {
+              table_name <- paste0(dataset_name, "_cohorts_", vintage)
+              tryCatch({
+                DBI::dbExecute(conn, sprintf("DROP TABLE IF EXISTS %s", table_name))
+                cat("     ✓ Deleted table:", table_name, "\n")
+              }, error = function(e2) {
+                cat("     ⚠️  Could not delete table:", e2$message, "\n")
+              })
+              DBI::dbDisconnect(conn)
+            }
+
+            # Also try alternate table name format
+            conn <- tryCatch({
+              DBI::dbConnect(RSQLite::SQLite(), db_file)
+            }, error = function(e2) NULL)
+
+            if (!is.null(conn)) {
+              table_name_alt <- paste0("lead_", vintage, "_", dataset_name, "_cohorts")
+              tryCatch({
+                DBI::dbExecute(conn, sprintf("DROP TABLE IF EXISTS %s", table_name_alt))
+                cat("     ✓ Deleted table:", table_name_alt, "\n")
+              }, error = function(e2) NULL)
+              DBI::dbDisconnect(conn)
+            }
+          }
+
+          cat("     Database cleaned. Will retry with fresh data...\n\n")
+        }
+
+        return(NULL)
+      })
+
+      # Check if save succeeded
+      if (!is.null(file_info)) {
+        success <- TRUE
+      } else {
+        retry_count <- retry_count + 1
+        if (retry_count < max_retries) {
+          cat("\n  🔄 RETRY", retry_count, "of", max_retries - 1, "...\n\n")
+        } else {
+          cat("\n  ❌ Failed after", max_retries - 1, "retries. Skipping this dataset.\n\n")
+          next
+        }
+      }
     }
 
-    cat("\n  Combined data loaded successfully!\n")
-    cat("    Total rows:", format(nrow(all_data), big.mark = ","), "\n")
-    cat("    Total states:", length(unique(all_data$state_abbr)), "\n\n")
-
-    # Save nationwide dataset
-    nationwide_file <- file.path(
-      nationwide_dir,
-      sprintf("lead_%s_cohorts_%s_us.csv", dataset_name, vintage)
-    )
-
-    file_info <- compress_and_save(
-      all_data,
-      nationwide_file,
-      sprintf("%s %s cohort data (all US states)", vintage, toupper(dataset_name))
-    )
+    if (!success) {
+      next  # Skip to next dataset
+    }
 
     manifest$nationwide[[paste0(dataset_name, "_", vintage)]] <- file_info
 
