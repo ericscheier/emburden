@@ -33,9 +33,9 @@ get_zenodo_config <- function() {
       ),
       fpl_2022 = list(
         filename = "lead_fpl_cohorts_2022_us.csv.gz",
-        url = "https://zenodo.org/records/17605603/files/lead_fpl_cohorts_2022_us.csv.gz",
-        size_mb = 52.05,
-        md5 = "a41dc1ba743d2d6a2f037f1b67f92597"
+        url = NULL,  # TEMPORARILY DISABLED - v0.4.8 upload has only NC data
+        size_mb = NULL,
+        md5 = NULL
       ),
 
       # 2018 Cohort Data (US Nationwide)
@@ -47,9 +47,9 @@ get_zenodo_config <- function() {
       ),
       fpl_2018 = list(
         filename = "lead_fpl_cohorts_2018_us.csv.gz",
-        url = "https://zenodo.org/records/17605603/files/lead_fpl_cohorts_2018_us.csv.gz",
-        size_mb = 52.64,
-        md5 = "e2f3acf38c331924f1f70eda24737dfd"
+        url = NULL,  # TEMPORARILY DISABLED - v0.4.8 upload has only NC data
+        size_mb = NULL,
+        md5 = NULL
       ),
 
       # Census Tract Data (not yet uploaded)

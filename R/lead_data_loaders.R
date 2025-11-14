@@ -1,5 +1,5 @@
 # Global variable bindings to satisfy R CMD check
-utils::globalVariables(c("geoid", "income_bracket"))
+utils::globalVariables(c("geoid", "geo_id", "income_bracket"))
 
 #' Load DOE LEAD Tool Cohort Data
 #'
@@ -1189,6 +1189,12 @@ standardize_cohort_columns <- function(data, dataset, vintage) {
   if ("FIP" %in% names(data) && !"geoid" %in% names(data)) {
     data <- data |>
       dplyr::rename(geoid = FIP)
+  }
+
+  # Handle legacy data that uses geo_id instead of geoid
+  if ("geo_id" %in% names(data) && !"geoid" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(geoid = geo_id)
   }
 
   # Ensure geoid is character

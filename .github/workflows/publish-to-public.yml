@@ -1,16 +1,20 @@
 name: Publish to Public Repository
 
 # Trigger options:
-# 1. On version tags (v1.0.0, v2.1.3, etc.)
-# 2. On release tags (release-2024-10-31, release-foo, etc.)
-# 3. On push to 'ready-for-public' branch (create this branch with protections)
-# 4. Manual trigger via GitHub Actions UI
+# 1. On GitHub release published (automatic after auto-release.yaml creates release)
+# 2. On push to 'ready-for-public' branch (create this branch with protections)
+# 3. Manual trigger via GitHub Actions UI
+#
+# NOTE: We trigger on 'release' events instead of 'push: tags' because
+# the auto-release workflow uses GITHUB_TOKEN to push tags, which won't
+# trigger other workflows (GitHub security feature to prevent infinite loops).
+# By triggering on 'release' events, we run automatically when the GitHub
+# release is created.
 
 on:
+  release:
+    types: [published]  # Triggers when auto-release.yaml creates a GitHub release
   push:
-    tags:
-      - 'v*'           # Matches v1.0.0, v2.1.3, etc.
-      - 'release-*'    # Matches release-2024-10-31, release-foo, etc.
     branches:
       - 'ready-for-public'  # Protected branch for controlled releases
   workflow_dispatch:    # Manual trigger from GitHub UI
