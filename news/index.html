@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,9 +37,323 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/v0.3.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="emburden-050">emburden 0.5.0<a class="anchor" aria-label="anchor" href="#emburden-050"></a></h2>
+<div class="section level3">
+<h3 id="cran-submission-ready---nationwide-energy-burden-analysis-0-5-0">CRAN Submission Ready - Nationwide Energy Burden Analysis<a class="anchor" aria-label="anchor" href="#cran-submission-ready---nationwide-energy-burden-analysis-0-5-0"></a></h3>
+<p>This major release marks the completion of the nationwide expansion and prepares the package for CRAN submission. The package now comprehensively showcases nationwide US capability across all documentation, with 648 tests passing and clean R CMD check results.</p>
+<div class="section level4">
+<h4 id="nationwide-expansion-complete-0-5-0">Nationwide Expansion Complete<a class="anchor" aria-label="anchor" href="#nationwide-expansion-complete-0-5-0"></a></h4>
+<ul><li>
+<strong>Full nationwide focus</strong> achieved across all documentation
+<ul><li>README features nationwide data from introduction: “All 51 US states…2.3+ million records”</li>
+<li>All function examples demonstrate single-state → multi-state → nationwide progression</li>
+<li>Both vignettes showcase nationwide capability alongside learning examples</li>
+<li>Dual focus strategy: NC examples for learning (small, fast), nationwide for production use</li>
+</ul></li>
+<li>
+<strong>Comprehensive test coverage</strong> validates nationwide functionality
+<ul><li>648 tests passing (0 failures)</li>
+<li>Multi-state regional filtering (Southeast, top 10 states, cross-regional)</li>
+<li>Data integrity validation across all 51 states</li>
+<li>All major US regions tested (Northeast, Southeast, Midwest, Southwest, West)</li>
+</ul></li>
+<li>
+<strong>CRAN readiness verified</strong>
+<ul><li>R CMD check: 0 errors, 1 acceptable warning (qpdf), 1 acceptable note (httptest2)</li>
+<li>Package size: Under 5MB CRAN limit (~1.9MB)</li>
+<li>Multi-platform CI validation (macOS, Windows, Ubuntu × 5 R versions)</li>
+<li>External data hosting on Zenodo (DOI: 10.5281/zenodo.17605603)</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="documentation-enhancements-0-5-0">Documentation Enhancements<a class="anchor" aria-label="anchor" href="#documentation-enhancements-0-5-0"></a></h4>
+<ul><li>
+<strong>Nationwide vignette content</strong>
+<ul><li>
+<code>vignettes/getting-started.Rmd</code>: Comprehensive nationwide examples (v0.4.10)</li>
+<li>
+<code>vignettes/jss-emburden.Rmd</code>: Nationwide data availability note added</li>
+<li>Performance guidance for large dataset queries (30-120 seconds, ~500MB RAM)</li>
+<li>Metadata discovery functions showcased (<code><a href="../reference/list_states.html">list_states()</a></code>, <code><a href="../reference/list_income_brackets.html">list_income_brackets()</a></code>, etc.)</li>
+</ul></li>
+<li>
+<strong>Language cleanup</strong>
+<ul><li>Removed “proof of concept” references from documentation</li>
+<li>Professional, production-ready messaging throughout</li>
+<li>Clear data coverage statements: 2.3M+ household records, ~73k census tracts, all 51 states</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="data-infrastructure-0-5-0">Data Infrastructure<a class="anchor" aria-label="anchor" href="#data-infrastructure-0-5-0"></a></h4>
+<ul><li>
+<strong>Zenodo data hosting</strong> (established in v0.4.7-0.4.8)
+<ul><li>4 nationwide datasets published (AMI/FPL 2018/2022, 307 MB compressed)</li>
+<li>MD5 checksum verification for data integrity</li>
+<li>Automatic download cascade: Database → CSV → Zenodo → OpenEI fallback</li>
+<li>Package stays under CRAN 5MB limit</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="package-quality-metrics-0-5-0">Package Quality Metrics<a class="anchor" aria-label="anchor" href="#package-quality-metrics-0-5-0"></a></h4>
+<ul><li>
+<strong>Test coverage</strong>: 648 comprehensive tests
+<ul><li>99 multi-state and nationwide tests</li>
+<li>48 metadata discovery tests</li>
+<li>62 Zenodo integration tests</li>
+<li>Complete data loader and comparison function coverage</li>
+</ul></li>
+<li>
+<strong>CI/CD infrastructure</strong>
+<ul><li>Multi-platform R CMD check (5 environments)</li>
+<li>Test coverage reporting</li>
+<li>Automated release workflow on version bumps</li>
+<li>Pre-commit and pre-push hooks for local validation</li>
+</ul></li>
+</ul><p><strong>Breaking changes</strong>: None. All existing NC-focused code continues to work. Nationwide capability is additive.</p>
+<p><strong>Next milestone</strong>: CRAN submission! 🚀</p>
+</div>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.9" id="emburden-049">emburden 0.4.9<a class="anchor" aria-label="anchor" href="#emburden-049"></a></h2>
+<div class="section level3">
+<h3 id="documentation-transition--infrastructure-0-4-9">Documentation Transition &amp; Infrastructure<a class="anchor" aria-label="anchor" href="#documentation-transition--infrastructure-0-4-9"></a></h3>
+<ul><li>
+<strong>NC→Nationwide transition (Phase 1)</strong>: Package documentation now showcases nationwide US capability
+<ul><li>Updated <code>README.md</code> with multi-state and nationwide examples alongside NC examples</li>
+<li>Updated all function examples (<code><a href="../reference/compare_energy_burden.html">compare_energy_burden()</a></code>, <code><a href="../reference/load_cohort_data.html">load_cohort_data()</a></code>, <code><a href="../reference/load_census_tract_data.html">load_census_tract_data()</a></code>)</li>
+<li>Added test validating all 51 US states are supported (614 tests passing)</li>
+<li>
+<strong>Data coverage</strong>: 2.3M household cohort records, ~73k census tracts, all 51 states</li>
+<li>Follows “dual focus” strategy: NC examples for learning, nationwide examples for production use</li>
+<li>See <code>.dev/NC-TO-NATIONWIDE-TRANSITION.md</code> for comprehensive transition plan</li>
+</ul></li>
+<li>
+<strong>pkgdown build fix</strong>: Resolved recurring CI failure
+<ul><li>Changed <code><a href="../reference/backup_db.html">backup_db()</a></code> and <code><a href="../reference/clear_test_environment.html">clear_test_environment()</a></code> from <code>@export</code> to <code>@keywords internal</code>
+</li>
+<li>Added pkgdown reference index check to pre-commit hook to prevent recurrence</li>
+<li>Hook provides helpful hints about <code>@export</code> vs <code>@keywords internal</code>
+</li>
+</ul></li>
+</ul><p><strong>No breaking changes</strong>: All NC-focused examples continue to work. Nationwide data access is additive.</p>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.8" id="emburden-048">emburden 0.4.8<a class="anchor" aria-label="anchor" href="#emburden-048"></a></h2>
+<div class="section level3">
+<h3 id="database-protection--testing-infrastructure-0-4-8">Database Protection &amp; Testing Infrastructure<a class="anchor" aria-label="anchor" href="#database-protection--testing-infrastructure-0-4-8"></a></h3>
+<ul><li>
+<strong>Production database protection</strong> to prevent accidental data loss:
+<ul><li>New <code>R/database-helpers.R</code> module with safe database operations</li>
+<li>
+<code><a href="../reference/delete_db.html">delete_db()</a></code> requires explicit <code>confirm = TRUE</code> for production database</li>
+<li>
+<code><a href="../reference/backup_db.html">backup_db()</a></code> creates timestamped backups before risky operations</li>
+<li>
+<code><a href="../reference/clear_test_environment.html">clear_test_environment()</a></code> safely clears only test data</li>
+<li>Separate test (<code>emburden_test_db.sqlite</code>) and production (<code>emburden_db.sqlite</code>) databases</li>
+<li>All database helpers fully documented with roxygen2</li>
+</ul></li>
+<li>
+<strong>Zenodo integration completed</strong> with NATIONWIDE data publication:
+<ul><li>Updated <code>R/zenodo.R</code> with published Zenodo record (DOI: 10.5281/zenodo.17605603)</li>
+<li>
+<strong>4 NATIONWIDE datasets uploaded</strong> (AMI/FPL 2018/2022, 307 MB compressed, all 51 US states)</li>
+<li>2.3+ million cohort records covering ~73,000 census tracts</li>
+<li>All download functions now use real Zenodo URLs</li>
+<li>MD5 checksum verification for all downloads</li>
+<li>Automated Zenodo upload and R code update scripts</li>
+<li>Comprehensive test suite (48 new metadata tests + 62 zenodo tests = 604 total tests)</li>
+</ul></li>
+<li>
+<strong>Comprehensive test coverage</strong> for Zenodo infrastructure:
+<ul><li>
+<code>tests/testthat/test-zenodo-integration.R</code>: Configuration and database protection tests</li>
+<li>
+<code>tests/testthat/test-zenodo-download.R</code>: Download functionality tests</li>
+<li>Fixed <code>tests/testthat/test-data-loaders.R</code> for Zenodo download cascade</li>
+<li>All 556 tests passing (0 failures, 3 expected offline skips)</li>
+</ul></li>
+<li>
+<strong>Development tools</strong> for data management:
+<ul><li>
+<code>.dev/upload-to-zenodo-nationwide.sh</code>: Automated nationwide Zenodo upload via REST API</li>
+<li>
+<code>.dev/update-zenodo-config.R</code>: Auto-update R/zenodo.R from upload output</li>
+<li>
+<code>.dev/prepare-zenodo-data-nationwide.R</code>: Script for preparing all 51 states</li>
+<li>
+<code>.dev/NC-TO-NATIONWIDE-TRANSITION.md</code>: Comprehensive transition plan</li>
+<li>
+<code>.dev/TEST_ZENODO_DOWNLOAD.md</code>: Complete testing guide</li>
+<li>Updated <code>.gitignore</code> for build artifacts</li>
+</ul></li>
+<li>
+<strong>Metadata discovery functions</strong> with comprehensive tests:
+<ul><li>
+<code><a href="../reference/list_states.html">list_states()</a></code>: Returns all 51 US state abbreviations</li>
+<li>
+<code><a href="../reference/list_income_brackets.html">list_income_brackets()</a></code>: Income brackets by dataset/vintage</li>
+<li>
+<code><a href="../reference/list_cohort_columns.html">list_cohort_columns()</a></code>: Column names and descriptions</li>
+<li>
+<code><a href="../reference/get_dataset_info.html">get_dataset_info()</a></code>: Complete dataset metadata</li>
+<li>48 new tests in <code>tests/testthat/test-metadata.R</code>
+</li>
+</ul></li>
+</ul><p><strong>Testing workflow</strong>: Safe TDD workflow established with test database isolation</p>
+<p><strong>Next steps</strong>: Transition documentation from NC-focused to nationwide (see <code>.dev/NC-TO-NATIONWIDE-TRANSITION.md</code>), ready for CRAN submission</p>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.7" id="emburden-047">emburden 0.4.7<a class="anchor" aria-label="anchor" href="#emburden-047"></a></h2>
+<div class="section level3">
+<h3 id="data-hosting-infrastructure-0-4-7">Data Hosting Infrastructure<a class="anchor" aria-label="anchor" href="#data-hosting-infrastructure-0-4-7"></a></h3>
+<ul><li>
+<strong>Implemented Zenodo data hosting</strong> with OpenEI fallback:
+<ul><li>New <code>R/zenodo.R</code> module for downloading from Zenodo repository</li>
+<li>Faster downloads via Zenodo CDN vs OpenEI</li>
+<li>MD5 checksum verification for data integrity</li>
+<li>Gzip decompression support for smaller downloads</li>
+<li>Automatic fallback to OpenEI if Zenodo unavailable</li>
+</ul></li>
+<li>
+<strong>Updated download cascade</strong> in <code><a href="../reference/load_cohort_data.html">load_cohort_data()</a></code> and <code><a href="../reference/load_census_tract_data.html">load_census_tract_data()</a></code>:
+<ol style="list-style-type: decimal"><li>Database (SQLite) - fastest, local</li>
+<li>CSV (cached files) - fast, local</li>
+<li>
+<strong>Zenodo (NEW!)</strong> - faster, more reliable</li>
+<li>OpenEI (fallback) - original source</li>
+</ol></li>
+<li>
+<strong>Added maintainer documentation</strong>: <code>.dev/ZENODO_UPLOAD_GUIDE.md</code>
+<ul><li>Complete workflow for preparing and uploading datasets</li>
+<li>Compression and checksum procedures</li>
+<li>Testing and versioning guidelines</li>
+</ul></li>
+</ul><p><strong>Benefits</strong>: Nationwide data testing ready, package stays under CRAN 5MB limit (currently 1.9MB), improved download reliability</p>
+<p><strong>Next steps</strong>: Upload processed datasets to Zenodo, update DOI configuration, ready for CRAN submission</p>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.6" id="emburden-046">emburden 0.4.6<a class="anchor" aria-label="anchor" href="#emburden-046"></a></h2>
+<div class="section level3">
+<h3 id="cran-preparation-fixes-0-4-6">CRAN Preparation Fixes<a class="anchor" aria-label="anchor" href="#cran-preparation-fixes-0-4-6"></a></h3>
+<ul><li>
+<strong>Fixed R CMD check WARNINGs and NOTEs</strong>:
+<ul><li>Excluded JSON data files (579MB) from package build via .Rbuildignore</li>
+<li>Excluded top-level presentation/poster files (25+ non-standard files)</li>
+<li>Added vignette metadata to jss-emburden.Rmd (VignetteEngine, VignetteIndexEntry)</li>
+<li>Package now builds cleanly under 5MB for CRAN submission</li>
+</ul></li>
+<li>
+<strong>Next steps for CRAN</strong>: Implement Zenodo data hosting to fully separate data from methods package</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.5" id="emburden-045">emburden 0.4.5<a class="anchor" aria-label="anchor" href="#emburden-045"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-4-5">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-4-5"></a></h3>
+<ul><li>
+<strong>Metadata discovery functions</strong> for easier data exploration:
+<ul><li>
+<code>list_income_brackets(dataset, vintage)</code>: Show available income brackets</li>
+<li>
+<code><a href="../reference/list_states.html">list_states()</a></code>: Show all 51 available state abbreviations</li>
+<li>
+<code>list_cohort_columns(dataset, vintage)</code>: Show column names, descriptions, and data types</li>
+<li>
+<code><a href="../reference/get_dataset_info.html">get_dataset_info()</a></code>: Show metadata about all available datasets</li>
+<li>Enables programmatic discovery of data structure</li>
+</ul></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.4" id="emburden-044">emburden 0.4.4<a class="anchor" aria-label="anchor" href="#emburden-044"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-4-4">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-4-4"></a></h3>
+<ul><li>
+<strong>Parameter reordering in <code><a href="../reference/compare_energy_burden.html">compare_energy_burden()</a></code></strong>: <code>group_by</code> now comes before <code>counties</code>
+<ul><li>
+<strong>New order</strong>: <code>compare_energy_burden(dataset, states, group_by, counties, ...)</code>
+</li>
+<li>Makes intuitive syntax work: <code>compare_energy_burden('fpl', 'NC', 'income_bracket')</code>
+</li>
+<li>Named parameters unaffected: <code>compare_energy_burden(dataset='fpl', counties=c('Orange'))</code>
+</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-0-4-4">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-4-4"></a></h3>
+<ul><li>
+<strong>Dynamic grouping in <code><a href="../reference/compare_energy_burden.html">compare_energy_burden()</a></code></strong>: <code>group_by</code> now accepts custom column names
+<ul><li>Use keywords: “income_bracket”, “state”, “none” (as before)</li>
+<li>OR custom columns: <code>group_by = "geoid"</code> for tract-level comparison</li>
+<li>OR multiple columns: <code>group_by = c("state_abbr", "income_bracket")</code>
+</li>
+<li>Enables flexible analysis patterns for full USA data</li>
+</ul></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.3" id="emburden-043">emburden 0.4.3<a class="anchor" aria-label="anchor" href="#emburden-043"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-4-3">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-4-3"></a></h3>
+<ul><li>
+<strong>Dynamic filtering in <code><a href="../reference/load_cohort_data.html">load_cohort_data()</a></code></strong>: Now accepts <code>...</code> parameter for flexible filtering
+<ul><li>Filter by any column using tidyverse syntax</li>
+<li>Example: <code>load_cohort_data("ami", states = "NC", households &gt; 100, total_income &gt; 50000)</code>
+</li>
+<li>Complements existing <code>states</code>, <code>counties</code>, <code>income_brackets</code> parameters</li>
+<li>First step toward full USA data package architecture</li>
+</ul></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.2" id="emburden-042">emburden 0.4.2<a class="anchor" aria-label="anchor" href="#emburden-042"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-4-2">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-4-2"></a></h3>
+<ul><li>Fixed confusing warnings when using <code>compare_energy_burden('fpl', 'NC', 'income_bracket')</code>
+</li>
+<li>Function now silently handles common mistake of passing ‘income_bracket’, ‘state’, or ‘none’ as counties argument</li>
+<li>Eliminates “County name ‘income_bracket’ not found” warnings while maintaining correct behavior</li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-0-4-2">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-4-2"></a></h3>
+<ul><li>Improved documentation with clearer examples distinguishing between <code>group_by</code> and <code>counties</code> parameters</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.1" id="emburden-041">emburden 0.4.1<a class="anchor" aria-label="anchor" href="#emburden-041"></a></h2>
+<div class="section level3">
+<h3 id="improvements-0-4-1">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-4-1"></a></h3>
+<ul><li>Updated contact email from <a href="mailto:eric.scheier@gmail.com" class="email">eric.scheier@gmail.com</a> to <a href="mailto:eric@scheier.org" class="email">eric@scheier.org</a> across all documentation</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="emburden-040">emburden 0.4.0<a class="anchor" aria-label="anchor" href="#emburden-040"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-4-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-4-0"></a></h3>
+<div class="section level4">
+<h4 id="fully-automated-release-workflow-0-4-0">Fully Automated Release Workflow<a class="anchor" aria-label="anchor" href="#fully-automated-release-workflow-0-4-0"></a></h4>
+<ul><li>
+<strong>Zero-touch releases</strong>: GitHub releases now created automatically when version bumps are merged
+<ul><li>Detects DESCRIPTION version changes automatically</li>
+<li>Runs all quality checks (R CMD check, tests, coverage)</li>
+<li>Generates release notes from NEWS.md</li>
+<li>Creates git tags and GitHub releases with package tarball</li>
+<li>No manual intervention required!</li>
+</ul></li>
+<li>
+<strong>Workflow</strong>: Simply bump version in DESCRIPTION, update NEWS.md, merge PR → release happens automatically</li>
+</ul></div>
+</div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="emburden-030">emburden 0.3.0<a class="anchor" aria-label="anchor" href="#emburden-030"></a></h2>
 <div class="section level3">

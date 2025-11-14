@@ -19,7 +19,8 @@ load_cohort_data(
   counties = NULL,
   vintage = "2022",
   income_brackets = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 ```
 
@@ -52,6 +53,12 @@ load_cohort_data(
 
   Logical, print status messages (default TRUE)
 
+- ...:
+
+  Additional filter expressions passed to dplyr::filter() for dynamic
+  filtering. Allows filtering by any column in the dataset using
+  tidyverse syntax. Example: `households > 100, total_income > 50000`
+
 ## Value
 
 A tibble with columns:
@@ -76,14 +83,17 @@ A tibble with columns:
 
 ``` r
 if (FALSE) { # \dontrun{
-# Load latest (2022) NC AMI data - auto-downloads if needed!
+# Single state (fast, good for learning)
 nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 
-# Load specific vintage
-nc_ami_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
+# Multiple states (regional analysis)
+southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
 
-# Load multiple states
-southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA"))
+# Nationwide (all 51 states - no filter)
+us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
+
+# Load specific vintage
+nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
 
 # Filter to specific income brackets
 low_income <- load_cohort_data(
@@ -92,7 +102,7 @@ low_income <- load_cohort_data(
   income_brackets = c("0-30% AMI", "30-50% AMI")
 )
 
-# Filter to specific counties
+# Filter to specific counties within a state
 triangle <- load_cohort_data(
   dataset = "fpl",
   states = "NC",
@@ -104,6 +114,14 @@ orange <- load_cohort_data(
   dataset = "fpl",
   states = "NC",
   counties = "37135"
+)
+
+# Use dynamic filtering for custom criteria
+high_burden <- load_cohort_data(
+  dataset = "ami",
+  states = "NC",
+  households > 100,
+  total_electricity_spend / total_income > 0.06
 )
 } # }
 ```

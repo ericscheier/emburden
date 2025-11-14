@@ -26,6 +26,19 @@ Functions for loading LEAD Tool data
 - [`check_data_sources()`](https://ericscheier.github.io/emburden/reference/check_data_sources.md)
   : Check Available Data Sources
 
+## Metadata Discovery
+
+Functions for exploring available data structure
+
+- [`list_income_brackets()`](https://ericscheier.github.io/emburden/reference/list_income_brackets.md)
+  : List Available Income Brackets
+- [`list_states()`](https://ericscheier.github.io/emburden/reference/list_states.md)
+  : List Available States
+- [`list_cohort_columns()`](https://ericscheier.github.io/emburden/reference/list_cohort_columns.md)
+  : List Available Columns in Cohort Data
+- [`get_dataset_info()`](https://ericscheier.github.io/emburden/reference/get_dataset_info.md)
+  : Get Dataset Information
+
 ## Statistical Analysis
 
 Weighted aggregation and group-level calculations

@@ -20,4 +20,4 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Eric Scheier <eric.scheier@gmail.com>
+**Maintainer**: Eric Scheier <eric@scheier.org>

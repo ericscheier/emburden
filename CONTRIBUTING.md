@@ -20,7 +20,7 @@ Net Energy Return (Nh) methodology.
 
 This project adheres to a Code of Conduct (see CODE_OF_CONDUCT.md). By
 participating, you are expected to uphold this code. Please report
-unacceptable behavior to <eric.scheier@gmail.com>.
+unacceptable behavior to <eric@scheier.org>.
 
 ## How Can I Contribute?
 
@@ -420,7 +420,7 @@ devtools::check()   # 0 errors, 0 warnings
 
 - **Documentation**: <https://ericscheier.github.io/emburden/>
 - **Issues**: <https://github.com/ericscheier/emburden/issues>
-- **Email**: <eric.scheier@gmail.com>
+- **Email**: <eric@scheier.org>
 - **Discussions**: Use GitHub Discussions for questions
 
 ## Recognition

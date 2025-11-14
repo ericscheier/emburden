@@ -9,8 +9,8 @@ using proper Net Energy Return (Nh) aggregation methodology.
 compare_energy_burden(
   dataset = c("ami", "fpl"),
   states = NULL,
+  group_by = "income_bracket",
   counties = NULL,
-  group_by = c("income_bracket", "state", "none"),
   vintage_1 = "2018",
   vintage_2 = "2022",
   format = TRUE
@@ -27,15 +27,18 @@ compare_energy_burden(
 
   Character vector of state abbreviations to filter by (optional)
 
+- group_by:
+
+  Character or character vector. Use keywords "income_bracket"
+  (default), "state", or "none" for standard groupings. Or provide
+  custom column name(s) for dynamic grouping (e.g., "geoid" for
+  tract-level, c("state_abbr", "income_bracket") for multi-level
+  grouping). Custom columns must exist in the loaded data.
+
 - counties:
 
   Character vector of county names or FIPS codes to filter by
   (optional). Requires `states` to be specified.
-
-- group_by:
-
-  Character, grouping variable: "income_bracket" (default), "state", or
-  "none" for overall comparison
 
 - vintage_1:
 
@@ -63,21 +66,32 @@ A data.frame with energy burden comparison showing:
 
 ``` r
 if (FALSE) { # \dontrun{
-# Compare NC energy burden by income bracket (2018 vs 2022)
-compare_energy_burden(dataset = "ami", states = "NC")
+# Single state comparison (fast, good for learning)
+nc_comparison <- compare_energy_burden("ami", "NC", "income_bracket")
 
-# State-level comparison
-compare_energy_burden(dataset = "ami", states = "NC", group_by = "state")
+# Multi-state regional comparison
+southeast <- compare_energy_burden(
+  dataset = "fpl",
+  states = c("NC", "SC", "GA", "FL"),
+  group_by = "state"
+)
+
+# Nationwide comparison by income bracket (all 51 states)
+us_comparison <- compare_energy_burden(
+  dataset = "ami",
+  group_by = "income_bracket"  # No states filter = all states
+)
 
 # Overall comparison (no grouping)
-compare_energy_burden(dataset = "fpl", states = c("NC", "SC"), group_by = "none")
+compare_energy_burden("ami", "NC", "none")
 
-# Custom vintage comparison
-compare_energy_burden(dataset = "ami", states = "CA",
-                     vintage_1 = "2018", vintage_2 = "2022")
+# Compare specific counties within a state
+compare_energy_burden("fpl", "NC", counties = c("Orange", "Durham", "Wake"))
 
-# Compare specific counties
-compare_energy_burden(dataset = "fpl", states = "NC",
-                     counties = c("Orange", "Durham", "Wake"))
+# Custom grouping by tract-level geoid
+compare_energy_burden("ami", "NC", group_by = "geoid")
+
+# Multi-level custom grouping (requires joining with tract data)
+# compare_energy_burden("fpl", "NC", group_by = c("state_abbr", "income_bracket"))
 } # }
 ```

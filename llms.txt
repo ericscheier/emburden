@@ -11,8 +11,10 @@ The package helps you aggregate energy burden data accurately using the
 Net Energy Return (Nh) method described in [Scheier & Kittner
 (2022)](#citation).
 
-**NEW**: Data downloads automatically from OpenEI on first use! No
-manual setup required.
+**Data coverage**: All 51 US states and territories (50 states + DC)
+with 2.3+ million household cohort records covering ~73,000 census
+tracts. Data downloads automatically from Zenodo/OpenEI on first use -
+no manual setup required!
 
 ### Key Features
 
@@ -67,11 +69,17 @@ library(emburden)
 library(dplyr)
 
 # Data downloads automatically on first use!
-# Load census tract data for North Carolina
-nc_tracts <- load_census_tract_data(states = "NC")
+# Example 1: Single state (fast, good for learning)
+nc_data <- load_cohort_data(dataset = "ami", states = "NC")
 
-# Load household cohort data by Area Median Income
-nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
+# Example 2: Multiple states (regional analysis)
+southeast <- load_cohort_data(dataset = "ami", states = c("NC", "SC", "GA", "FL"))
+
+# Example 3: Nationwide (all 51 states - no filter)
+us_data <- load_cohort_data(dataset = "ami", vintage = "2022")  # No states filter = all states
+
+# For the examples below, we'll use NC data (faster)
+nc_ami <- nc_data
 
 # === EXAMPLE 1: Single household calculation ===
 gross_income <- 50000
@@ -117,19 +125,34 @@ results$formatted_median <- to_percent(results$metric_median)
 
 # === EXAMPLE 5: Temporal comparison ===
 # Compare energy burden between 2018 and 2022
-comparison <- compare_energy_burden(
+
+# Single state comparison
+nc_comparison <- compare_energy_burden(
   dataset = "ami",
   states = "NC",
-  group_by = "income_bracket"  # Options: "income_bracket", "state", "none"
+  group_by = "income_bracket"
+)
+
+# Multi-state comparison by state
+southeast_comparison <- compare_energy_burden(
+  dataset = "ami",
+  states = c("NC", "SC", "GA", "FL"),
+  group_by = "state"  # Options: "income_bracket", "state", "none", or custom columns
+)
+
+# Nationwide comparison by income bracket
+us_comparison <- compare_energy_burden(
+  dataset = "ami",
+  group_by = "income_bracket"  # No states filter = all 51 states
 )
 
 # View results
-print(comparison)
+print(nc_comparison)
 
 # Access specific columns
-comparison$neb_2018  # 2018 energy burden
-comparison$neb_2022  # 2022 energy burden
-comparison$neb_change_pp  # Change in percentage points
+us_comparison$neb_2018  # 2018 energy burden
+us_comparison$neb_2022  # 2022 energy burden
+us_comparison$neb_change_pp  # Change in percentage points
 ```
 
 ## Sample Data (No Download Required!)
@@ -268,14 +291,15 @@ source("analysis/scripts/nc_all_utilities_energy_burden.R")
 
 ### Automatic Data Download
 
-The package automatically downloads LEAD Tool data from OpenEI on first
-use and caches it locally for fast subsequent access. No manual data
-setup required!
+The package automatically downloads LEAD Tool data from Zenodo/OpenEI on
+first use and caches it locally for fast subsequent access. No manual
+data setup required!
 
-**NEW in v0.3.0**: Support for both 2018 and 2022 LEAD Tool data
-vintages enables temporal analysis.
+**Data coverage**: All 51 US states (50 states + DC) with 2.3+ million
+cohort records covering ~73,000 census tracts.
 
-**Loading data** (automatic database/CSV/OpenEI download fallback):
+**Loading data** (automatic database/CSV/Zenodo/OpenEI download
+fallback):
 
 ``` r
 library(emburden)
@@ -283,19 +307,24 @@ library(emburden)
 # Check which data source is available
 check_data_sources()
 
-# Load census tract data (tries database → CSV → automatic download)
-nc_tracts <- load_census_tract_data(states = "NC")
+# Example 1: Single state (fast)
+nc_data <- load_cohort_data(dataset = "ami", states = "NC")
 
-# Load household cohort data (defaults to latest vintage - 2022)
-# Auto-downloads from OpenEI on first use, imports to database for fast subsequent access!
-nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
+# Example 2: Multiple states (regional)
+southeast <- load_cohort_data(dataset = "ami", states = c("NC", "SC", "GA"))
+
+# Example 3: Nationwide (all 51 states)
+us_data <- load_cohort_data(dataset = "ami", vintage = "2022")  # No filter = all states
 
 # Load specific vintage (2018 or 2022)
-nc_ami_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
-nc_ami_2022 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2022")
+nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
+nc_2022 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2022")
 
 # Compare vintages for temporal analysis
-comparison <- compare_energy_burden(dataset = "ami", states = "NC", group_by = "state")
+nc_comparison <- compare_energy_burden(dataset = "ami", states = "NC", group_by = "income_bracket")
+
+# Nationwide temporal comparison
+us_comparison <- compare_energy_burden(dataset = "ami", group_by = "income_bracket")
 ```
 
 **Data Loading Workflow:**
@@ -434,21 +463,24 @@ install.packages(c("DBI", "RSQLite"))
 
 ### Usage
 
-**Energy Burden Data** (automatic database/CSV/download fallback):
+**Energy Burden Data** (automatic database/CSV/Zenodo/download
+fallback):
 
 ``` r
 library(emburden)
 
-# Load census tract data (tries database → CSV → automatic download)
-nc_tracts <- load_census_tract_data(states = "NC")
+# Single state analysis
+nc_data <- load_cohort_data(dataset = "ami", states = "NC")
 
-# Load household cohort data by income bracket
-# Downloads automatically if not available locally!
-nc_ami <- load_cohort_data(
-  dataset = "ami",  # or "fpl"
-  states = "NC",
+# Multi-state regional analysis
+southeast <- load_cohort_data(
+  dataset = "ami",
+  states = c("NC", "SC", "GA", "FL"),
   income_brackets = c("0-30% AMI", "30-50% AMI")
 )
+
+# Nationwide analysis (all 51 states)
+us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
 
 # Load integrated data (burden + utility rates + emissions)
 nc_full <- load_burden_with_utilities(
@@ -535,6 +567,19 @@ Functions for loading LEAD Tool data
   : Load DOE LEAD Tool Cohort Data
 - [`check_data_sources()`](https://ericscheier.github.io/emburden/reference/check_data_sources.md)
   : Check Available Data Sources
+
+## Metadata Discovery
+
+Functions for exploring available data structure
+
+- [`list_income_brackets()`](https://ericscheier.github.io/emburden/reference/list_income_brackets.md)
+  : List Available Income Brackets
+- [`list_states()`](https://ericscheier.github.io/emburden/reference/list_states.md)
+  : List Available States
+- [`list_cohort_columns()`](https://ericscheier.github.io/emburden/reference/list_cohort_columns.md)
+  : List Available Columns in Cohort Data
+- [`get_dataset_info()`](https://ericscheier.github.io/emburden/reference/get_dataset_info.md)
+  : Get Dataset Information
 
 ## Statistical Analysis
 

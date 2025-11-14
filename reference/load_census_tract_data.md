@@ -39,10 +39,13 @@ A tibble with columns:
 
 ``` r
 if (FALSE) { # \dontrun{
-# Load all NC census tracts
+# Single state
 nc_tracts <- load_census_tract_data(states = "NC")
 
-# Load multiple states
-southeast <- load_census_tract_data(states = c("NC", "SC", "GA"))
+# Multiple states (regional)
+southeast <- load_census_tract_data(states = c("NC", "SC", "GA", "FL"))
+
+# Nationwide (all ~73,000 census tracts)
+us_tracts <- load_census_tract_data()  # No filter = all states
 } # }
 ```

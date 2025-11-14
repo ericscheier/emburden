@@ -1,5 +1,316 @@
 # Changelog
 
+## emburden 0.5.0
+
+### CRAN Submission Ready - Nationwide Energy Burden Analysis
+
+This major release marks the completion of the nationwide expansion and
+prepares the package for CRAN submission. The package now
+comprehensively showcases nationwide US capability across all
+documentation, with 648 tests passing and clean R CMD check results.
+
+#### Nationwide Expansion Complete
+
+- **Full nationwide focus** achieved across all documentation
+  - README features nationwide data from introduction: “All 51 US
+    states…2.3+ million records”
+  - All function examples demonstrate single-state → multi-state →
+    nationwide progression
+  - Both vignettes showcase nationwide capability alongside learning
+    examples
+  - Dual focus strategy: NC examples for learning (small, fast),
+    nationwide for production use
+- **Comprehensive test coverage** validates nationwide functionality
+  - 648 tests passing (0 failures)
+  - Multi-state regional filtering (Southeast, top 10 states,
+    cross-regional)
+  - Data integrity validation across all 51 states
+  - All major US regions tested (Northeast, Southeast, Midwest,
+    Southwest, West)
+- **CRAN readiness verified**
+  - R CMD check: 0 errors, 1 acceptable warning (qpdf), 1 acceptable
+    note (httptest2)
+  - Package size: Under 5MB CRAN limit (~1.9MB)
+  - Multi-platform CI validation (macOS, Windows, Ubuntu × 5 R versions)
+  - External data hosting on Zenodo (DOI: 10.5281/zenodo.17605603)
+
+#### Documentation Enhancements
+
+- **Nationwide vignette content**
+  - `vignettes/getting-started.Rmd`: Comprehensive nationwide examples
+    (v0.4.10)
+  - `vignettes/jss-emburden.Rmd`: Nationwide data availability note
+    added
+  - Performance guidance for large dataset queries (30-120 seconds,
+    ~500MB RAM)
+  - Metadata discovery functions showcased
+    ([`list_states()`](https://ericscheier.github.io/emburden/reference/list_states.md),
+    [`list_income_brackets()`](https://ericscheier.github.io/emburden/reference/list_income_brackets.md),
+    etc.)
+- **Language cleanup**
+  - Removed “proof of concept” references from documentation
+  - Professional, production-ready messaging throughout
+  - Clear data coverage statements: 2.3M+ household records, ~73k census
+    tracts, all 51 states
+
+#### Data Infrastructure
+
+- **Zenodo data hosting** (established in v0.4.7-0.4.8)
+  - 4 nationwide datasets published (AMI/FPL 2018/2022, 307 MB
+    compressed)
+  - MD5 checksum verification for data integrity
+  - Automatic download cascade: Database → CSV → Zenodo → OpenEI
+    fallback
+  - Package stays under CRAN 5MB limit
+
+#### Package Quality Metrics
+
+- **Test coverage**: 648 comprehensive tests
+  - 99 multi-state and nationwide tests
+  - 48 metadata discovery tests
+  - 62 Zenodo integration tests
+  - Complete data loader and comparison function coverage
+- **CI/CD infrastructure**
+  - Multi-platform R CMD check (5 environments)
+  - Test coverage reporting
+  - Automated release workflow on version bumps
+  - Pre-commit and pre-push hooks for local validation
+
+**Breaking changes**: None. All existing NC-focused code continues to
+work. Nationwide capability is additive.
+
+**Next milestone**: CRAN submission! 🚀
+
+## emburden 0.4.9
+
+### Documentation Transition & Infrastructure
+
+- **NC→Nationwide transition (Phase 1)**: Package documentation now
+  showcases nationwide US capability
+  - Updated `README.md` with multi-state and nationwide examples
+    alongside NC examples
+  - Updated all function examples
+    ([`compare_energy_burden()`](https://ericscheier.github.io/emburden/reference/compare_energy_burden.md),
+    [`load_cohort_data()`](https://ericscheier.github.io/emburden/reference/load_cohort_data.md),
+    [`load_census_tract_data()`](https://ericscheier.github.io/emburden/reference/load_census_tract_data.md))
+  - Added test validating all 51 US states are supported (614 tests
+    passing)
+  - **Data coverage**: 2.3M household cohort records, ~73k census
+    tracts, all 51 states
+  - Follows “dual focus” strategy: NC examples for learning, nationwide
+    examples for production use
+  - See `.dev/NC-TO-NATIONWIDE-TRANSITION.md` for comprehensive
+    transition plan
+- **pkgdown build fix**: Resolved recurring CI failure
+  - Changed
+    [`backup_db()`](https://ericscheier.github.io/emburden/reference/backup_db.md)
+    and
+    [`clear_test_environment()`](https://ericscheier.github.io/emburden/reference/clear_test_environment.md)
+    from `@export` to `@keywords internal`
+  - Added pkgdown reference index check to pre-commit hook to prevent
+    recurrence
+  - Hook provides helpful hints about `@export` vs `@keywords internal`
+
+**No breaking changes**: All NC-focused examples continue to work.
+Nationwide data access is additive.
+
+## emburden 0.4.8
+
+### Database Protection & Testing Infrastructure
+
+- **Production database protection** to prevent accidental data loss:
+  - New `R/database-helpers.R` module with safe database operations
+  - [`delete_db()`](https://ericscheier.github.io/emburden/reference/delete_db.md)
+    requires explicit `confirm = TRUE` for production database
+  - [`backup_db()`](https://ericscheier.github.io/emburden/reference/backup_db.md)
+    creates timestamped backups before risky operations
+  - [`clear_test_environment()`](https://ericscheier.github.io/emburden/reference/clear_test_environment.md)
+    safely clears only test data
+  - Separate test (`emburden_test_db.sqlite`) and production
+    (`emburden_db.sqlite`) databases
+  - All database helpers fully documented with roxygen2
+- **Zenodo integration completed** with NATIONWIDE data publication:
+  - Updated `R/zenodo.R` with published Zenodo record (DOI:
+    10.5281/zenodo.17605603)
+  - **4 NATIONWIDE datasets uploaded** (AMI/FPL 2018/2022, 307 MB
+    compressed, all 51 US states)
+  - 2.3+ million cohort records covering ~73,000 census tracts
+  - All download functions now use real Zenodo URLs
+  - MD5 checksum verification for all downloads
+  - Automated Zenodo upload and R code update scripts
+  - Comprehensive test suite (48 new metadata tests + 62 zenodo tests =
+    604 total tests)
+- **Comprehensive test coverage** for Zenodo infrastructure:
+  - `tests/testthat/test-zenodo-integration.R`: Configuration and
+    database protection tests
+  - `tests/testthat/test-zenodo-download.R`: Download functionality
+    tests
+  - Fixed `tests/testthat/test-data-loaders.R` for Zenodo download
+    cascade
+  - All 556 tests passing (0 failures, 3 expected offline skips)
+- **Development tools** for data management:
+  - `.dev/upload-to-zenodo-nationwide.sh`: Automated nationwide Zenodo
+    upload via REST API
+  - `.dev/update-zenodo-config.R`: Auto-update R/zenodo.R from upload
+    output
+  - `.dev/prepare-zenodo-data-nationwide.R`: Script for preparing all 51
+    states
+  - `.dev/NC-TO-NATIONWIDE-TRANSITION.md`: Comprehensive transition plan
+  - `.dev/TEST_ZENODO_DOWNLOAD.md`: Complete testing guide
+  - Updated `.gitignore` for build artifacts
+- **Metadata discovery functions** with comprehensive tests:
+  - [`list_states()`](https://ericscheier.github.io/emburden/reference/list_states.md):
+    Returns all 51 US state abbreviations
+  - [`list_income_brackets()`](https://ericscheier.github.io/emburden/reference/list_income_brackets.md):
+    Income brackets by dataset/vintage
+  - [`list_cohort_columns()`](https://ericscheier.github.io/emburden/reference/list_cohort_columns.md):
+    Column names and descriptions
+  - [`get_dataset_info()`](https://ericscheier.github.io/emburden/reference/get_dataset_info.md):
+    Complete dataset metadata
+  - 48 new tests in `tests/testthat/test-metadata.R`
+
+**Testing workflow**: Safe TDD workflow established with test database
+isolation
+
+**Next steps**: Transition documentation from NC-focused to nationwide
+(see `.dev/NC-TO-NATIONWIDE-TRANSITION.md`), ready for CRAN submission
+
+## emburden 0.4.7
+
+### Data Hosting Infrastructure
+
+- **Implemented Zenodo data hosting** with OpenEI fallback:
+  - New `R/zenodo.R` module for downloading from Zenodo repository
+  - Faster downloads via Zenodo CDN vs OpenEI
+  - MD5 checksum verification for data integrity
+  - Gzip decompression support for smaller downloads
+  - Automatic fallback to OpenEI if Zenodo unavailable
+- **Updated download cascade** in
+  [`load_cohort_data()`](https://ericscheier.github.io/emburden/reference/load_cohort_data.md)
+  and
+  [`load_census_tract_data()`](https://ericscheier.github.io/emburden/reference/load_census_tract_data.md):
+  1.  Database (SQLite) - fastest, local
+  2.  CSV (cached files) - fast, local
+  3.  **Zenodo (NEW!)** - faster, more reliable
+  4.  OpenEI (fallback) - original source
+- **Added maintainer documentation**: `.dev/ZENODO_UPLOAD_GUIDE.md`
+  - Complete workflow for preparing and uploading datasets
+  - Compression and checksum procedures
+  - Testing and versioning guidelines
+
+**Benefits**: Nationwide data testing ready, package stays under CRAN
+5MB limit (currently 1.9MB), improved download reliability
+
+**Next steps**: Upload processed datasets to Zenodo, update DOI
+configuration, ready for CRAN submission
+
+## emburden 0.4.6
+
+### CRAN Preparation Fixes
+
+- **Fixed R CMD check WARNINGs and NOTEs**:
+  - Excluded JSON data files (579MB) from package build via
+    .Rbuildignore
+  - Excluded top-level presentation/poster files (25+ non-standard
+    files)
+  - Added vignette metadata to jss-emburden.Rmd (VignetteEngine,
+    VignetteIndexEntry)
+  - Package now builds cleanly under 5MB for CRAN submission
+- **Next steps for CRAN**: Implement Zenodo data hosting to fully
+  separate data from methods package
+
+## emburden 0.4.5
+
+### New Features
+
+- **Metadata discovery functions** for easier data exploration:
+  - `list_income_brackets(dataset, vintage)`: Show available income
+    brackets
+  - [`list_states()`](https://ericscheier.github.io/emburden/reference/list_states.md):
+    Show all 51 available state abbreviations
+  - `list_cohort_columns(dataset, vintage)`: Show column names,
+    descriptions, and data types
+  - [`get_dataset_info()`](https://ericscheier.github.io/emburden/reference/get_dataset_info.md):
+    Show metadata about all available datasets
+  - Enables programmatic discovery of data structure
+
+## emburden 0.4.4
+
+### Breaking Changes
+
+- **Parameter reordering in
+  [`compare_energy_burden()`](https://ericscheier.github.io/emburden/reference/compare_energy_burden.md)**:
+  `group_by` now comes before `counties`
+  - **New order**:
+    `compare_energy_burden(dataset, states, group_by, counties, ...)`
+  - Makes intuitive syntax work:
+    `compare_energy_burden('fpl', 'NC', 'income_bracket')`
+  - Named parameters unaffected:
+    `compare_energy_burden(dataset='fpl', counties=c('Orange'))`
+
+### New Features
+
+- **Dynamic grouping in
+  [`compare_energy_burden()`](https://ericscheier.github.io/emburden/reference/compare_energy_burden.md)**:
+  `group_by` now accepts custom column names
+  - Use keywords: “income_bracket”, “state”, “none” (as before)
+  - OR custom columns: `group_by = "geoid"` for tract-level comparison
+  - OR multiple columns: `group_by = c("state_abbr", "income_bracket")`
+  - Enables flexible analysis patterns for full USA data
+
+## emburden 0.4.3
+
+### New Features
+
+- **Dynamic filtering in
+  [`load_cohort_data()`](https://ericscheier.github.io/emburden/reference/load_cohort_data.md)**:
+  Now accepts `...` parameter for flexible filtering
+  - Filter by any column using tidyverse syntax
+  - Example:
+    `load_cohort_data("ami", states = "NC", households > 100, total_income > 50000)`
+  - Complements existing `states`, `counties`, `income_brackets`
+    parameters
+  - First step toward full USA data package architecture
+
+## emburden 0.4.2
+
+### Bug Fixes
+
+- Fixed confusing warnings when using
+  `compare_energy_burden('fpl', 'NC', 'income_bracket')`
+- Function now silently handles common mistake of passing
+  ‘income_bracket’, ‘state’, or ‘none’ as counties argument
+- Eliminates “County name ‘income_bracket’ not found” warnings while
+  maintaining correct behavior
+
+### Improvements
+
+- Improved documentation with clearer examples distinguishing between
+  `group_by` and `counties` parameters
+
+## emburden 0.4.1
+
+### Improvements
+
+- Updated contact email from <eric.scheier@gmail.com> to
+  <eric@scheier.org> across all documentation
+
+## emburden 0.4.0
+
+### New Features
+
+#### Fully Automated Release Workflow
+
+- **Zero-touch releases**: GitHub releases now created automatically
+  when version bumps are merged
+  - Detects DESCRIPTION version changes automatically
+  - Runs all quality checks (R CMD check, tests, coverage)
+  - Generates release notes from NEWS.md
+  - Creates git tags and GitHub releases with package tarball
+  - No manual intervention required!
+- **Workflow**: Simply bump version in DESCRIPTION, update NEWS.md,
+  merge PR → release happens automatically
+
 ## emburden 0.3.0
 
 ### Major Improvements
