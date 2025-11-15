@@ -1,3 +1,36 @@
+# emburden 0.5.1
+
+## Critical Data Fix - Corrected Zenodo Repository
+
+This patch release fixes critical data corruption in the v0.5.0 Zenodo repository.
+
+### Bug Fixes
+
+* **Fixed corrupted Zenodo data** (PR #28)
+  - v0.5.0 Zenodo record (17605603) contained incorrect FPL data files
+  - FPL files only included NC state data (52MB) instead of full nationwide data (306MB)
+  - AMI files were correct (nationwide data, 148MB)
+  - New Zenodo record (17613104) uploaded with all 4 corrected datasets
+  - All datasets now contain complete US nationwide data (51 states, ~73K census tracts)
+
+* **Updated Zenodo configuration**
+  - New concept DOI: 10.5281/zenodo.17613103
+  - New version DOI: 10.5281/zenodo.17613104
+  - Updated all file URLs and MD5 checksums in `R/zenodo.R`
+  - Updated test patterns to accept new Zenodo API endpoint format
+
+### Verified Data Integrity
+
+All 4 nationwide datasets verified and working correctly:
+- `lead_ami_cohorts_2022_us.csv.gz` - 148 MB ✓
+- `lead_fpl_cohorts_2022_us.csv.gz` - 305 MB ✓
+- `lead_ami_cohorts_2018_us.csv.gz` - 148 MB ✓
+- `lead_fpl_cohorts_2018_us.csv.gz` - 305 MB ✓
+
+All tests passing (614 tests, 0 failures).
+
+---
+
 # emburden 0.5.0
 
 ## CRAN Submission Ready - Nationwide Energy Burden Analysis
