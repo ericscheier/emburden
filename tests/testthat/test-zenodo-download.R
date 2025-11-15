@@ -19,7 +19,7 @@ test_that("Zenodo configuration is valid", {
 
   # Check file URLs are set
   expect_type(config$files$ami_2022$url, "character")
-  expect_true(grepl("^https://zenodo\\.org/records/", config$files$ami_2022$url))
+  expect_true(grepl("^https://zenodo\\.org/(api/)?records/", config$files$ami_2022$url))
 })
 
 test_that("Zenodo URLs are accessible", {
