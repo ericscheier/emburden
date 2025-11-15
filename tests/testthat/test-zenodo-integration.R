@@ -31,7 +31,7 @@ test_that("Zenodo configuration contains all required datasets", {
     # URL should be set (or NULL for temporarily disabled datasets)
     if (!is.null(file_info$url)) {
       expect_type(file_info$url, "character")
-      expect_match(file_info$url, "^https://zenodo\\.org/records/")
+      expect_match(file_info$url, "^https://zenodo\\.org/(api/)?records/")
 
       # MD5 should be set when URL is available
       expect_type(file_info$md5, "character")

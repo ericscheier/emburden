@@ -11,15 +11,15 @@
 #' @keywords internal
 get_zenodo_config <- function() {
   # Zenodo record for emburden processed datasets
-  # Published: 2025-11-13
+  # Published: 2025-11-15
   # Scope: US Nationwide (51 states + DC)
   # This record contains pre-processed, analysis-ready datasets
   list(
     # Main repository DOI (concept DOI - always points to latest version)
-    concept_doi = "10.5281/zenodo.17605602",
+    concept_doi = "10.5281/zenodo.17613103",
 
     # Version-specific DOI (for reproducibility)
-    version_doi = "10.5281/zenodo.17605603",
+    version_doi = "10.5281/zenodo.17613104",
 
     # Direct download URLs for each dataset
     # Format: zenodo_baseurl/records/RECORD_ID/files/FILENAME
@@ -27,29 +27,29 @@ get_zenodo_config <- function() {
       # 2022 Cohort Data (US Nationwide)
       ami_2022 = list(
         filename = "lead_ami_cohorts_2022_us.csv.gz",
-        url = "https://zenodo.org/records/17605603/files/lead_ami_cohorts_2022_us.csv.gz",
-        size_mb = 148.14,
-        md5 = "5c2655cb5a698fb9744adbc6c567d91c"
+        url = "https://zenodo.org/api/records/17613104/files/lead_ami_cohorts_2022_us.csv.gz/content",
+        size_mb = 148,
+        md5 = "145bff9cdb4fc8a0904ffc4a7b1396eb"
       ),
       fpl_2022 = list(
         filename = "lead_fpl_cohorts_2022_us.csv.gz",
-        url = NULL,  # TEMPORARILY DISABLED - v0.4.8 upload has only NC data
-        size_mb = NULL,
-        md5 = NULL
+        url = "https://zenodo.org/api/records/17613104/files/lead_fpl_cohorts_2022_us.csv.gz/content",
+        size_mb = 305,
+        md5 = "82562ee72f4b412b9a0440143b756410"
       ),
 
       # 2018 Cohort Data (US Nationwide)
       ami_2018 = list(
         filename = "lead_ami_cohorts_2018_us.csv.gz",
-        url = "https://zenodo.org/records/17605603/files/lead_ami_cohorts_2018_us.csv.gz",
-        size_mb = 54.03,
-        md5 = "117870dae2661e7b0ec931e39743b7f9"
+        url = "https://zenodo.org/api/records/17613104/files/lead_ami_cohorts_2018_us.csv.gz/content",
+        size_mb = 148,
+        md5 = "d540db9df447a44ea0ea5a0f2f9b9722"
       ),
       fpl_2018 = list(
         filename = "lead_fpl_cohorts_2018_us.csv.gz",
-        url = NULL,  # TEMPORARILY DISABLED - v0.4.8 upload has only NC data
-        size_mb = NULL,
-        md5 = NULL
+        url = "https://zenodo.org/api/records/17613104/files/lead_fpl_cohorts_2018_us.csv.gz/content",
+        size_mb = 305,
+        md5 = "a559838508b2136d2ff1d06a9b36bb4a"
       ),
 
       # Census Tract Data (not yet uploaded)
