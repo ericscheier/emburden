@@ -38,6 +38,7 @@ Suggests:
     RSQLite,
     rticles,
     testthat (>= 3.0.0),
+    tinytex,
     withr
 VignetteBuilder: knitr
 LazyData: true
