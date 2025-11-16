@@ -565,9 +565,19 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
   # For 2018, data is distributed as state-specific ZIP files
   # For 2022, data is available as direct CSV downloads
   if (vintage == "2018") {
-    # 2018 requires state parameter
+    # If no states specified, download all 51 states (50 + DC)
+    # This provides uniform API - nationwide data works same way for both vintages
     if (is.null(states) || length(states) == 0) {
-      stop("2018 vintage requires 'states' parameter (state abbreviation, e.g., 'NC')")
+      if (verbose) {
+        message("No states specified - downloading nationwide data (all 51 states)")
+        message("Note: This downloads and merges 51 separate ZIP files (~8-10 GB total)")
+        message("This is a one-time download. Subsequent uses load from cache.")
+        message("TIP: For faster downloads, use Zenodo (automatic via load_cohort_data)")
+      }
+
+      # Get all state abbreviations
+      all_states <- get_all_states()
+      return(download_and_merge_states(dataset, vintage, all_states, verbose))
     }
 
     # Use first state (2018 ZIP files are per-state)
@@ -591,9 +601,19 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
   } else if (vintage == "2022") {
     # 2022: AMI uses direct CSV, FPL uses state ZIP files
     if (dataset == "fpl") {
-      # FPL data is only available in state ZIP files (like 2018)
+      # If no states specified, download all 51 states
+      # This provides uniform API - nationwide data works same way for both datasets
       if (is.null(states) || length(states) == 0) {
-        stop("2022 FPL data requires 'states' parameter (state abbreviation, e.g., 'NC')")
+        if (verbose) {
+          message("No states specified - downloading nationwide FPL data (all 51 states)")
+          message("Note: This downloads and merges 51 separate ZIP files (~8-10 GB total)")
+          message("This is a one-time download. Subsequent uses load from cache.")
+          message("TIP: For faster downloads, use Zenodo (automatic via load_cohort_data)")
+        }
+
+        # Get all state abbreviations
+        all_states <- get_all_states()
+        return(download_and_merge_states(dataset, vintage, all_states, verbose))
       }
 
       # Use first state
@@ -1343,6 +1363,90 @@ get_state_fips <- function(state_abbrs) {
   }
 
   return(unname(fips))
+}
+
+#' Get all state abbreviations
+#' @return Character vector of all 51 state abbreviations (50 states + DC)
+#' @keywords internal
+get_all_states <- function() {
+  c(
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+    "DC"
+  )
+}
+
+#' Download and merge data from multiple states
+#' @param dataset Character, "ami" or "fpl"
+#' @param vintage Character, "2018" or "2022"
+#' @param states Character vector of state abbreviations
+#' @param verbose Logical, print progress messages
+#' @return Combined tibble with data from all states
+#' @keywords internal
+download_and_merge_states <- function(dataset, vintage, states, verbose = TRUE) {
+
+  if (verbose) {
+    message(sprintf("Downloading %s %s data for %d states...", vintage, dataset, length(states)))
+  }
+
+  # Download each state's data
+  all_data <- list()
+  failed_states <- character()
+
+  for (i in seq_along(states)) {
+    state <- states[i]
+
+    if (verbose) {
+      message(sprintf("[%d/%d] Downloading %s...", i, length(states), state))
+    }
+
+    # Download single state
+    tryCatch({
+      state_data <- download_lead_data(
+        dataset = dataset,
+        vintage = vintage,
+        states = state,
+        verbose = FALSE  # Suppress individual state messages
+      )
+
+      if (!is.null(state_data) && nrow(state_data) > 0) {
+        all_data[[state]] <- state_data
+      } else {
+        failed_states <- c(failed_states, state)
+      }
+
+    }, error = function(e) {
+      warning(sprintf("Failed to download %s: %s", state, e$message))
+      failed_states <- c(failed_states, state)
+    })
+  }
+
+  if (length(all_data) == 0) {
+    stop("Failed to download data from any state")
+  }
+
+  if (length(failed_states) > 0 && verbose) {
+    message(sprintf("Warning: Failed to download %d state(s): %s",
+                    length(failed_states), paste(failed_states, collapse = ", ")))
+  }
+
+  # Merge all state data
+  if (verbose) {
+    message(sprintf("Merging data from %d states...", length(all_data)))
+  }
+
+  combined_data <- dplyr::bind_rows(all_data)
+
+  if (verbose) {
+    message(sprintf("Successfully merged %s rows from %d states",
+                    format(nrow(combined_data), big.mark = ","),
+                    length(all_data)))
+  }
+
+  return(combined_data)
 }
 
 #' Convert county identifiers to FIPS codes
