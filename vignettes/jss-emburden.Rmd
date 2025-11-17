@@ -18,12 +18,18 @@ keywords:
   plain: ["energy burden", "energy poverty", "household energy", "net energy return", "temporal analysis", "R"]
 preamble: >
   \usepackage{amsmath}
-output: rticles::jss_article
+output:
+  rticles::jss_article:
+    keep_tex: true
+  html_document:
+    toc: true
+    toc_depth: 3
 bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{emburden: Temporal Energy Burden Analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteBuilder{knitr}
 ---
 
 # Introduction

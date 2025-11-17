@@ -18,8 +18,8 @@ utils::globalVariables(c(
 #'   for multi-level grouping). Custom columns must exist in the loaded data.
 #' @param counties Character vector of county names or FIPS codes to filter by (optional).
 #'   Requires `states` to be specified.
-#' @param vintage_1 Character, first vintage year: "2018" or "2022" (default "2018")
-#' @param vintage_2 Character, second vintage year: "2018" or "2022" (default "2022")
+#' @param vintage_1 Character, first vintage year: "2018" or "2022" (default "2022")
+#' @param vintage_2 Character, second vintage year: "2018" or "2022" (default "2018")
 #' @param format Logical, if TRUE returns formatted percentages (default TRUE)
 #'
 #' @return A data.frame with energy burden comparison showing:
@@ -63,8 +63,8 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
                                   states = NULL,
                                   group_by = "income_bracket",
                                   counties = NULL,
-                                  vintage_1 = "2018",
-                                  vintage_2 = "2022",
+                                  vintage_1 = "2022",
+                                  vintage_2 = "2018",
                                   format = TRUE) {
 
   # Validate inputs
@@ -197,13 +197,25 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
     )
 
   # Calculate changes
-  neb_col_1 <- paste0("neb_", vintage_1)
-  neb_col_2 <- paste0("neb_", vintage_2)
+  # Always calculate change in chronological order (later - earlier)
+  # regardless of which vintage was specified first
+  v1_year <- as.integer(vintage_1)
+  v2_year <- as.integer(vintage_2)
+
+  if (v2_year > v1_year) {
+    # v2 is later: calculate v2 - v1 (normal case)
+    neb_later <- paste0("neb_", vintage_2)
+    neb_earlier <- paste0("neb_", vintage_1)
+  } else {
+    # v1 is later: calculate v1 - v2
+    neb_later <- paste0("neb_", vintage_1)
+    neb_earlier <- paste0("neb_", vintage_2)
+  }
 
   result <- result |>
     dplyr::mutate(
-      change_pp = .data[[neb_col_2]] - .data[[neb_col_1]],
-      change_pct = (change_pp / .data[[neb_col_1]]) * 100
+      change_pp = .data[[neb_later]] - .data[[neb_earlier]],
+      change_pct = (change_pp / .data[[neb_earlier]]) * 100
     )
 
   # Format if requested
