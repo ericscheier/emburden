@@ -1,3 +1,24 @@
+# emburden 0.5.2
+
+## CRAN Submission Fix - LaTeX Compatibility
+
+This patch release fixes a LaTeX compatibility issue blocking CRAN submission.
+
+### Bug Fixes
+
+* **Fixed LaTeX Unicode error in documentation** (PR #32)
+  - Replaced Unicode ≥ character (U+2265) with LaTeX-compatible `\eqn{\ge}` macro
+  - Fixed in `R/energy_ratios.R` documentation for `ner_func()` function
+  - All R CMD check tests passing with 0 ERRORS
+
+### CRAN Readiness
+
+- Clean R CMD check results: 0 ERRORS, 1 WARNING (qpdf - non-critical), 3 NOTEs (all acceptable)
+- All 614 tests passing across 7 platforms (ubuntu, windows, macos, multiple R versions)
+- Package ready for CRAN submission
+
+---
+
 # emburden 0.5.1
 
 ## Critical Data Fix - Corrected Zenodo Repository
