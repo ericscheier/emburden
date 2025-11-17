@@ -139,7 +139,7 @@ eroi_func <- function(g, s, se = NULL) {
 #' For cohort data (pre-aggregated totals), direct calculation `sum(S)/sum(G)`
 #' is mathematically equivalent to the Nh method but simpler.
 #'
-#' The 6% energy burden poverty threshold corresponds to Nh ≥ 15.67.
+#' The 6% energy burden poverty threshold corresponds to Nh \eqn{\ge} 15.67.
 #'
 #' @export
 #'

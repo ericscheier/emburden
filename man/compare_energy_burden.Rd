@@ -9,8 +9,8 @@ compare_energy_burden(
   states = NULL,
   group_by = "income_bracket",
   counties = NULL,
-  vintage_1 = "2018",
-  vintage_2 = "2022",
+  vintage_1 = "2022",
+  vintage_2 = "2018",
   format = TRUE
 )
 }
@@ -27,9 +27,9 @@ for multi-level grouping). Custom columns must exist in the loaded data.}
 \item{counties}{Character vector of county names or FIPS codes to filter by (optional).
 Requires \code{states} to be specified.}
 
-\item{vintage_1}{Character, first vintage year: "2018" or "2022" (default "2018")}
+\item{vintage_1}{Character, first vintage year: "2018" or "2022" (default "2022")}
 
-\item{vintage_2}{Character, second vintage year: "2018" or "2022" (default "2022")}
+\item{vintage_2}{Character, second vintage year: "2018" or "2022" (default "2018")}
 
 \item{format}{Logical, if TRUE returns formatted percentages (default TRUE)}
 }
