@@ -85,7 +85,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::pkgbuild, any::covr
+          extra-packages: any::rcmdcheck, any::pkgbuild, any::covr, any::urlchecker, any::spelling
           needs: check
 
       - name: Verify version consistency across all metadata files
@@ -123,10 +123,26 @@ jobs:
           echo "  - .zenodo.json version consistent"
           echo "  - All metadata files in sync"
 
-      - name: Run R CMD check
+      - name: CRAN Readiness - Check URLs
+        run: |
+          Rscript -e "
+          cat('\n=== URL Validation ===\n')
+          urlchecker::url_check()
+          "
+
+      - name: CRAN Readiness - Check Spelling
+        run: |
+          Rscript -e "
+          cat('\n=== Spell Check ===\n')
+          spelling::spell_check_package()
+          "
+        continue-on-error: true
+
+      - name: Run R CMD check with --as-cran
         uses: r-lib/actions/check-r-package@v2
         with:
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          args: 'c("--as-cran")'
           error-on: '"error"'
 
       - name: Run test suite with coverage
@@ -176,10 +192,13 @@ jobs:
 
           ## Quality Checks Status
 
-          - ✅ R CMD check passed (0 errors, 0 warnings)
+          - ✅ R CMD check --as-cran passed (0 errors, 0 warnings)
+          - ✅ URL validation passed
+          - ✅ Spell check completed
           - ✅ Test suite passed with adequate coverage
           - ✅ Package tarball built successfully
           - ✅ Version consistency verified
+          - ✅ CRAN readiness validated
 
           ## Package Artifact
 
@@ -422,6 +441,13 @@ jobs:
 
           Steps to submit:
 
+          0. Pre-submission Windows check (RECOMMENDED):
+             Run devtools::check_win_devel() to test on Windows R-devel
+             - This submits to CRAN's win-builder service
+             - Results arrive via email (typically within 30-60 minutes)
+             - Fix any Windows-specific issues before submitting to CRAN
+             - Command: Rscript -e "devtools::check_win_devel()"
+
           1. Download the package tarball:
              https://github.com/${{ github.repository }}/releases/download/v${{ needs.validate.outputs.version }}/${{ needs.validate.outputs.tarball }}
 
@@ -432,6 +458,7 @@ jobs:
              - NEWS.md updated with version notes
              - DESCRIPTION file has correct maintainer email
              - All examples run successfully
+             - Windows check completed (if applicable)
 
           3. Submit to CRAN:
              - Go to: https://cran.r-project.org/submit.html

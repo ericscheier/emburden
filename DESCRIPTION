@@ -42,5 +42,5 @@ Suggests:
     withr
 VignetteBuilder: knitr
 LazyData: true
-URL: https://github.com/ericscheier/emburden, https://ericscheier.github.io/emburden/
+URL: https://github.com/ericscheier/emburden, https://ericscheier.info/emburden/
 BugReports: https://github.com/ericscheier/emburden/issues
