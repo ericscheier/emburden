@@ -12,7 +12,7 @@ Provides tools for calculating and analyzing household energy burden using the N
 Useful links:
 \itemize{
   \item \url{https://github.com/ericscheier/emburden}
-  \item \url{https://ericscheier.github.io/emburden/}
+  \item \url{https://ericscheier.info/emburden/}
   \item Report bugs at \url{https://github.com/ericscheier/emburden/issues}
 }
 
