@@ -29,7 +29,7 @@ get_zenodo_config <- function() {
         filename = "lead_ami_cohorts_2022_us.csv.gz",
         url = "https://zenodo.org/records/17653871/files/lead_ami_cohorts_2022_us.csv.gz",
         size_mb = 23.02,
-        md5 = "cc847d89119a374bede6ee7f41060506"
+        md5 = "d3b30d9d0009032ebb1b9228e44d0e2d"
       ),
       fpl_2022 = list(
         filename = "lead_fpl_cohorts_2022_us.csv.gz",
@@ -43,13 +43,13 @@ get_zenodo_config <- function() {
         filename = "lead_ami_cohorts_2018_us.csv.gz",
         url = "https://zenodo.org/records/17653871/files/lead_ami_cohorts_2018_us.csv.gz",
         size_mb = 17.20,
-        md5 = "4941e3566daec1badc53eb44f34d95a8"
+        md5 = "5aefd8e2ef0a63089b68977579d9df86"
       ),
       fpl_2018 = list(
         filename = "lead_fpl_cohorts_2018_us.csv.gz",
         url = "https://zenodo.org/records/17653871/files/lead_fpl_cohorts_2018_us.csv.gz",
         size_mb = 17.36,
-        md5 = "85ef6b7b4de244e80ff700f3d5becf3a"
+        md5 = "3da8be8c8628656b7772df4c4e7c4e04"
       ),
 
       # Census Tract Data (not yet uploaded)
