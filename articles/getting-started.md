@@ -104,8 +104,8 @@ nc_data <- nc_ami %>%
 
 ## Aggregating Energy Burden (Critical!)
 
-**⚠️ Important**: Energy burden is a ratio and **cannot be aggregated
-using arithmetic mean**!
+**Important**: Energy burden is a ratio and **cannot be aggregated using
+arithmetic mean**!
 
 ### The WRONG Way
 

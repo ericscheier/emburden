@@ -1,5 +1,24 @@
 # Changelog
 
+## emburden 0.5.7
+
+### CRAN Readiness - Final Fixes
+
+This patch release completes CRAN readiness with final compliance fixes.
+
+#### Bug Fixes
+
+- **Package build exclusions**: Excluded
+  `data/zenodo-upload-nationwide/` directory from package tarball (fixes
+  CRAN data directory WARNING)
+- **Spelling whitelist**: Added `inst/WORDLIST` with 85 technical terms
+  and acronyms to prevent false-positive spelling errors
+- **Public repository sync**: Fixed `publish-to-public` workflow to
+  properly remove private-only workflow files before syncing to public
+  repository
+
+------------------------------------------------------------------------
+
 ## emburden 0.5.6
 
 ### CRAN Quality-of-Life Improvements

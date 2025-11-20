@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,9 +37,25 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/v0.5.6/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.7" id="emburden-057">emburden 0.5.7<a class="anchor" aria-label="anchor" href="#emburden-057"></a></h2>
+<div class="section level3">
+<h3 id="cran-readiness---final-fixes-0-5-7">CRAN Readiness - Final Fixes<a class="anchor" aria-label="anchor" href="#cran-readiness---final-fixes-0-5-7"></a></h3>
+<p>This patch release completes CRAN readiness with final compliance fixes.</p>
+<div class="section level4">
+<h4 id="bug-fixes-0-5-7">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-7"></a></h4>
+<ul><li>
+<strong>Package build exclusions</strong>: Excluded <code>data/zenodo-upload-nationwide/</code> directory from package tarball (fixes CRAN data directory WARNING)</li>
+<li>
+<strong>Spelling whitelist</strong>: Added <code>inst/WORDLIST</code> with 85 technical terms and acronyms to prevent false-positive spelling errors</li>
+<li>
+<strong>Public repository sync</strong>: Fixed <code>publish-to-public</code> workflow to properly remove private-only workflow files before syncing to public repository</li>
+</ul><hr></div>
+</div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.6" id="emburden-056">emburden 0.5.6<a class="anchor" aria-label="anchor" href="#emburden-056"></a></h2>
 <div class="section level3">
