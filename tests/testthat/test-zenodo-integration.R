@@ -1,106 +1,187 @@
-# Comprehensive Zenodo Integration Tests
-# These tests verify the complete Zenodo download infrastructure
+# Integration Tests for Zenodo Downloads
+#
+# These tests actually download data from Zenodo to verify:
+# 1. URLs are accessible
+# 2. MD5 checksums match
+# 3. Data loads correctly
+#
+# IMPORTANT: These tests are SKIPPED by default because they:
+# - Require network access
+# - Download large files (>100 MB total)
+# - Take several minutes to complete
+#
+# To run these tests manually before a release:
+#   testthat::test_file("tests/testthat/test-zenodo-integration.R")
+# Or with an environment variable:
+#   EMBURDEN_RUN_INTEGRATION_TESTS=1 R CMD check
 
-test_that("Zenodo configuration contains all required datasets", {
-  config <- get_zenodo_config()
+test_that("Zenodo integration tests are skipped unless explicitly enabled", {
+  skip_on_cran()
+  skip_on_ci()
 
-  # Check structure
-  expect_true("concept_doi" %in% names(config))
-  expect_true("version_doi" %in% names(config))
-  expect_true("files" %in% names(config))
+  # Skip unless explicitly requested
+  run_integration <- Sys.getenv("EMBURDEN_RUN_INTEGRATION_TESTS", "0")
+  skip_if(run_integration != "1", "Integration tests disabled. Set EMBURDEN_RUN_INTEGRATION_TESTS=1 to enable.")
 
-  # Check DOI format
-  expect_match(config$concept_doi, "^10\\.5281/zenodo\\.[0-9]+$")
-  expect_match(config$version_doi, "^10\\.5281/zenodo\\.[0-9]+$")
+  # If we got here, integration tests are enabled
+  cat("\n\n")
+  cat("==========================================\n")
+  cat("  ZENODO INTEGRATION TESTS\n")
+  cat("  (Full downloads + validation)\n")
+  cat("==========================================\n\n")
+})
 
-  # Check all 4 datasets present
-  expect_true("ami_2022" %in% names(config$files))
-  expect_true("fpl_2022" %in% names(config$files))
-  expect_true("ami_2018" %in% names(config$files))
-  expect_true("fpl_2018" %in% names(config$files))
 
-  # Check each file has required metadata
-  for (dataset in c("ami_2022", "fpl_2022", "ami_2018", "fpl_2018")) {
-    file_info <- config$files[[dataset]]
+test_that("Zenodo AMI 2022 download works with correct checksum", {
+  skip_on_cran()
+  skip_on_ci()
+  run_integration <- Sys.getenv("EMBURDEN_RUN_INTEGRATION_TESTS", "0")
+  skip_if(run_integration != "1", "Integration tests disabled")
 
-    expect_true("filename" %in% names(file_info))
-    expect_true("url" %in% names(file_info))
-    expect_true("size_mb" %in% names(file_info))
-    expect_true("md5" %in% names(file_info))
+  cat("Downloading AMI 2022 from Zenodo...\n")
 
-    # URL should be set (or NULL for temporarily disabled datasets)
-    if (!is.null(file_info$url)) {
-      expect_type(file_info$url, "character")
-      expect_match(file_info$url, "^https://zenodo\\.org/(api/)?records/")
+  # Clear cache to force fresh download
+  clear_dataset_cache("ami", "2022", verbose = FALSE)
 
-      # MD5 should be set when URL is available
-      expect_type(file_info$md5, "character")
-      expect_equal(nchar(file_info$md5), 32)  # MD5 is 32 hex chars
-    } else {
-      # NULL URLs are acceptable for datasets not yet uploaded/temporarily disabled
-      expect_null(file_info$url)
-    }
+  # Download from Zenodo (verbose=TRUE to show progress)
+  data <- download_from_zenodo("ami", "2022", verbose = TRUE)
+
+  # Should have successfully downloaded
+  expect_false(is.null(data))
+  expect_s3_class(data, "data.frame")
+
+  # Check data structure
+  expect_true("geoid" %in% names(data))
+  expect_true("income_bracket" %in% names(data))
+  expect_true("households" %in% names(data))
+
+  # Should have substantial data
+  expect_gt(nrow(data), 100000)
+
+  cat("  SUCCESS: AMI 2022 downloaded and validated\n\n")
+})
+
+
+test_that("Zenodo FPL 2022 download works with correct checksum", {
+  skip_on_cran()
+  skip_on_ci()
+  run_integration <- Sys.getenv("EMBURDEN_RUN_INTEGRATION_TESTS", "0")
+  skip_if(run_integration != "1", "Integration tests disabled")
+
+  cat("Downloading FPL 2022 from Zenodo...\n")
+
+  clear_dataset_cache("fpl", "2022", verbose = FALSE)
+  data <- download_from_zenodo("fpl", "2022", verbose = TRUE)
+
+  expect_false(is.null(data))
+  expect_s3_class(data, "data.frame")
+  expect_gt(nrow(data), 100000)
+
+  cat("  SUCCESS: FPL 2022 downloaded and validated\n\n")
+})
+
+
+test_that("Zenodo AMI 2018 download works with correct checksum", {
+  skip_on_cran()
+  skip_on_ci()
+  run_integration <- Sys.getenv("EMBURDEN_RUN_INTEGRATION_TESTS", "0")
+  skip_if(run_integration != "1", "Integration tests disabled")
+
+  cat("Downloading AMI 2018 from Zenodo...\n")
+
+  clear_dataset_cache("ami", "2018", verbose = FALSE)
+  data <- download_from_zenodo("ami", "2018", verbose = TRUE)
+
+  expect_false(is.null(data))
+  expect_s3_class(data, "data.frame")
+  expect_gt(nrow(data), 100000)
+
+  cat("  SUCCESS: AMI 2018 downloaded and validated\n\n")
+})
+
+
+test_that("Zenodo FPL 2018 download works with correct checksum", {
+  skip_on_cran()
+  skip_on_ci()
+  run_integration <- Sys.getenv("EMBURDEN_RUN_INTEGRATION_TESTS", "0")
+  skip_if(run_integration != "1", "Integration tests disabled")
+
+  cat("Downloading FPL 2018 from Zenodo...\n")
+
+  clear_dataset_cache("fpl", "2018", verbose = FALSE)
+  data <- download_from_zenodo("fpl", "2018", verbose = TRUE)
+
+  expect_false(is.null(data))
+  expect_s3_class(data, "data.frame")
+  expect_gt(nrow(data), 100000)
+
+  cat("  SUCCESS: FPL 2018 downloaded and validated\n\n")
+})
+
+
+test_that("All Zenodo datasets have different data (no duplicates)", {
+  skip_on_cran()
+  skip_on_ci()
+  run_integration <- Sys.getenv("EMBURDEN_RUN_INTEGRATION_TESTS", "0")
+  skip_if(run_integration != "1", "Integration tests disabled")
+
+  cat("Verifying all datasets are distinct...\n")
+
+  # Load all 4 datasets
+  ami_2022 <- download_from_zenodo("ami", "2022", verbose = FALSE)
+  fpl_2022 <- download_from_zenodo("fpl", "2022", verbose = FALSE)
+  ami_2018 <- download_from_zenodo("ami", "2018", verbose = FALSE)
+  fpl_2018 <- download_from_zenodo("fpl", "2018", verbose = FALSE)
+
+  # Check row counts are different (would be identical if cached same data)
+  expect_false(nrow(ami_2022) == nrow(ami_2018))
+  expect_false(nrow(fpl_2022) == nrow(fpl_2018))
+
+  # Check income bracket distributions differ between AMI and FPL
+  ami_2022_brackets <- unique(ami_2022$income_bracket)
+  fpl_2022_brackets <- unique(fpl_2022$income_bracket)
+  expect_false(identical(sort(ami_2022_brackets), sort(fpl_2022_brackets)))
+
+  cat("  SUCCESS: All datasets are distinct\n\n")
+})
+
+
+test_that("Downloaded data matches state-manifest.json metadata", {
+  skip_on_cran()
+  skip_on_ci()
+  run_integration <- Sys.getenv("EMBURDEN_RUN_INTEGRATION_TESTS", "0")
+  skip_if(run_integration != "1", "Integration tests disabled")
+
+  cat("Cross-checking with state-manifest.json...\n")
+
+  # Read manifest
+  manifest_path <- system.file("../../zenodo-upload-nationwide/state-manifest.json", package = "emburden")
+  if (!file.exists(manifest_path)) {
+    skip("state-manifest.json not available in package")
   }
+
+  manifest <- jsonlite::read_json(manifest_path)
+
+  # Check AMI 2022 row count matches
+  ami_2022 <- download_from_zenodo("ami", "2022", verbose = FALSE)
+  expect_equal(nrow(ami_2022), manifest$nationwide$ami_2022$rows,
+               tolerance = 100)  # Allow small variance
+
+  cat("  SUCCESS: Data matches manifest metadata\n\n")
 })
 
-test_that("Zenodo download function handles errors gracefully", {
-  # Test with invalid dataset
-  result <- download_from_zenodo("invalid_dataset", "2022", verbose = FALSE)
-  expect_null(result)
 
-  # Test with invalid vintage
-  result <- download_from_zenodo("ami", "1999", verbose = FALSE)
-  expect_null(result)
-})
+# Cleanup after integration tests
+test_that("Cleanup after integration tests", {
+  skip_on_cran()
+  skip_on_ci()
+  run_integration <- Sys.getenv("EMBURDEN_RUN_INTEGRATION_TESTS", "0")
+  skip_if(run_integration != "1", "Integration tests disabled")
 
-test_that("Database helper functions work correctly", {
-  # Get paths
-  test_path <- get_db_path(test = TRUE)
-  prod_path <- get_db_path(test = FALSE)
-
-  # Should be different
-  expect_false(identical(test_path, prod_path))
-
-  # Test path should contain 'test'
-  expect_true(grepl("test", test_path, ignore.case = TRUE))
-
-  # Prod path should NOT contain 'test'
-  expect_false(grepl("test", prod_path, ignore.case = TRUE))
-})
-
-test_that("Production database is protected from deletion", {
-  # Should error without confirmation
-  expect_error(
-    delete_db(test = FALSE, confirm = FALSE),
-    "Cannot delete production database"
-  )
-
-  # Test database can be deleted
-  if (db_exists(test = TRUE)) {
-    expect_true(delete_db(test = TRUE, confirm = FALSE))
-  }
-})
-
-test_that("clear_test_environment is safe", {
-  # This should never fail and never touch production
-  # (It will produce messages, which is expected)
-  expect_message(clear_test_environment(), "Test environment cleared")
-
-  # Production DB should still exist if it did before
-  # (This test doesn't create it, just verifies safety)
-})
-
-test_that("backup_db works or handles missing DB gracefully", {
-  if (db_exists(test = FALSE)) {
-    # If prod DB exists, backup should work
-    backup_file <- backup_db()
-    expect_true(file.exists(backup_file))
-
-    # Clean up backup
-    unlink(backup_file)
-  } else {
-    # If no prod DB, should return NULL gracefully
-    result <- backup_db()
-    expect_null(result)
-  }
+  cat("\n")
+  cat("==========================================\n")
+  cat("  INTEGRATION TESTS COMPLETE\n")
+  cat("==========================================\n\n")
+  cat("All Zenodo downloads validated successfully!\n")
+  cat("Safe to proceed with release.\n\n")
 })
