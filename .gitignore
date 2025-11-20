@@ -169,3 +169,4 @@ rsconnect/.env
 # Zenodo upload staging
 zenodo-upload/
 zenodo-upload-nationwide/
+data/zenodo-upload-nationwide/
