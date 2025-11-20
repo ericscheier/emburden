@@ -56,6 +56,7 @@ echo "Upload directory: $UPLOAD_DIR"
 echo ""
 
 # Files to upload
+# NOTE: Arizona 2018 data has non-standard filename handled in R code
 FILES=(
     "lead_ami_cohorts_2022_us.csv.gz"
     "lead_fpl_cohorts_2022_us.csv.gz"

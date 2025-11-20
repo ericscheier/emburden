@@ -261,11 +261,16 @@ test_that("database fallback works when CSV unavailable", {
     total_electricity_spend = c(120000, 180000)
   )
 
-  # Mock try_load_from_database to return data
+  # Mock all download sources to fail, only database succeeds
+  mockery::stub(load_cohort_data, "try_load_from_csv", NULL)
+  mockery::stub(load_cohort_data, "download_from_zenodo", NULL)
+  mockery::stub(load_cohort_data, "download_lead_data", NULL)  # Also mock OpenEI fallback
   mockery::stub(load_cohort_data, "try_load_from_database", db_data)
 
-  # CSV should not be tried if database succeeds
-  # (but we'll mock it to NULL to test the fallback logic)
+  # Mock corruption detection to pass (2-row data is valid for testing)
+  mockery::stub(load_cohort_data, "detect_database_corruption", list(is_corrupted = FALSE))
+
+  # Should use database data when all download sources are unavailable
 
   result <- load_cohort_data(dataset = "ami", vintage = "2022", verbose = FALSE)
 
