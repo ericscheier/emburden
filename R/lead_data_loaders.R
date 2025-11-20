@@ -1,5 +1,5 @@
 # Global variable bindings to satisfy R CMD check
-utils::globalVariables(c("geoid", "geo_id", "income_bracket"))
+utils::globalVariables(c("geoid", "geo_id", "income_bracket", "AMI150", "AMI68"))
 
 #' Load DOE LEAD Tool Cohort Data
 #'
@@ -97,7 +97,7 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
   # Try database first (unless disabled via environment variable)
   data <- if (Sys.getenv("EMBURDEN_NO_DATABASE") == "1") {
     if (verbose) {
-      message("  ⚠️  Database caching disabled (EMBURDEN_NO_DATABASE=1)")
+      message("  \u26A0  Database caching disabled (EMBURDEN_NO_DATABASE=1)")
     }
     NULL  # Skip database, go directly to CSV/OpenEI
   } else {
@@ -121,7 +121,7 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
     # If corrupted, discard and try other sources
     if (corruption_check$is_corrupted) {
       if (verbose) {
-        message("  ⚠️  Database data appears corrupted, will try other sources...")
+        message("  \u26A0  Database data appears corrupted, will try other sources...")
       }
       data <- NULL  # Discard corrupted data, try CSV/OpenEI
     }
@@ -1122,7 +1122,7 @@ try_import_to_database <- function(data, dataset, vintage, verbose = FALSE) {
 
   if (!validation$valid) {
     if (verbose) {
-      message("  ⚠️  Data validation failed, will NOT cache to database:")
+      message("  \u26A0  Data validation failed, will NOT cache to database:")
       for (issue in validation$issues) {
         message("     - ", issue)
       }

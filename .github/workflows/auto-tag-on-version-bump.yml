@@ -1,0 +1,94 @@
+name: Auto-tag on version bump
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'DESCRIPTION'
+
+permissions:
+  contents: write
+
+jobs:
+  auto-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need previous commit to detect changes
+
+      - name: Extract version from DESCRIPTION
+        id: get_version
+        run: |
+          VERSION=$(grep "^Version:" DESCRIPTION | sed 's/^Version: *//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+
+      - name: Check if version changed in this push
+        id: check_version_change
+        run: |
+          # Get version from previous commit
+          git checkout HEAD~1
+          PREV_VERSION=$(grep "^Version:" DESCRIPTION | sed 's/^Version: *//' || echo "none")
+          git checkout -
+
+          CURRENT_VERSION="${{ steps.get_version.outputs.version }}"
+
+          echo "Previous version: $PREV_VERSION"
+          echo "Current version: $CURRENT_VERSION"
+
+          if [ "$PREV_VERSION" != "$CURRENT_VERSION" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Version changed from $PREV_VERSION to $CURRENT_VERSION"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Version unchanged"
+          fi
+
+      - name: Check if tag already exists
+        id: check_tag
+        if: steps.check_version_change.outputs.changed == 'true'
+        run: |
+          TAG="v${{ steps.get_version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG does not exist"
+          fi
+
+      - name: Verify version consistency
+        if: steps.check_version_change.outputs.changed == 'true' && steps.check_tag.outputs.exists == 'false'
+        run: |
+          # Install R (minimal, just for running the version check script)
+          sudo apt-get update -qq
+          sudo apt-get install -y r-base-core
+
+          # Run version consistency checker
+          if [ -f ".dev/check-version-consistency.R" ]; then
+            Rscript .dev/check-version-consistency.R
+          else
+            echo "Warning: .dev/check-version-consistency.R not found, skipping consistency check"
+          fi
+
+      - name: Create and push version tag
+        if: steps.check_version_change.outputs.changed == 'true' && steps.check_tag.outputs.exists == 'false'
+        run: |
+          TAG="v${{ steps.get_version.outputs.version }}"
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create annotated tag
+          git tag -a "$TAG" -m "Release $TAG"
+
+          # Push tag (this will trigger the auto-release workflow)
+          git push origin "$TAG"
+
+          echo "✅ Created and pushed tag: $TAG"
+          echo "This will trigger the auto-release workflow to create a GitHub release"
