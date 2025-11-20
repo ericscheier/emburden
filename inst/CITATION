@@ -3,12 +3,12 @@ bibentry(
   title    = "{emburden}: Energy Burden Analysis Using Net Energy Return Methodology",
   author   = "Eric Scheier",
   year     = "2025",
-  note     = "R package version 0.4.7",
+  note     = "R package version 0.5.4",
   url      = "https://github.com/ericscheier/emburden",
   textVersion = paste(
     "Scheier, Eric (2025).",
     "emburden: Energy Burden Analysis Using Net Energy Return Methodology.",
-    "R package version 0.4.7",
+    "R package version 0.5.4",
     "https://github.com/ericscheier/emburden"
   )
 )
