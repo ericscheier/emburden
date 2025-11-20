@@ -124,9 +124,12 @@ jobs:
           find . -name "*_files" -type d -exec rm -rf {} + 2>/dev/null || true
           echo "✓ Removed *_files directories"
 
-          # Remove workflow file itself (don't want this in public repo)
+          # Remove private-only workflow files (don't want these in public repo)
           rm -f .github/workflows/publish-to-public.yml
-          echo "✓ Removed workflow file"
+          rm -f .github/workflows/auto-release.yml
+          rm -f .github/workflows/auto-release.yaml
+          rm -f .github/workflows/auto-tag-on-version-bump.yml
+          echo "✓ Removed private workflow files"
 
           echo ""
           echo "Files cleaned. Current status:"

@@ -55,6 +55,9 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Install LaTeX packages for vignettes
+        run: Rscript -e "tinytex::tlmgr_install('orcidlink')"
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true

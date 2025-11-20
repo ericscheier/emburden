@@ -156,6 +156,7 @@
 ^STATUS\.md$
 ^zenodo-upload$
 ^zenodo-upload-nationwide$
+^data/zenodo-upload-nationwide$
 ^cleanup_conflicts\.R$
 ^helpers\.R$
 ^ratios\.R$
