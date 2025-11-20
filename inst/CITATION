@@ -3,7 +3,7 @@ bibentry(
   title    = "{emburden}: Energy Burden Analysis Using Net Energy Return Methodology",
   author   = "Eric Scheier",
   year     = "2025",
-  note     = "R package version 0.5.7",
+  note     = "R package version 0.5.8",
   url      = "https://github.com/ericscheier/emburden",
   textVersion = paste(
     "Scheier, Eric (2025).",
