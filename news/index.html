@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,7 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html"><span class="fa fas fa-home fa-lg"></span></a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html" aria-label="Home"><span class="fa fas fa-home fa-lg"></span></a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -37,9 +37,96 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/v0.5.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.3" id="emburden-053">emburden 0.5.3<a class="anchor" aria-label="anchor" href="#emburden-053"></a></h2>
+<div class="section level3">
+<h3 id="zenodo-integration---us-nationwide-datasets-0-5-3">Zenodo Integration - US Nationwide Datasets<a class="anchor" aria-label="anchor" href="#zenodo-integration---us-nationwide-datasets-0-5-3"></a></h3>
+<p>This patch release enables Zenodo downloads for US nationwide datasets with improved reliability and performance.</p>
+<div class="section level4">
+<h4 id="data-infrastructure-0-5-3">Data Infrastructure<a class="anchor" aria-label="anchor" href="#data-infrastructure-0-5-3"></a></h4>
+<ul><li>
+<strong>Enabled Zenodo downloads for US nationwide datasets</strong> (PR <a href="https://github.com/ericscheier/emburden/issues/35" class="external-link">#35</a>)
+<ul><li>Deployed Zenodo record <a href="https://zenodo.org/records/17653871" class="external-link">10.5281/zenodo.17653871</a> with 4 datasets</li>
+<li>AMI cohorts 2022 (499,234 records, 51 states)</li>
+<li>FPL cohorts 2022 (416,054 records, 51 states)</li>
+<li>AMI cohorts 2018 (361,095 records, 51 states)</li>
+<li>FPL cohorts 2018 (361,085 records, 51 states)</li>
+<li>Updated MD5 checksums for all datasets</li>
+<li>Removed temporary Zenodo bypass code</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes-0-5-3">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-3"></a></h4>
+<ul><li>
+<strong>Fixed test mocking for database fallback</strong> (PR <a href="https://github.com/ericscheier/emburden/issues/35" class="external-link">#35</a>)
+<ul><li>Database fallback test now properly mocks all download sources</li>
+<li>Added mock for <code><a href="../reference/download_lead_data.html">download_lead_data()</a></code> to prevent OpenEI fallback</li>
+<li>Added mock for <code><a href="../reference/detect_database_corruption.html">detect_database_corruption()</a></code> to allow test data</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="testing-0-5-3">Testing<a class="anchor" aria-label="anchor" href="#testing-0-5-3"></a></h4>
+<ul><li>All 614 tests passing across 7 platforms</li>
+<li>Clean R CMD check: 0 ERRORS, 0 FAILURES</li>
+</ul><hr></div>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.2" id="emburden-052">emburden 0.5.2<a class="anchor" aria-label="anchor" href="#emburden-052"></a></h2>
+<div class="section level3">
+<h3 id="cran-submission-fix---latex-compatibility-0-5-2">CRAN Submission Fix - LaTeX Compatibility<a class="anchor" aria-label="anchor" href="#cran-submission-fix---latex-compatibility-0-5-2"></a></h3>
+<p>This patch release fixes a LaTeX compatibility issue blocking CRAN submission.</p>
+<div class="section level4">
+<h4 id="bug-fixes-0-5-2">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-2"></a></h4>
+<ul><li>
+<strong>Fixed LaTeX Unicode error in documentation</strong> (PR <a href="https://github.com/ericscheier/emburden/issues/32" class="external-link">#32</a>)
+<ul><li>Replaced Unicode ≥ character (U+2265) with LaTeX-compatible <code>\eqn{\ge}</code> macro</li>
+<li>Fixed in <code>R/energy_ratios.R</code> documentation for <code><a href="../reference/ner_func.html">ner_func()</a></code> function</li>
+<li>All R CMD check tests passing with 0 ERRORS</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="cran-readiness-0-5-2">CRAN Readiness<a class="anchor" aria-label="anchor" href="#cran-readiness-0-5-2"></a></h4>
+<ul><li>Clean R CMD check results: 0 ERRORS, 1 WARNING (qpdf - non-critical), 3 NOTEs (all acceptable)</li>
+<li>All 614 tests passing across 7 platforms (ubuntu, windows, macos, multiple R versions)</li>
+<li>Package ready for CRAN submission</li>
+</ul><hr></div>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.1" id="emburden-051">emburden 0.5.1<a class="anchor" aria-label="anchor" href="#emburden-051"></a></h2>
+<div class="section level3">
+<h3 id="critical-data-fix---corrected-zenodo-repository-0-5-1">Critical Data Fix - Corrected Zenodo Repository<a class="anchor" aria-label="anchor" href="#critical-data-fix---corrected-zenodo-repository-0-5-1"></a></h3>
+<p>This patch release fixes critical data corruption in the v0.5.0 Zenodo repository.</p>
+<div class="section level4">
+<h4 id="bug-fixes-0-5-1">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-1"></a></h4>
+<ul><li>
+<strong>Fixed corrupted Zenodo data</strong> (PR <a href="https://github.com/ericscheier/emburden/issues/28" class="external-link">#28</a>)
+<ul><li>v0.5.0 Zenodo record (17605603) contained incorrect FPL data files</li>
+<li>FPL files only included NC state data (52MB) instead of full nationwide data (306MB)</li>
+<li>AMI files were correct (nationwide data, 148MB)</li>
+<li>New Zenodo record (17613104) uploaded with all 4 corrected datasets</li>
+<li>All datasets now contain complete US nationwide data (51 states, ~73K census tracts)</li>
+</ul></li>
+<li>
+<strong>Updated Zenodo configuration</strong>
+<ul><li>New concept DOI: 10.5281/zenodo.17613103</li>
+<li>New version DOI: 10.5281/zenodo.17613104</li>
+<li>Updated all file URLs and MD5 checksums in <code>R/zenodo.R</code>
+</li>
+<li>Updated test patterns to accept new Zenodo API endpoint format</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="verified-data-integrity-0-5-1">Verified Data Integrity<a class="anchor" aria-label="anchor" href="#verified-data-integrity-0-5-1"></a></h4>
+<p>All 4 nationwide datasets verified and working correctly: - <code>lead_ami_cohorts_2022_us.csv.gz</code> - 148 MB ✓ - <code>lead_fpl_cohorts_2022_us.csv.gz</code> - 305 MB ✓ - <code>lead_ami_cohorts_2018_us.csv.gz</code> - 148 MB ✓ - <code>lead_fpl_cohorts_2018_us.csv.gz</code> - 305 MB ✓</p>
+<p>All tests passing (614 tests, 0 failures).</p>
+<hr></div>
+</div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0" id="emburden-050">emburden 0.5.0<a class="anchor" aria-label="anchor" href="#emburden-050"></a></h2>
 <div class="section level3">

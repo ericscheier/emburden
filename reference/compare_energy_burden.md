@@ -11,8 +11,8 @@ compare_energy_burden(
   states = NULL,
   group_by = "income_bracket",
   counties = NULL,
-  vintage_1 = "2018",
-  vintage_2 = "2022",
+  vintage_1 = "2022",
+  vintage_2 = "2018",
   format = TRUE
 )
 ```
@@ -42,11 +42,11 @@ compare_energy_burden(
 
 - vintage_1:
 
-  Character, first vintage year: "2018" or "2022" (default "2018")
+  Character, first vintage year: "2018" or "2022" (default "2022")
 
 - vintage_2:
 
-  Character, second vintage year: "2018" or "2022" (default "2022")
+  Character, second vintage year: "2018" or "2022" (default "2018")
 
 - format:
 

@@ -14,7 +14,7 @@ Useful links:
 
 - <https://github.com/ericscheier/emburden>
 
-- <https://ericscheier.github.io/emburden/>
+- <https://ericscheier.info/emburden/>
 
 - Report bugs at <https://github.com/ericscheier/emburden/issues>
 

@@ -1,5 +1,109 @@
 # Changelog
 
+## emburden 0.5.3
+
+### Zenodo Integration - US Nationwide Datasets
+
+This patch release enables Zenodo downloads for US nationwide datasets
+with improved reliability and performance.
+
+#### Data Infrastructure
+
+- **Enabled Zenodo downloads for US nationwide datasets** (PR
+  [\#35](https://github.com/ericscheier/emburden/issues/35))
+  - Deployed Zenodo record
+    [10.5281/zenodo.17653871](https://zenodo.org/records/17653871) with
+    4 datasets
+  - AMI cohorts 2022 (499,234 records, 51 states)
+  - FPL cohorts 2022 (416,054 records, 51 states)
+  - AMI cohorts 2018 (361,095 records, 51 states)
+  - FPL cohorts 2018 (361,085 records, 51 states)
+  - Updated MD5 checksums for all datasets
+  - Removed temporary Zenodo bypass code
+
+#### Bug Fixes
+
+- **Fixed test mocking for database fallback** (PR
+  [\#35](https://github.com/ericscheier/emburden/issues/35))
+  - Database fallback test now properly mocks all download sources
+  - Added mock for
+    [`download_lead_data()`](https://ericscheier.github.io/emburden/reference/download_lead_data.md)
+    to prevent OpenEI fallback
+  - Added mock for
+    [`detect_database_corruption()`](https://ericscheier.github.io/emburden/reference/detect_database_corruption.md)
+    to allow test data
+
+#### Testing
+
+- All 614 tests passing across 7 platforms
+- Clean R CMD check: 0 ERRORS, 0 FAILURES
+
+------------------------------------------------------------------------
+
+## emburden 0.5.2
+
+### CRAN Submission Fix - LaTeX Compatibility
+
+This patch release fixes a LaTeX compatibility issue blocking CRAN
+submission.
+
+#### Bug Fixes
+
+- **Fixed LaTeX Unicode error in documentation** (PR
+  [\#32](https://github.com/ericscheier/emburden/issues/32))
+  - Replaced Unicode ≥ character (U+2265) with LaTeX-compatible
+    `\eqn{\ge}` macro
+  - Fixed in `R/energy_ratios.R` documentation for
+    [`ner_func()`](https://ericscheier.github.io/emburden/reference/ner_func.md)
+    function
+  - All R CMD check tests passing with 0 ERRORS
+
+#### CRAN Readiness
+
+- Clean R CMD check results: 0 ERRORS, 1 WARNING (qpdf - non-critical),
+  3 NOTEs (all acceptable)
+- All 614 tests passing across 7 platforms (ubuntu, windows, macos,
+  multiple R versions)
+- Package ready for CRAN submission
+
+------------------------------------------------------------------------
+
+## emburden 0.5.1
+
+### Critical Data Fix - Corrected Zenodo Repository
+
+This patch release fixes critical data corruption in the v0.5.0 Zenodo
+repository.
+
+#### Bug Fixes
+
+- **Fixed corrupted Zenodo data** (PR
+  [\#28](https://github.com/ericscheier/emburden/issues/28))
+  - v0.5.0 Zenodo record (17605603) contained incorrect FPL data files
+  - FPL files only included NC state data (52MB) instead of full
+    nationwide data (306MB)
+  - AMI files were correct (nationwide data, 148MB)
+  - New Zenodo record (17613104) uploaded with all 4 corrected datasets
+  - All datasets now contain complete US nationwide data (51 states,
+    ~73K census tracts)
+- **Updated Zenodo configuration**
+  - New concept DOI: 10.5281/zenodo.17613103
+  - New version DOI: 10.5281/zenodo.17613104
+  - Updated all file URLs and MD5 checksums in `R/zenodo.R`
+  - Updated test patterns to accept new Zenodo API endpoint format
+
+#### Verified Data Integrity
+
+All 4 nationwide datasets verified and working correctly: -
+`lead_ami_cohorts_2022_us.csv.gz` - 148 MB ✓ -
+`lead_fpl_cohorts_2022_us.csv.gz` - 305 MB ✓ -
+`lead_ami_cohorts_2018_us.csv.gz` - 148 MB ✓ -
+`lead_fpl_cohorts_2018_us.csv.gz` - 305 MB ✓
+
+All tests passing (614 tests, 0 failures).
+
+------------------------------------------------------------------------
+
 ## emburden 0.5.0
 
 ### CRAN Submission Ready - Nationwide Energy Burden Analysis

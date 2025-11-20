@@ -568,6 +568,15 @@ Functions for loading LEAD Tool data
 - [`check_data_sources()`](https://ericscheier.github.io/emburden/reference/check_data_sources.md)
   : Check Available Data Sources
 
+## Cache Management
+
+Functions for managing data cache and database
+
+- [`clear_dataset_cache()`](https://ericscheier.github.io/emburden/reference/clear_dataset_cache.md)
+  : Clear cache for a specific dataset
+- [`clear_all_cache()`](https://ericscheier.github.io/emburden/reference/clear_all_cache.md)
+  : Clear all emburden cache and database
+
 ## Metadata Discovery
 
 Functions for exploring available data structure
