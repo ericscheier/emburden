@@ -1,5 +1,12 @@
 name: Auto-tag on version bump
 
+# IMPORTANT: This workflow uses PUBLIC_REPO_TOKEN (PAT) instead of GITHUB_TOKEN
+# when pushing tags. This is required because GITHUB_TOKEN cannot trigger other
+# workflows (GitHub security feature to prevent infinite loops). Using a PAT
+# ensures that when we push a tag, it properly triggers:
+#   1. auto-release.yml (creates GitHub release)
+#   2. publish-to-public.yml (pushes to public repository)
+
 on:
   push:
     branches:
@@ -77,6 +84,8 @@ jobs:
 
       - name: Create and push version tag
         if: steps.check_version_change.outputs.changed == 'true' && steps.check_tag.outputs.exists == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
           TAG="v${{ steps.get_version.outputs.version }}"
 
@@ -87,8 +96,10 @@ jobs:
           # Create annotated tag
           git tag -a "$TAG" -m "Release $TAG"
 
-          # Push tag (this will trigger the auto-release workflow)
-          git push origin "$TAG"
+          # Push tag using PAT to trigger downstream workflows
+          # Using PUBLIC_REPO_TOKEN instead of GITHUB_TOKEN ensures that
+          # the tag push triggers auto-release and publish-to-public workflows
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git "$TAG"
 
           echo "✅ Created and pushed tag: $TAG"
           echo "This will trigger the auto-release workflow to create a GitHub release"
