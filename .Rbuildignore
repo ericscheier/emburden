@@ -48,6 +48,7 @@
 ^data/nerc_regions\.gdb/
 ^data/PGE_DIDF_Tables_Public/
 ^data/PGE_POSTSR2A_3-1-2022\.gdb/
+^data/\.archived_bad_data/
 
 # Analysis scripts and outputs (keep in repo but not package)
 ^analysis/

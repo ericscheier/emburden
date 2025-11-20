@@ -1,3 +1,20 @@
+# emburden 0.5.4
+
+## Critical Bugfix - Zenodo MD5 Checksums
+
+This patch release fixes incorrect MD5 checksums that caused data loading failures.
+
+### Bug Fixes
+
+* **Fixed MD5 checksums for Zenodo downloads**
+  - Corrected AMI 2022 checksum: `cc847d89119a374bede6ee7f41060506`
+  - Corrected AMI 2018 checksum: `4941e3566daec1badc53eb44f34d95a8`
+  - Corrected FPL 2018 checksum: `85ef6b7b4de244e80ff700f3d5becf3a`
+  - Updated file sizes to match actual generated files
+  - **Impact**: Previously, 3 out of 4 datasets failed checksum verification and fell back to cached/OpenEI data, causing incorrect data comparisons (e.g., 2018 and 2022 appearing identical)
+
+---
+
 # emburden 0.5.3
 
 ## Zenodo Integration - US Nationwide Datasets

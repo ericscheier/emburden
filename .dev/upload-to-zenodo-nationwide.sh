@@ -55,6 +55,16 @@ echo ""
 echo "Upload directory: $UPLOAD_DIR"
 echo ""
 
+# Validate checksums before uploading
+echo "Validating MD5 checksums..."
+if ! Rscript .dev/validate-zenodo-checksums.R; then
+    echo ""
+    echo "❌ ABORT: Checksum validation failed!"
+    echo "   Fix the mismatches in R/zenodo.R before uploading."
+    exit 1
+fi
+echo ""
+
 # Files to upload
 # NOTE: Arizona 2018 data has non-standard filename handled in R code
 FILES=(
