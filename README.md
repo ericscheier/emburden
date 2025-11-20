@@ -1,7 +1,7 @@
 # emburden
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yml)
 <!-- badges: end -->
 
 R package for analyzing household energy burden - the percentage of income spent on energy costs.

@@ -1,3 +1,32 @@
+# emburden 0.5.8
+
+## CRAN Automation and Submission
+
+This release introduces comprehensive automation for CRAN submissions.
+
+### New Features
+
+* **Automated CRAN submission pipeline**:
+  - Multi-layer validation (local → GitHub Actions → Win-builder → manual approval → auto-submit)
+  - Win-builder integration for Windows testing
+  - Manual approval gate via GitHub environment
+  - Automatic submission using `devtools::submit_cran()`
+* **Pre-tag validation script** (`.dev/pre-tag-cran-check.R`):
+  - Local validation before creating version tags
+  - Comprehensive CRAN checks with `--as-cran` flag
+  - Optional Win-builder submission
+  - Version consistency validation
+* **Complete workflow documentation** (`.dev/CRAN-SUBMISSION-GUIDE.md`):
+  - Full CRAN submission process guide
+  - Multi-repository setup explanation
+  - Troubleshooting tips and best practices
+
+### Bug Fixes
+
+* Fixed R-CMD-check badge URL in README (`.yaml` → `.yml`)
+
+---
+
 # emburden 0.5.7
 
 ## CRAN Readiness - Final Fixes

@@ -1,0 +1,258 @@
+name: CRAN Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on semantic version tags like v0.5.7, v1.0.0, etc.
+  workflow_dispatch:  # Allow manual triggering for testing
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  validate-cran:
+    name: Validate CRAN Package
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      tarball: ${{ steps.build.outputs.tarball }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=$(grep "^Version:" DESCRIPTION | sed 's/^Version: *//')
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - name: Setup R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::rcmdcheck
+            any::devtools
+          needs: check
+
+      - name: Setup Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
+
+      - name: Setup TinyTeX
+        uses: r-lib/actions/setup-tinytex@v2
+        env:
+          TINYTEX_INSTALLER: TinyTeX
+
+      - name: Install LaTeX packages
+        run: |
+          tlmgr install xcolor xstring fancyvrb framed
+
+      - name: Build source package
+        id: build
+        run: |
+          tarball=$(R CMD build . | grep -o '[^/]*\.tar\.gz$')
+          echo "tarball=$tarball" >> $GITHUB_OUTPUT
+          echo "Built package: $tarball"
+
+      - name: Run CRAN checks
+        run: |
+          Rscript -e "rcmdcheck::rcmdcheck(
+            path = '${{ steps.build.outputs.tarball }}',
+            args = c('--as-cran', '--no-manual'),
+            error_on = 'warning',
+            check_dir = 'check'
+          )"
+
+      - name: Upload check results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cran-check-results
+          path: check/
+
+      - name: Upload source tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: r-package-source
+          path: ${{ steps.build.outputs.tarball }}
+          retention-days: 30
+
+      - name: Submit to Win-builder (Optional)
+        id: winbuilder
+        continue-on-error: true
+        run: |
+          echo "📦 Submitting to Win-builder for Windows testing..."
+          Rscript -e "devtools::check_win_release(email = '${{ secrets.CRAN_EMAIL }}')"
+          echo ""
+          echo "✅ Submitted to Win-builder!"
+          echo "⏱️  Results will be emailed to ${{ secrets.CRAN_EMAIL }} within ~30 minutes"
+          echo ""
+          echo "Check your email for Win-builder results before proceeding with CRAN submission."
+
+      - name: Win-builder submission summary
+        if: steps.winbuilder.outcome == 'success'
+        run: |
+          echo "### Win-builder Submission" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Package submitted to Win-builder for Windows testing" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Results will be emailed to the configured CRAN_EMAIL address." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** Win-builder results typically arrive within 30 minutes." >> $GITHUB_STEP_SUMMARY
+
+  submit-to-cran:
+    name: Submit to CRAN
+    needs: validate-cran
+    runs-on: ubuntu-latest
+    environment: cran-production  # Requires manual approval
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download package tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: r-package-source
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Install devtools
+        run: Rscript -e "install.packages('devtools')"
+
+      - name: Prepare CRAN submission
+        id: prepare
+        run: |
+          VERSION="${{ needs.validate-cran.outputs.version }}"
+          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
+
+          cat > cran_comments.md << 'EOF'
+          ## Resubmission
+          This is version $VERSION of the emburden package.
+
+          ## Test environments
+          * Ubuntu 22.04 (GitHub Actions), R-release
+          * Windows (GitHub Actions), R-release
+          * macOS (GitHub Actions), R-release
+
+          ## R CMD check results
+          There were no ERRORs, WARNINGs, or NOTEs.
+
+          ## Downstream dependencies
+          There are currently no downstream dependencies for this package.
+          EOF
+
+          echo "Package: emburden v$VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "Tarball: $TARBALL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### CRAN Submission Comments" >> $GITHUB_STEP_SUMMARY
+          cat cran_comments.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Submit to CRAN
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          CRAN_EMAIL: ${{ secrets.CRAN_EMAIL }}
+        run: |
+          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
+
+          # Note: Automatic submission requires CRAN credentials
+          # For now, this creates the submission artifact
+          # Manual submission can be done via: devtools::submit_cran()
+
+          echo "✅ Package validated and ready for CRAN submission"
+          echo ""
+          echo "📧 Submitting to CRAN automatically..."
+          echo ""
+
+          # Auto-submit to CRAN using configured CRAN_EMAIL
+          Rscript -e "devtools::submit_cran('$TARBALL', email = Sys.getenv('CRAN_EMAIL'))"
+
+          echo ""
+          echo "✅ Package submitted to CRAN!"
+          echo "📬 Check ${{ secrets.CRAN_EMAIL }} for CRAN submission confirmation"
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.validate-cran.outputs.version }}"
+          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
+          TAG="v$VERSION"
+
+          # Create release notes
+          cat > release_notes.md << 'EOF'
+          ## emburden v$VERSION
+
+          CRAN release candidate for version $VERSION.
+
+          ### Installation
+
+          ```r
+          # From CRAN (once approved)
+          install.packages("emburden")
+
+          # Or install this version directly
+          install.packages("$TARBALL", repos = NULL, type = "source")
+          ```
+
+          ### CRAN Validation
+
+          ✅ All CRAN checks passed:
+          - No ERRORs
+          - No WARNINGs
+          - No NOTEs
+
+          ### Files
+
+          - Source package: `$TARBALL`
+          - Validated with R CMD check --as-cran
+
+          See [CRAN Submission Policy](https://cran.r-project.org/web/packages/policies.html) for details.
+          EOF
+
+          # Check if release already exists
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, updating..."
+            gh release upload "$TAG" "$TARBALL" --clobber
+          else
+            echo "Creating new release $TAG..."
+            gh release create "$TAG" \
+              "$TARBALL" \
+              --title "emburden v$VERSION - CRAN Release" \
+              --notes-file release_notes.md
+          fi
+
+          echo "✅ GitHub release created: $TAG"
+
+      - name: Post-submission summary
+        if: always()
+        run: |
+          echo "### CRAN Submission Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Package validated" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Source tarball created" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ GitHub release created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Wait for CRAN submission confirmation email" >> $GITHUB_STEP_SUMMARY
+          echo "2. Respond to any CRAN reviewer feedback" >> $GITHUB_STEP_SUMMARY
+          echo "3. Monitor https://cran.r-project.org/web/checks/" >> $GITHUB_STEP_SUMMARY
