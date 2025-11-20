@@ -1,3 +1,34 @@
+# emburden 0.5.3
+
+## Zenodo Integration - US Nationwide Datasets
+
+This patch release enables Zenodo downloads for US nationwide datasets with improved reliability and performance.
+
+### Data Infrastructure
+
+* **Enabled Zenodo downloads for US nationwide datasets** (PR #35)
+  - Deployed Zenodo record [10.5281/zenodo.17653871](https://zenodo.org/records/17653871) with 4 datasets
+  - AMI cohorts 2022 (499,234 records, 51 states)
+  - FPL cohorts 2022 (416,054 records, 51 states)
+  - AMI cohorts 2018 (361,095 records, 51 states)
+  - FPL cohorts 2018 (361,085 records, 51 states)
+  - Updated MD5 checksums for all datasets
+  - Removed temporary Zenodo bypass code
+
+### Bug Fixes
+
+* **Fixed test mocking for database fallback** (PR #35)
+  - Database fallback test now properly mocks all download sources
+  - Added mock for `download_lead_data()` to prevent OpenEI fallback
+  - Added mock for `detect_database_corruption()` to allow test data
+
+### Testing
+
+- All 614 tests passing across 7 platforms
+- Clean R CMD check: 0 ERRORS, 0 FAILURES
+
+---
+
 # emburden 0.5.2
 
 ## CRAN Submission Fix - LaTeX Compatibility

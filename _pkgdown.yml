@@ -26,6 +26,12 @@ reference:
       - load_cohort_data
       - check_data_sources
 
+  - title: "Cache Management"
+    desc: "Functions for managing data cache and database"
+    contents:
+      - clear_dataset_cache
+      - clear_all_cache
+
   - title: "Metadata Discovery"
     desc: "Functions for exploring available data structure"
     contents:
@@ -64,6 +70,7 @@ navbar:
   components:
     home:
       icon: fas fa-home fa-lg
+      aria-label: "Home"
       href: index.html
     reference:
       text: Reference

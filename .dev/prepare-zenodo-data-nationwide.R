@@ -23,6 +23,16 @@
 #       lead_fpl_cohorts_2018_us.csv.gz
 #     checksums.txt
 #     state-manifest.json
+#
+# Usage:
+#   # Normal mode: use cache if available, download if needed (default)
+#   Rscript prepare-zenodo-data-nationwide.R --nationwide-only
+#
+#   # Cache-only mode: use cached data only (ideal for post-processing fixes)
+#   Rscript prepare-zenodo-data-nationwide.R --nationwide-only --use-cache
+#
+#   # Force download: clear cache and re-download everything
+#   Rscript prepare-zenodo-data-nationwide.R --nationwide-only --force-download
 
 # Load development version of emburden (includes list_states() and validation functions)
 library(devtools)
@@ -46,6 +56,44 @@ args <- commandArgs(trailingOnly = TRUE)
 states_only <- "--states-only" %in% args
 nationwide_only <- "--nationwide-only" %in% args
 quick_test <- "--quick-test" %in% args  # Just a few states for testing
+
+# Cache control flags (for efficient re-processing without re-downloading)
+use_cache_only <- "--use-cache" %in% args      # Use cached data only, fail if missing
+force_download <- "--force-download" %in% args  # Force re-download even if cache exists
+
+# Validate conflicting flags
+if (use_cache_only && force_download) {
+  stop("ERROR: Cannot use both --use-cache and --force-download")
+}
+
+# Set download policy environment variable for load_cohort_data
+if (use_cache_only) {
+  Sys.setenv(EMBURDEN_NO_DOWNLOAD = "1")
+  cat("\n")
+  cat("================================================================================\n")
+  cat("  CACHE-ONLY MODE: Will use cached data without downloading\n")
+  cat("================================================================================\n")
+  cat("\n")
+  cat("This mode is ideal for:\n")
+  cat("  - Re-processing with post-processing fixes (e.g., column renaming)\n")
+  cat("  - Testing validation logic without re-downloading\n")
+  cat("  - Quick iterations on data transformation\n")
+  cat("\n")
+  cat("If cache is missing, the script will fail. Use --force-download to re-download.\n")
+  cat("\n")
+} else if (force_download) {
+  # Clear cache to force fresh downloads
+  cache_dir <- get_cache_dir()
+  if (dir.exists(cache_dir)) {
+    cat("\n")
+    cat("================================================================================\n")
+    cat("  FORCE-DOWNLOAD MODE: Clearing cache and re-downloading all data\n")
+    cat("================================================================================\n")
+    cat("\n")
+    unlink(cache_dir, recursive = TRUE)
+    cat("✓ Cache cleared:", cache_dir, "\n\n")
+  }
+}
 
 # Output directories
 base_dir <- "zenodo-upload-nationwide"
@@ -74,6 +122,8 @@ cat("States to process:", length(all_states), "\n")
 cat("States:", paste(all_states, collapse = ", "), "\n\n")
 
 # Dataset configurations
+# NOTE: Arizona 2018 data has non-standard filename: "AZ-2018-LEAD-data (1).zip"
+# This is handled in R/lead_data_loaders.R
 datasets <- list(
   list(name = "ami", vintage = "2022"),
   list(name = "fpl", vintage = "2022"),
@@ -287,6 +337,15 @@ if (!nationwide_only) {
         next
       }
 
+      # Fix AMI column naming: AMI150 → income_bracket
+      # AMI datasets from OpenEI use "AMI150" column instead of "income_bracket"
+      if (dataset_name == "ami" && "AMI150" %in% names(data)) {
+        cat("    ⚙️  Standardizing AMI column naming (AMI150 → income_bracket)...\n")
+        data <- data %>%
+          rename(income_bracket = AMI150)
+        cat("      ✓ Column renamed\n")
+      }
+
       # Manual filter by state (in case load_cohort_data didn't filter properly)
       if ("state_abbr" %in% names(data)) {
         data <- data %>% filter(state_abbr == state)
@@ -360,12 +419,21 @@ if (!states_only) {
 
       if (is.null(all_data) || nrow(all_data) == 0) {
         cat("  SKIPPED: No data available\n\n")
-        break
+        next  # Skip to next dataset, don't break out of entire loop
       }
 
       cat("\n  Combined data loaded successfully!\n")
       cat("    Total rows:", format(nrow(all_data), big.mark = ","), "\n")
       cat("    Total states:", length(unique(all_data$state_abbr)), "\n\n")
+
+      # Fix AMI column naming: AMI150 → income_bracket
+      # AMI datasets from OpenEI use "AMI150" column instead of "income_bracket"
+      if (dataset_name == "ami" && "AMI150" %in% names(all_data)) {
+        cat("  ⚙️  Standardizing AMI column naming (AMI150 → income_bracket)...\n")
+        all_data <- all_data %>%
+          rename(income_bracket = AMI150)
+        cat("    ✓ Column renamed\n\n")
+      }
 
       # Save nationwide dataset (with validation)
       nationwide_file <- file.path(

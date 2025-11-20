@@ -94,14 +94,40 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
     message("Loading ", vintage, " ", toupper(dataset), " cohort data...")
   }
 
-  # Try database first
-  data <- try_load_from_database(
-    dataset = dataset,
-    vintage = vintage,
-    verbose = verbose
-  )
+  # Try database first (unless disabled via environment variable)
+  data <- if (Sys.getenv("EMBURDEN_NO_DATABASE") == "1") {
+    if (verbose) {
+      message("  ⚠️  Database caching disabled (EMBURDEN_NO_DATABASE=1)")
+    }
+    NULL  # Skip database, go directly to CSV/OpenEI
+  } else {
+    try_load_from_database(
+      dataset = dataset,
+      vintage = vintage,
+      verbose = verbose
+    )
+  }
 
-  # If database fails, try CSV
+  # Check database data for corruption (warn but don't auto-delete)
+  if (!is.null(data)) {
+    corruption_check <- detect_database_corruption(
+      data = data,
+      dataset = dataset,
+      vintage = vintage,
+      states = states,
+      verbose = verbose
+    )
+
+    # If corrupted, discard and try other sources
+    if (corruption_check$is_corrupted) {
+      if (verbose) {
+        message("  ⚠️  Database data appears corrupted, will try other sources...")
+      }
+      data <- NULL  # Discard corrupted data, try CSV/OpenEI
+    }
+  }
+
+  # If database fails or corrupted, try CSV
   if (is.null(data)) {
     data <- try_load_from_csv(
       dataset = dataset,
@@ -565,26 +591,38 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
   # For 2018, data is distributed as state-specific ZIP files
   # For 2022, data is available as direct CSV downloads
   if (vintage == "2018") {
-    # If no states specified, download all 51 states (50 + DC)
+    # If no states specified OR multiple states requested, download all/merge
     # This provides uniform API - nationwide data works same way for both vintages
-    if (is.null(states) || length(states) == 0) {
-      if (verbose) {
-        message("No states specified - downloading nationwide data (all 51 states)")
-        message("Note: This downloads and merges 51 separate ZIP files (~8-10 GB total)")
-        message("This is a one-time download. Subsequent uses load from cache.")
-        message("TIP: For faster downloads, use Zenodo (automatic via load_cohort_data)")
+    if (is.null(states) || length(states) == 0 || length(states) > 1) {
+      # Use provided states or get all states if none specified
+      states_to_download <- if (is.null(states) || length(states) == 0) {
+        get_all_states()
+      } else {
+        states
       }
 
-      # Get all state abbreviations
-      all_states <- get_all_states()
-      return(download_and_merge_states(dataset, vintage, all_states, verbose))
+      if (verbose) {
+        message("Downloading 2018 data for ", length(states_to_download), " states...")
+        message("Note: This downloads and merges ", length(states_to_download), " separate ZIP files")
+        message("This is a one-time download. Subsequent uses load from cache.")
+        if (is.null(states) || length(states) == 0) {
+          message("TIP: For faster downloads, use Zenodo (automatic via load_cohort_data)")
+        }
+      }
+
+      return(download_and_merge_states(dataset, vintage, states_to_download, verbose))
     }
 
-    # Use first state (2018 ZIP files are per-state)
+    # Single state requested - use first state
     state <- toupper(states[1])
 
     # ZIP file URL pattern
-    zip_url <- paste0("https://data.openei.org/files/573/", state, "-2018-LEAD-data.zip")
+    # Note: Arizona has a non-standard filename with " (1)" suffix
+    if (state == "AZ") {
+      zip_url <- "https://data.openei.org/files/573/AZ-2018-LEAD-data%20(1).zip"
+    } else {
+      zip_url <- paste0("https://data.openei.org/files/573/", state, "-2018-LEAD-data.zip")
+    }
 
     #CSV file name inside ZIP
     dataset_upper <- toupper(dataset)
@@ -601,22 +639,29 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
   } else if (vintage == "2022") {
     # 2022: AMI uses direct CSV, FPL uses state ZIP files
     if (dataset == "fpl") {
-      # If no states specified, download all 51 states
+      # If no states specified OR multiple states requested, download all/merge
       # This provides uniform API - nationwide data works same way for both datasets
-      if (is.null(states) || length(states) == 0) {
-        if (verbose) {
-          message("No states specified - downloading nationwide FPL data (all 51 states)")
-          message("Note: This downloads and merges 51 separate ZIP files (~8-10 GB total)")
-          message("This is a one-time download. Subsequent uses load from cache.")
-          message("TIP: For faster downloads, use Zenodo (automatic via load_cohort_data)")
+      if (is.null(states) || length(states) == 0 || length(states) > 1) {
+        # Use provided states or get all states if none specified
+        states_to_download <- if (is.null(states) || length(states) == 0) {
+          get_all_states()
+        } else {
+          states
         }
 
-        # Get all state abbreviations
-        all_states <- get_all_states()
-        return(download_and_merge_states(dataset, vintage, all_states, verbose))
+        if (verbose) {
+          message("Downloading FPL data for ", length(states_to_download), " states...")
+          message("Note: This downloads and merges ", length(states_to_download), " separate ZIP files")
+          message("This is a one-time download. Subsequent uses load from cache.")
+          if (is.null(states) || length(states) == 0) {
+            message("TIP: For faster downloads, use Zenodo (automatic via load_cohort_data)")
+          }
+        }
+
+        return(download_and_merge_states(dataset, vintage, states_to_download, verbose))
       }
 
-      # Use first state
+      # Single state requested - use first state
       state <- toupper(states[1])
 
       # ZIP file URL pattern for 2022
@@ -635,21 +680,45 @@ download_lead_data <- function(dataset, vintage, states = NULL, verbose = FALSE)
       is_zip <- TRUE
 
     } else {
-      # AMI: Direct CSV download
-      openei_urls_2022 <- list(
-        ami = "https://data.openei.org/files/6219/lead_ami_tracts_2022.csv"
-      )
+      # AMI: Also uses state ZIP files (same as FPL)
+      # If no states specified OR multiple states requested, download all/merge
+      if (is.null(states) || length(states) == 0 || length(states) > 1) {
+        # Use provided states or get all states if none specified
+        states_to_download <- if (is.null(states) || length(states) == 0) {
+          get_all_states()
+        } else {
+          states
+        }
 
-      url <- openei_urls_2022[[dataset]]
-      if (is.null(url)) {
-        stop("No OpenEI URL configured for ", dataset, " ", vintage)
+        if (verbose) {
+          message("Downloading AMI data for ", length(states_to_download), " states...")
+          message("Note: This downloads and merges ", length(states_to_download), " separate ZIP files")
+          message("This is a one-time download. Subsequent uses load from cache.")
+          if (is.null(states) || length(states) == 0) {
+            message("TIP: For faster downloads, use Zenodo (automatic via load_cohort_data)")
+          }
+        }
+
+        return(download_and_merge_states(dataset, vintage, states_to_download, verbose))
       }
+
+      # Single state requested - use first state
+      state <- toupper(states[1])
+
+      # ZIP file URL pattern for 2022
+      zip_url <- paste0("https://data.openei.org/files/6219/", state, "-2022-LEAD-data.zip")
+
+      # CSV file name inside ZIP (note the space in filename)
+      dataset_upper <- toupper(dataset)
+      csv_filename <- paste0(state, " ", dataset_upper, " Census Tracts 2022.csv")
 
       if (verbose) {
-        message("  Downloading from: ", url)
+        message("  Downloading 2022 AMI ZIP from: ", zip_url)
+        message("  Will extract: ", csv_filename)
       }
 
-      is_zip <- FALSE
+      url <- zip_url
+      is_zip <- TRUE
     }
 
   } else {
@@ -1042,6 +1111,26 @@ try_import_to_database <- function(data, dataset, vintage, verbose = FALSE) {
     dir.create("data", showWarnings = FALSE, recursive = TRUE)
   }
 
+  # Validate data BEFORE caching to prevent corruption
+  validation <- validate_before_caching(
+    data = data,
+    dataset = dataset,
+    vintage = vintage,
+    expected_states = 51,  # Assume nationwide; will be relaxed for filtered data
+    strict = FALSE  # Don't throw errors, just check
+  )
+
+  if (!validation$valid) {
+    if (verbose) {
+      message("  ⚠️  Data validation failed, will NOT cache to database:")
+      for (issue in validation$issues) {
+        message("     - ", issue)
+      }
+      message("  This prevents corrupted data from being cached.")
+    }
+    return(FALSE)
+  }
+
   table_name <- paste0("lead_", vintage, "_", dataset, "_cohorts")
 
   tryCatch({
@@ -1227,13 +1316,20 @@ standardize_cohort_columns <- function(data, dataset, vintage) {
   # Note: 2022 uses period (HINCP.UNITS), older formats use asterisk (HINCP*UNITS)
 
   # Income bracket column (check multiple formats)
-  # 2022 FPL uses FPL150, 2018 FPL uses FPL15
+  # FPL datasets: 2022 uses FPL150, 2018 uses FPL15
+  # AMI datasets: 2022 uses AMI150, 2018 uses AMI68
   if ("FPL150" %in% names(data) && !"income_bracket" %in% names(data)) {
     data <- data |>
       dplyr::rename(income_bracket = FPL150)
   } else if ("FPL15" %in% names(data) && !"income_bracket" %in% names(data)) {
     data <- data |>
       dplyr::rename(income_bracket = FPL15)
+  } else if ("AMI150" %in% names(data) && !"income_bracket" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(income_bracket = AMI150)
+  } else if ("AMI68" %in% names(data) && !"income_bracket" %in% names(data)) {
+    data <- data |>
+      dplyr::rename(income_bracket = AMI68)
   }
 
   # Households column
@@ -1444,6 +1540,26 @@ download_and_merge_states <- function(dataset, vintage, states, verbose = TRUE) 
     message(sprintf("Successfully merged %s rows from %d states",
                     format(nrow(combined_data), big.mark = ","),
                     length(all_data)))
+  }
+
+  # Save merged data to cache
+  cache_dir <- get_cache_dir()
+  cache_file <- file.path(cache_dir, paste0("lead_", vintage, "_", dataset, ".csv"))
+
+  if (verbose) {
+    message("  Caching merged nationwide data...")
+  }
+
+  readr::write_csv(combined_data, cache_file)
+
+  # Import to database for faster subsequent loads
+  if (verbose) {
+    message("  Importing to database...")
+  }
+  try_import_to_database(combined_data, dataset, vintage, verbose = verbose)
+
+  if (verbose) {
+    message("  \u2713 Downloaded, merged, and cached successfully")
   }
 
   return(combined_data)
