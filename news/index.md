@@ -1,5 +1,48 @@
 # Changelog
 
+## emburden 0.5.6
+
+### CRAN Quality-of-Life Improvements
+
+This release focuses on CRAN compliance and automation improvements.
+
+#### Enhancements
+
+- **Auto-release workflow**: Automated GitHub release creation on
+  version tags
+- **CRAN compliance improvements**:
+  - Added `Language: en-US` field to DESCRIPTION
+  - Added `jsonlite` to Suggests (used in tests)
+  - Replaced all non-ASCII Unicode characters with escape sequences
+  - Added missing global variable bindings (AMI150, AMI68)
+
+#### Bug Fixes
+
+- Fixed auto-release workflow heredoc syntax issue
+- All Unicode characters now use `\uxxxx` escape format for portability
+
+------------------------------------------------------------------------
+
+## emburden 0.5.5
+
+### Data Integrity Fix - New Zenodo Record
+
+This patch release deploys corrected datasets to a new Zenodo record to
+ensure data integrity.
+
+#### Bug Fixes
+
+- **New Zenodo record with verified correct data**
+  - Deployed new Zenodo record
+    [10.5281/zenodo.17656637](https://zenodo.org/records/17656637)
+  - Updated MD5 checksums to match re-uploaded files with verified
+    correct data
+  - Verified FPL 2022 checksum: `767f2ff27193116f61e893999eb8bcf1`
+  - **Impact**: Ensures users download validated, correct data for all 4
+    datasets
+
+------------------------------------------------------------------------
+
 ## emburden 0.5.4
 
 ### Critical Bugfix - Zenodo MD5 Checksums
