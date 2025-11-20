@@ -116,7 +116,7 @@ detect_database_corruption <- function(data, dataset, vintage, states = NULL, ve
 
   # Print warning if corrupted
   if (is_corrupted && verbose) {
-    message("\n⚠️  WARNING: Potential database corruption detected")
+    message("\n\u26A0  WARNING: Potential database corruption detected")
     message("   Dataset: ", toupper(dataset), " ", vintage)
     message("   Issues:")
     for (issue in issues) {
@@ -270,7 +270,7 @@ clear_dataset_cache <- function(dataset = c("ami", "fpl"), vintage = c("2018", "
     if (file.exists(f)) {
       unlink(f)
       cleared <- cleared + 1
-      if (verbose) message("  ✓ Deleted: ", basename(f))
+      if (verbose) message("  \u2713 Deleted: ", basename(f))
     }
   }
 
@@ -292,18 +292,18 @@ clear_dataset_cache <- function(dataset = c("ami", "fpl"), vintage = c("2018", "
         if (DBI::dbExistsTable(conn, table_name)) {
           DBI::dbExecute(conn, sprintf("DROP TABLE IF EXISTS %s", table_name))
           cleared <- cleared + 1
-          if (verbose) message("  ✓ Deleted database table: ", table_name)
+          if (verbose) message("  \u2713 Deleted database table: ", table_name)
         }
       }
 
       DBI::dbDisconnect(conn)
     }, error = function(e) {
-      if (verbose) message("  ⚠️  Could not access database: ", e$message)
+      if (verbose) message("  \u26A0  Could not access database: ", e$message)
     })
   }
 
   if (verbose) {
-    message("✓ Cleared ", cleared, " cache item(s) for ", toupper(dataset), " ", vintage)
+    message("\u2713 Cleared ", cleared, " cache item(s) for ", toupper(dataset), " ", vintage)
   }
 
   invisible(cleared)
@@ -346,7 +346,7 @@ clear_all_cache <- function(confirm = FALSE, verbose = TRUE) {
   if (dir.exists(cache_dir)) {
     unlink(cache_dir, recursive = TRUE)
     results$cache_cleared <- TRUE
-    if (verbose) message("  ✓ Deleted cache directory: ", cache_dir)
+    if (verbose) message("  \u2713 Deleted cache directory: ", cache_dir)
   }
 
   # 2. Clear database file
@@ -354,11 +354,11 @@ clear_all_cache <- function(confirm = FALSE, verbose = TRUE) {
   if (file.exists(db_path)) {
     unlink(db_path)
     results$db_cleared <- TRUE
-    if (verbose) message("  ✓ Deleted database: ", db_path)
+    if (verbose) message("  \u2713 Deleted database: ", db_path)
   }
 
   if (verbose) {
-    message("✓ All cache and database cleared")
+    message("\u2713 All cache and database cleared")
     message("  Note: Data will be re-downloaded from OpenEI on next use")
   }
 

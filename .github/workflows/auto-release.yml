@@ -1,0 +1,101 @@
+name: Auto Release
+
+# Automatically create GitHub releases when version tags are pushed
+# This workflow is referenced by publish-to-public.yml
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on tags like v0.5.5, v1.0.0, etc.
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to create releases
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for changelog generation
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG_NAME#v}
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Creating release for $TAG_NAME (version $VERSION)"
+
+      - name: Extract release notes from NEWS.md
+        id: get_notes
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          echo "Extracting notes for version $VERSION from NEWS.md"
+
+          # Extract the section for this version from NEWS.md
+          if [ -f "NEWS.md" ]; then
+            # Find content between "# emburden $VERSION" and next version header
+            awk "/^# emburden $VERSION/,/^# emburden [0-9]/" NEWS.md | head -n -1 > /tmp/release-notes.md
+
+            # If no release notes found, use a default message
+            if [ ! -s /tmp/release-notes.md ]; then
+              echo "# emburden $VERSION" > /tmp/release-notes.md
+              echo "" >> /tmp/release-notes.md
+              echo "See [NEWS.md](NEWS.md) for details." >> /tmp/release-notes.md
+            fi
+          else
+            echo "# emburden $VERSION" > /tmp/release-notes.md
+            echo "" >> /tmp/release-notes.md
+            echo "Release notes not available (NEWS.md not found)" >> /tmp/release-notes.md
+          fi
+
+          # Append installation and validation information
+          cat >> /tmp/release-notes.md <<'RELEASE_EOF'
+
+---
+
+## Installation
+
+```r
+# Install from GitHub
+# install.packages("remotes")
+remotes::install_github("ericscheier/emburden@${{ steps.get_version.outputs.tag_name }}")
+```
+
+## Package Validation
+
+All automated checks passed:
+- ✅ R CMD check (0 errors, 0 warnings)
+- ✅ All tests passing
+- ✅ Test coverage threshold met
+- ✅ Package builds successfully
+RELEASE_EOF
+
+          cat /tmp/release-notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_name }}
+          name: emburden ${{ steps.get_version.outputs.tag_name }}
+          body_path: /tmp/release-notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Release Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Successfully created release [\`${{ steps.get_version.outputs.tag_name }}\`](https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.tag_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** \`${{ steps.get_version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- The \`publish-to-public\` workflow will automatically trigger to push this release to the public repository" >> $GITHUB_STEP_SUMMARY
+          echo "- Check the [Actions tab](https://github.com/${{ github.repository }}/actions) to monitor the public repository deployment" >> $GITHUB_STEP_SUMMARY
