@@ -24,6 +24,11 @@ on:
     branches:
       - 'ready-for-public'  # Protected branch for controlled releases
   workflow_dispatch:    # Manual trigger from GitHub UI
+    inputs:
+      tag_name:
+        description: 'Tag name (e.g., v0.5.13) - optional, defaults to current HEAD'
+        required: false
+        type: string
 
 env:
   PUBLIC_REPO: 'ericscheier/emburden'

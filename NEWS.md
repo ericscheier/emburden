@@ -1,3 +1,44 @@
+# emburden 0.5.99
+
+## New Features
+
+* Complete workflow_call implementation for all triggers
+
+## Bug Fixes
+
+* Use current branch ref for publish-to-public trigger
+* Add workflow_dispatch inputs to publish-to-public
+* Prevent duplicate tag creation in release workflow
+* Skip CRAN workflow gracefully on private repo
+* Improve CRAN workflow job dependencies and output visibility
+
+## Other Changes
+
+* Update auto-release.yml
+* Update deployment workflow
+
+---
+
+
+# emburden 0.5.14
+
+## Changes
+
+### New Features
+
+* (Add new features here)
+
+### Bug Fixes
+
+* (Add bug fixes here)
+
+### Enhancements
+
+* (Add enhancements here)
+
+---
+
+
 # emburden 0.5.13
 
 ## Changes
