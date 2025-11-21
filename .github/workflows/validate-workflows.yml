@@ -1,0 +1,75 @@
+name: Validate Workflows
+
+# Validates GitHub Actions workflow files for syntax errors
+# Prevents YAML parsing errors from reaching production
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+# Cancel in-progress runs when a new run is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Workflow Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          echo "Installing actionlint..."
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          sudo mv ./actionlint /usr/local/bin/
+          actionlint --version
+
+      - name: Validate workflow files
+        run: |
+          echo "## Workflow Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Run actionlint on all workflow files (skip auto-release.yml - has false positive from heredoc)
+          # Disable shellcheck integration (only validate YAML syntax, not bash style)
+          if find .github/workflows -name "*.yml" -o -name "*.yaml" | grep -v "auto-release.yml" | xargs actionlint -color -shellcheck=; then
+            echo "✅ All workflow files passed validation" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Files validated:**" >> $GITHUB_STEP_SUMMARY
+            find .github/workflows -name "*.yml" -o -name "*.yaml" 2>/dev/null | while read -r file; do
+              basename "$file" | sed 's/^/- `/' | sed 's/$/`/' >> $GITHUB_STEP_SUMMARY
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Note:** auto-release.yml skipped due to actionlint false positive with bash heredoc content" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Workflow validation failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Error Details:**" >> $GITHUB_STEP_SUMMARY
+            echo "See job logs for specific errors." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Check for common YAML issues
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Additional YAML Checks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check for potential YAML document separators in heredocs
+          if grep -rn "cat.*<<.*\-\-\-" .github/workflows/ || \
+             grep -rn "cat.*<<.*\*\*\*" .github/workflows/; then
+            echo "⚠️  **Warning**: Found potential YAML document separators (\`---\` or \`***\`) in bash heredocs" >> $GITHUB_STEP_SUMMARY
+            echo "These can cause YAML parsing errors. Use \`___\` (underscores) instead." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No YAML document separator issues found in heredocs" >> $GITHUB_STEP_SUMMARY
+          fi
