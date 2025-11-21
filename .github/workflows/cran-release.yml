@@ -25,6 +25,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Verify tag is on main branch
+        run: |
+          # Get the branch(es) that contain this commit
+          BRANCHES=$(git branch -r --contains ${{ github.sha }} | grep -o 'origin/[^ ]*' | sed 's|origin/||' || echo "")
+
+          echo "Branches containing this commit: $BRANCHES"
+
+          # Check if main is in the list
+          if ! echo "$BRANCHES" | grep -q "^main$"; then
+            echo "ERROR: This workflow can only run on tags created from the main branch"
+            echo "Current commit is on: $BRANCHES"
+            echo ""
+            echo "To fix: Merge your PR to main first, then the auto-tag workflow will create the tag automatically"
+            exit 1
+          fi
+
+          echo "✓ Verified: Tag is on main branch"
+
       - name: Extract version from tag
         id: get_version
         run: |
@@ -58,9 +76,10 @@ jobs:
         env:
           TINYTEX_INSTALLER: TinyTeX
 
-      - name: Install LaTeX packages
+      - name: Install LaTeX packages for vignettes
         run: |
-          tlmgr install xcolor xstring fancyvrb framed
+          # Install LaTeX packages needed for JSS vignette and general vignette building
+          tlmgr install orcidlink xcolor xstring fancyvrb framed
 
       - name: Build source package
         id: build
