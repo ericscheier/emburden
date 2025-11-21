@@ -79,7 +79,7 @@ jobs:
       - name: Install LaTeX packages for vignettes
         run: |
           # Install LaTeX packages needed for JSS vignette and general vignette building
-          tlmgr install orcidlink xcolor xstring fancyvrb framed
+          tlmgr install xcolor xstring fancyvrb framed
 
       - name: Build source package
         id: build
