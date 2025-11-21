@@ -77,16 +77,45 @@ jobs:
           echo "Release version: $VERSION"
 
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag is on main branch
+        run: |
+          # Get the branch(es) that contain this commit
+          BRANCHES=$(git branch -r --contains ${{ github.sha }} | grep -o 'origin/[^ ]*' | sed 's|origin/||' || echo "")
+
+          echo "Branches containing this commit: $BRANCHES"
+
+          # Check if main is in the list
+          if ! echo "$BRANCHES" | grep -q "^main$"; then
+            echo "ERROR: This workflow can only run on tags created from the main branch"
+            echo "Current commit is on: $BRANCHES"
+            echo ""
+            echo "To fix: Merge your PR to main first, then the auto-tag workflow will create the tag automatically"
+            exit 1
+          fi
+
+          echo "✓ Verified: Tag is on main branch"
+
+      - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ env.R_VERSION }}
           use-public-rspm: true
 
+      - uses: r-lib/actions/setup-tinytex@v2
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::pkgbuild, any::covr, any::urlchecker, any::spelling
           needs: check
+
+      - name: Install LaTeX packages for vignettes
+        run: |
+          # Install LaTeX packages needed for JSS vignette and general vignette building
+          Rscript -e "tinytex::tlmgr_install(c('orcidlink', 'xcolor', 'xstring', 'fancyvrb', 'framed'))"
 
       - name: Verify version consistency across all metadata files
         run: |
