@@ -228,7 +228,7 @@ system.time({
   eb_nh <- 1 / (1 + nh_mean)
 })
 #>    user  system elapsed 
-#>       0       0       0
+#>   0.000   0.000   0.001
 
 # Method 2: Harmonic mean
 system.time({

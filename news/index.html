@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,9 +37,98 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/v0.5.10/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.99" id="emburden-0599">emburden 0.5.99<a class="anchor" aria-label="anchor" href="#emburden-0599"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-5-99">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-5-99"></a></h3>
+<ul><li>Complete workflow_call implementation for all triggers</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-5-99">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-99"></a></h3>
+<ul><li>Use current branch ref for publish-to-public trigger</li>
+<li>Add workflow_dispatch inputs to publish-to-public</li>
+<li>Prevent duplicate tag creation in release workflow</li>
+<li>Skip CRAN workflow gracefully on private repo</li>
+<li>Improve CRAN workflow job dependencies and output visibility</li>
+</ul></div>
+<div class="section level3">
+<h3 id="other-changes-0-5-99">Other Changes<a class="anchor" aria-label="anchor" href="#other-changes-0-5-99"></a></h3>
+<ul><li>Update auto-release.yml</li>
+<li>Update deployment workflow</li>
+</ul><hr></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.14" id="emburden-0514">emburden 0.5.14<a class="anchor" aria-label="anchor" href="#emburden-0514"></a></h2>
+<div class="section level3">
+<h3 id="changes-0-5-14">Changes<a class="anchor" aria-label="anchor" href="#changes-0-5-14"></a></h3>
+<div class="section level4">
+<h4 id="new-features-0-5-14">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-5-14"></a></h4>
+<ul><li>(Add new features here)</li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes-0-5-14">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-14"></a></h4>
+<ul><li>(Add bug fixes here)</li>
+</ul></div>
+<div class="section level4">
+<h4 id="enhancements-0-5-14">Enhancements<a class="anchor" aria-label="anchor" href="#enhancements-0-5-14"></a></h4>
+<ul><li>(Add enhancements here)</li>
+</ul><hr></div>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.13" id="emburden-0513">emburden 0.5.13<a class="anchor" aria-label="anchor" href="#emburden-0513"></a></h2>
+<div class="section level3">
+<h3 id="changes-0-5-13">Changes<a class="anchor" aria-label="anchor" href="#changes-0-5-13"></a></h3>
+<ol style="list-style-type: decimal"><li>Removed redundant tag creation - Release script no longer creates tags; workflow handles it after merge</li>
+<li>Remote tag checking - Workflow now checks both local and remote tags to prevent conflicts</li>
+<li>Automatic PR creation - Bonus feature that extracts NEWS.md content for PR bodies</li>
+</ol><hr><p># emburden 0.5.12</p>
+<p>## Changes</p>
+<p>### New Features</p>
+<ul><li>
+<strong>Release Automation</strong>: Added automatic PR creation to <code>release-version.sh</code> script
+<ul><li>Automatically creates or finds existing PR after pushing version tag</li>
+<li>Extracts and includes NEWS.md content for current version in PR body</li>
+<li>Displays PR URL in final summary output</li>
+<li>Includes comprehensive release automation guide (<code>.dev/RELEASE-AUTOMATION-GUIDE.md</code>)</li>
+</ul></li>
+</ul><p>### Bug Fixes</p>
+<ul><li>
+<strong>CRAN Workflow</strong>: Fixed workflow to skip gracefully on private repository instead of failing
+<ul><li>Changed from step-level <code>exit 1</code> to job-level <code>if: github.repository == 'ericscheier/emburden'</code> condition</li>
+<li>Ensures clean skip (not failure) when running on ScheierVentures/emburden</li>
+<li>Only executes on public repository for CRAN submissions</li>
+</ul></li>
+</ul><p>### Enhancements</p>
+<ul><li>
+<strong>Developer Experience</strong>: Release script now handles full workflow from version bump to PR creation in 9 automated steps</li>
+</ul><p># emburden 0.5.11</p>
+<p>## Changes</p>
+<p>### Bug Fixes</p>
+<ul><li>
+<strong>CRAN Workflow</strong>: Improved job dependencies and output visibility
+<ul><li>Fixed <code>submit-to-cran</code> job to only run when <code>validate-cran</code> succeeds (added <code>if: success()</code> condition)</li>
+<li>Changed R CMD build to use <code>tee</code> to show all output while capturing tarball filename</li>
+<li>Added error handling for tarball name extraction failures</li>
+<li>Prevents “out of order” issues where jobs try to download artifacts that were never uploaded</li>
+</ul></li>
+<li>
+<strong>Git LFS</strong>: Completely removed Git LFS to resolve budget exceeded errors
+<ul><li>Deleted <code>.gitattributes</code> (LFS configuration)</li>
+<li>Removed LFS config from auto-tag workflow</li>
+<li>Updated <code>.gitignore</code> to exclude R package build artifacts (<code>Meta/</code>, <code>doc/</code>)</li>
+</ul></li>
+<li>
+<strong>CI/CD</strong>: Added repository check to CRAN Release workflow
+<ul><li>Only runs on public repository (<code>ericscheier/emburden</code>)</li>
+<li>Prevents wasted CI minutes on private repository</li>
+<li>CRAN submissions now only come from public repo</li>
+</ul></li>
+</ul><hr></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.10" id="emburden-0510">emburden 0.5.10<a class="anchor" aria-label="anchor" href="#emburden-0510"></a></h2>
 <div class="section level3">
