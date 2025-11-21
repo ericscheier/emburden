@@ -1,3 +1,22 @@
+# emburden 0.5.11
+
+## Changes
+
+### New Features
+
+* (Add new features here)
+
+### Bug Fixes
+
+* (Add bug fixes here)
+
+### Enhancements
+
+* (Add enhancements here)
+
+---
+
+
 # emburden 0.5.10
 
 ## Workflow Organization
