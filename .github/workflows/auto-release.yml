@@ -56,7 +56,7 @@ jobs:
           # Append installation and validation information
           cat >> /tmp/release-notes.md <<'RELEASE_EOF'
 
-***
+___
 
 ## Installation
 
