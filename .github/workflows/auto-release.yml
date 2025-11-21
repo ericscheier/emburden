@@ -53,34 +53,25 @@ jobs:
             echo "Release notes not available (NEWS.md not found)" >> /tmp/release-notes.md
           fi
 
-          # Append installation and validation information
-          cat >> /tmp/release-notes.md <<'RELEASE_EOF'
-
-___
-
-## Installation
-
-RELEASE_EOF
-
-          # Add code block with proper variable substitution
-          cat >> /tmp/release-notes.md <<CODE_EOF
-\`\`\`r
-# Install from GitHub
-# install.packages("remotes")
-remotes::install_github("ericscheier/emburden@${{ steps.get_version.outputs.tag_name }}")
-\`\`\`
-CODE_EOF
-
-          cat >> /tmp/release-notes.md <<'RELEASE_EOF'
-
-## Package Validation
-
-All automated checks passed:
-- ✅ R CMD check (0 errors, 0 warnings)
-- ✅ All tests passing
-- ✅ Test coverage threshold met
-- ✅ Package builds successfully
-RELEASE_EOF
+          # Append installation and validation information using echo
+          echo "" >> /tmp/release-notes.md
+          echo "___" >> /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo "## Installation" >> /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo '```r' >> /tmp/release-notes.md
+          echo '# Install from GitHub' >> /tmp/release-notes.md
+          echo '# install.packages("remotes")' >> /tmp/release-notes.md
+          echo "remotes::install_github(\"ericscheier/emburden@${{ steps.get_version.outputs.tag_name }}\")" >> /tmp/release-notes.md
+          echo '```' >> /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo "## Package Validation" >> /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo "All automated checks passed:" >> /tmp/release-notes.md
+          echo "- ✅ R CMD check (0 errors, 0 warnings)" >> /tmp/release-notes.md
+          echo "- ✅ All tests passing" >> /tmp/release-notes.md
+          echo "- ✅ Test coverage threshold met" >> /tmp/release-notes.md
+          echo "- ✅ Package builds successfully" >> /tmp/release-notes.md
 
           cat /tmp/release-notes.md
 
