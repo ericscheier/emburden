@@ -42,7 +42,7 @@ jobs:
 
           # Run actionlint on all workflow files (skip auto-release.yml - has false positive from heredoc)
           # Disable shellcheck integration (only validate YAML syntax, not bash style)
-          if find .github/workflows -name "*.yml" -o -name "*.yaml" | grep -v "auto-release.yml" | xargs actionlint -color -shellcheck=; then
+          if find .github/workflows -name "*.yml" -o -name "*.yaml" | grep -v "auto-release.yml" | xargs actionlint -color -shellcheck=""; then
             echo "✅ All workflow files passed validation" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Files validated:**" >> $GITHUB_STEP_SUMMARY
