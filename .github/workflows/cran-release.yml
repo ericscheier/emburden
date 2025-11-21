@@ -95,7 +95,18 @@ jobs:
       - name: Build source package
         id: build
         run: |
-          tarball=$(R CMD build . | grep -o '[^/]*\.tar\.gz$')
+          # Run R CMD build and show all output while capturing tarball name
+          # Using tee to show output AND extract filename
+          R CMD build . | tee /tmp/build-output.txt
+          tarball=$(grep -o '[^/]*\.tar\.gz$' /tmp/build-output.txt)
+
+          if [ -z "$tarball" ]; then
+            echo "ERROR: Failed to extract tarball name from R CMD build output"
+            echo "Build output:"
+            cat /tmp/build-output.txt
+            exit 1
+          fi
+
           echo "tarball=$tarball" >> $GITHUB_OUTPUT
           echo "Built package: $tarball"
 
@@ -148,6 +159,7 @@ jobs:
   submit-to-cran:
     name: Submit to CRAN
     needs: validate-cran
+    if: success()  # Only run if validate-cran succeeded
     runs-on: ubuntu-latest
     environment: cran-production  # Requires manual approval
 
