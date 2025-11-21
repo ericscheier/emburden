@@ -1,3 +1,26 @@
+# emburden 0.5.9
+
+## CI/CD Improvements
+
+This release focuses on improving the robustness and reliability of the CI/CD pipeline.
+
+### New Features
+
+* **Workflow validation system**:
+  - Added `.github/workflows/validate-workflows.yml` for PR validation
+  - Pre-tag validation gate in auto-tag workflow prevents creating tags when workflow files have syntax errors
+  - Manual validation script `.dev/validate-workflows.sh` for local checks
+  - Prevents misordering of workflow fixes and version bumps
+
+### Bug Fixes
+
+* **Fixed Windows CI TinyTeX failures**:
+  - Added `tlmgr_update()` before installing LaTeX packages
+  - Resolves "outdated CTAN mirror" errors on Windows runners
+  - Ensures consistent vignette building across all platforms (Windows, macOS, Linux)
+
+---
+
 # emburden 0.5.8
 
 ## CRAN Automation and Submission

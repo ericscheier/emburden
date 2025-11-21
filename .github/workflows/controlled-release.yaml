@@ -115,7 +115,7 @@ jobs:
       - name: Install LaTeX packages for vignettes
         run: |
           # Install LaTeX packages needed for JSS vignette and general vignette building
-          Rscript -e "tinytex::tlmgr_install(c('orcidlink', 'xcolor', 'xstring', 'fancyvrb', 'framed'))"
+          Rscript -e "tinytex::tlmgr_install(c('xcolor', 'xstring', 'fancyvrb', 'framed'))"
 
       - name: Verify version consistency across all metadata files
         run: |

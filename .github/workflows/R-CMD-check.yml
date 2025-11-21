@@ -66,17 +66,6 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
-      - name: Install LaTeX packages for vignettes
-        shell: bash
-        run: |
-          # Update tlmgr to sync with repository (prevents outdated database issues)
-          echo "Updating tlmgr package database..."
-          Rscript -e "tinytex::tlmgr_update()"
-
-          # Install required LaTeX package for vignettes
-          echo "Installing orcidlink package..."
-          Rscript -e "tinytex::tlmgr_install('orcidlink')"
-
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
