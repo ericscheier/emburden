@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   validate-cran:
+    # Only run on public repository (skip on private, don't fail)
+    if: github.repository == 'ericscheier/emburden'
     name: Validate CRAN Package
     runs-on: ubuntu-latest
 
@@ -22,14 +24,8 @@ jobs:
     steps:
       - name: Verify repository
         run: |
-          # CRAN Release should only run on public repository
-          if [[ "${{ github.repository }}" != "ericscheier/emburden" ]]; then
-            echo "❌ CRAN Release workflow should only run on public repository (ericscheier/emburden)"
-            echo "   Current repository: ${{ github.repository }}"
-            echo "   Skipping CRAN release process on private repository"
-            exit 1
-          fi
-          echo "✅ Verified: Running on public repository"
+          # This step is informational - the job-level if: prevents execution on wrong repo
+          echo "✅ Running on public repository: ${{ github.repository }}"
 
       - name: Checkout code
         uses: actions/checkout@v4

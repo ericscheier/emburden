@@ -1,18 +1,47 @@
-# emburden 0.5.11
+  # emburden 0.5.12
 
-## Changes
+  ## Changes
 
-### New Features
+  ### New Features
 
-* (Add new features here)
+  * **Release Automation**: Added automatic PR creation to `release-version.sh` script
+    - Automatically creates or finds existing PR after pushing version tag
+    - Extracts and includes NEWS.md content for current version in PR body
+    - Displays PR URL in final summary output
+    - Includes comprehensive release automation guide (`.dev/RELEASE-AUTOMATION-GUIDE.md`)
 
-### Bug Fixes
+  ### Bug Fixes
 
-* (Add bug fixes here)
+  * **CRAN Workflow**: Fixed workflow to skip gracefully on private repository instead of failing
+    - Changed from step-level `exit 1` to job-level `if: github.repository == 'ericscheier/emburden'` condition
+    - Ensures clean skip (not failure) when running on ScheierVentures/emburden
+    - Only executes on public repository for CRAN submissions
 
-### Enhancements
+  ### Enhancements
 
-* (Add enhancements here)
+  * **Developer Experience**: Release script now handles full workflow from version bump to PR creation in 9 automated steps
+
+  # emburden 0.5.11
+
+  ## Changes
+
+  ### Bug Fixes
+
+  * **CRAN Workflow**: Improved job dependencies and output visibility
+    - Fixed `submit-to-cran` job to only run when `validate-cran` succeeds (added `if: success()` condition)
+    - Changed R CMD build to use `tee` to show all output while capturing tarball filename
+    - Added error handling for tarball name extraction failures
+    - Prevents "out of order" issues where jobs try to download artifacts that were never uploaded
+
+  * **Git LFS**: Completely removed Git LFS to resolve budget exceeded errors
+    - Deleted `.gitattributes` (LFS configuration)
+    - Removed LFS config from auto-tag workflow
+    - Updated `.gitignore` to exclude R package build artifacts (`Meta/`, `doc/`)
+
+  * **CI/CD**: Added repository check to CRAN Release workflow
+    - Only runs on public repository (`ericscheier/emburden`)
+    - Prevents wasted CI minutes on private repository
+    - CRAN submissions now only come from public repo
 
 ---
 
