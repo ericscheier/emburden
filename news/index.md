@@ -1,5 +1,25 @@
 # Changelog
 
+## emburden 0.5.15
+
+### New Features
+
+- Add auto-increment version feature to release script
+
+### Bug Fixes
+
+- Enable workflow_dispatch trigger to create releases on public repo
+- Prevent duplicate tag creation in release workflow
+- Skip CRAN workflow gracefully on private repo
+- Improve CRAN workflow job dependencies and output visibility
+
+### Other Changes
+
+- Update auto-release.yml
+- Update deployment workflow
+
+------------------------------------------------------------------------
+
 ## emburden 0.5.99
 
 ### New Features
