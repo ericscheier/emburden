@@ -129,8 +129,13 @@ jobs:
           echo "This will trigger the auto-release workflow to create a GitHub release"
 
       - name: Trigger auto-release workflow
-        uses: ./.github/workflows/auto-release.yml@main
-        with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          version: ${{ steps.get_version.outputs.version }}
+        if: steps.check_version_change.outputs.changed == 'true' && steps.check_tag.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          echo "Triggering auto-release workflow for tag v${{ steps.get_version.outputs.version }}"
+          gh workflow run auto-release.yml \
+            --ref main \
+            -f tag_name=v${{ steps.get_version.outputs.version }}
+          echo "✅ Triggered auto-release workflow"
 

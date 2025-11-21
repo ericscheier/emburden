@@ -139,8 +139,87 @@ info "[Step 3/8] Updating NEWS.md..."
 if grep -q "^# emburden $NEW_VERSION" NEWS.md; then
     success "NEWS.md already contains entry for version $NEW_VERSION"
 else
-    # Create NEWS template
-    NEWS_TEMPLATE="# emburden $NEW_VERSION
+    # Generate NEWS content
+    if [[ "$AUTO_MODE" == "true" ]]; then
+        info "Auto mode: generating NEWS.md from git commits..."
+
+        # Find the last version tag
+        LAST_TAG=$(git tag -l "v*" | sort -V | tail -1)
+        if [[ -z "$LAST_TAG" ]]; then
+            warning "No previous version tag found, using all commits"
+            COMMIT_RANGE="HEAD"
+        else
+            info "Extracting commits since $LAST_TAG..."
+            COMMIT_RANGE="$LAST_TAG..HEAD"
+        fi
+
+        # Extract commits and categorize them
+        FEATURES=""
+        FIXES=""
+        ENHANCEMENTS=""
+        OTHER=""
+
+        while IFS= read -r commit; do
+            # Get commit message (first line only)
+            msg=$(echo "$commit" | sed 's/^[a-f0-9]* //')
+
+            # Skip version bump commits and merge commits
+            if [[ "$msg" =~ ^(Bump version|Merge|Version bump) ]]; then
+                continue
+            fi
+
+            # Remove PR numbers like (#60) from the end
+            msg=$(echo "$msg" | sed 's/ (#[0-9]*)$//')
+
+            # Categorize by conventional commit prefix
+            if [[ "$msg" =~ ^feat(\(.*\))?:\ (.*)$ ]]; then
+                # New feature
+                feature_msg="${BASH_REMATCH[2]}"
+                FEATURES="${FEATURES}* ${feature_msg}\n"
+            elif [[ "$msg" =~ ^fix(\(.*\))?:\ (.*)$ ]]; then
+                # Bug fix
+                fix_msg="${BASH_REMATCH[2]}"
+                FIXES="${FIXES}* ${fix_msg}\n"
+            elif [[ "$msg" =~ ^(chore|docs|refactor|style|test|perf)(\(.*\))?:\ (.*)$ ]]; then
+                # Enhancement/other improvement
+                enh_msg="${BASH_REMATCH[3]}"
+                ENHANCEMENTS="${ENHANCEMENTS}* ${enh_msg}\n"
+            else
+                # Other changes without conventional commit prefix
+                OTHER="${OTHER}* ${msg}\n"
+            fi
+        done < <(git log "$COMMIT_RANGE" --oneline --no-merges)
+
+        # Build NEWS template with actual content
+        NEWS_TEMPLATE="# emburden $NEW_VERSION\n\n"
+
+        if [[ -n "$FEATURES" ]]; then
+            NEWS_TEMPLATE="${NEWS_TEMPLATE}## New Features\n\n${FEATURES}\n"
+        fi
+
+        if [[ -n "$FIXES" ]]; then
+            NEWS_TEMPLATE="${NEWS_TEMPLATE}## Bug Fixes\n\n${FIXES}\n"
+        fi
+
+        if [[ -n "$ENHANCEMENTS" ]]; then
+            NEWS_TEMPLATE="${NEWS_TEMPLATE}## Enhancements\n\n${ENHANCEMENTS}\n"
+        fi
+
+        if [[ -n "$OTHER" ]]; then
+            NEWS_TEMPLATE="${NEWS_TEMPLATE}## Other Changes\n\n${OTHER}\n"
+        fi
+
+        # If no changes found, add a note
+        if [[ -z "$FEATURES" && -z "$FIXES" && -z "$ENHANCEMENTS" && -z "$OTHER" ]]; then
+            NEWS_TEMPLATE="${NEWS_TEMPLATE}## Changes\n\n* Minor updates and improvements\n\n"
+        fi
+
+        NEWS_TEMPLATE="${NEWS_TEMPLATE}---\n\n"
+
+        success "Generated NEWS.md from $(git rev-list --count "$COMMIT_RANGE" --no-merges) commits"
+    else
+        # Manual mode: create template with placeholders
+        NEWS_TEMPLATE="# emburden $NEW_VERSION
 
 ## Changes
 
@@ -159,19 +238,19 @@ else
 ---
 
 "
+        success "Created NEWS.md template for manual editing"
+    fi
 
-    # Insert at top of NEWS.md (after first line if it's a title)
+    # Insert at top of NEWS.md
     if [[ -f NEWS.md ]]; then
         # Create temporary file with new entry
         {
-            echo "$NEWS_TEMPLATE"
+            echo -e "$NEWS_TEMPLATE"
             cat NEWS.md
         } > NEWS.md.tmp
         mv NEWS.md.tmp NEWS.md
-        success "Added template entry to NEWS.md"
     else
-        echo "$NEWS_TEMPLATE" > NEWS.md
-        success "Created NEWS.md with template"
+        echo -e "$NEWS_TEMPLATE" > NEWS.md
     fi
 
     # Open in editor (skip in auto mode)
@@ -190,8 +269,6 @@ else
             info "Press Enter when done editing..."
             read -r
         fi
-    else
-        info "Auto mode: skipping NEWS.md editing (using template)"
     fi
 fi
 echo ""

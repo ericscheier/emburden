@@ -7,6 +7,12 @@ on:
   push:
     tags:
       - 'v*'  # Triggers on tags like v0.5.5, v1.0.0, etc.
+  workflow_dispatch:  # ADD THIS for manual triggering
+    inputs:
+      tag_name:
+        description: 'Tag name (e.g., v0.5.13)'
+        required: true
+        type: string
   workflow_call:  # NEW: Allow direct calls from other workflows
     inputs:
       tag_name:
@@ -32,7 +38,15 @@ jobs:
       - name: Extract version from tag
         id: get_version
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          # Handle different trigger types
+          if [ -n "${{ inputs.tag_name }}" ]; then
+            # Called via workflow_dispatch or workflow_call
+            TAG_NAME="${{ inputs.tag_name }}"
+          else
+            # Called via push event
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+          fi
+
           VERSION=${TAG_NAME#v}
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -95,9 +109,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger publish-to-public workflow
-        uses: ./.github/workflows/publish-to-public.yml@main
-        with:
-          tag_name: ${{ steps.get_version.outputs.tag_name }}
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          echo "Triggering publish-to-public workflow for tag ${{ steps.get_version.outputs.tag_name }}"
+          # Run from current branch to ensure workflow definition is available
+          # In production (after merge), this will be main; during testing it's the feature branch
+          gh workflow run publish-to-public.yml \
+            --ref ${{ github.ref_name }} \
+            -f tag_name=${{ steps.get_version.outputs.tag_name }}
+          echo "✅ Triggered publish-to-public workflow"
 
       - name: Summary
         run: |
@@ -110,5 +131,6 @@ jobs:
           echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
           echo "- The \`publish-to-public\` workflow will automatically trigger to push this release to the public repository" >> $GITHUB_STEP_SUMMARY
           echo "- Check the [Actions tab](https://github.com/${{ github.repository }}/actions) to monitor the public repository deployment" >> $GITHUB_STEP_SUMMARY
+
 
 
