@@ -43,9 +43,35 @@ jobs:
       url: https://github.com/${{ env.PUBLIC_REPO }}
 
     steps:
+      - name: Detect tag name from input or event
+        id: detect_tag
+        run: |
+          # Priority: workflow_dispatch/workflow_call input > tag event > branch
+          if [ -n "${{ inputs.tag_name }}" ]; then
+            TAG_NAME="${{ inputs.tag_name }}"
+            echo "Source: workflow input"
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "Source: tag event"
+          else
+            TAG_NAME=""
+            echo "Source: branch (no tag)"
+          fi
+
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "is_tag=$( [ -n \"$TAG_NAME\" ] && echo \"true\" || echo \"false\" )" >> $GITHUB_OUTPUT
+          echo "is_version_tag=$( [[ \"$TAG_NAME\" == v* ]] && echo \"true\" || echo \"false\" )" >> $GITHUB_OUTPUT
+
+          if [ -n "$TAG_NAME" ]; then
+            echo "Detected tag: $TAG_NAME"
+          else
+            echo "No tag detected - will publish current branch"
+          fi
+
       - name: Checkout private repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ steps.detect_tag.outputs.tag_name || github.ref }}
           fetch-depth: 0  # Full history for proper git operations
           persist-credentials: false  # Don't persist GitHub Actions token
 
@@ -190,21 +216,21 @@ jobs:
           echo "Public repository: https://github.com/${PUBLIC_REPO}"
           echo "Branch: ${PUBLIC_BRANCH}"
 
-          # If triggered by tag, also push the tag
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            TAG_NAME=${GITHUB_REF#refs/tags/}
+          # If we have a tag, push it to public repo
+          if [ -n "${{ steps.detect_tag.outputs.tag_name }}" ]; then
+            TAG_NAME="${{ steps.detect_tag.outputs.tag_name }}"
             echo "Pushing tag: ${TAG_NAME}"
             git push public ${TAG_NAME} || echo "Note: Tag may already exist on public repo"
           fi
 
       - name: Create GitHub release on public repo
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.detect_tag.outputs.is_version_tag == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
           GH_REPO: ${{ env.PUBLIC_REPO }}
         run: |
-          # Extract version from tag
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          # Extract version from detected tag
+          TAG_NAME="${{ steps.detect_tag.outputs.tag_name }}"
           VERSION=${TAG_NAME#v}
 
           echo "Creating release for version: $VERSION"
@@ -260,8 +286,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Target branch:** \`${PUBLIC_BRANCH}\`" >> $GITHUB_STEP_SUMMARY
 
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            TAG_NAME=${GITHUB_REF#refs/tags/}
+          if [ -n "${{ steps.detect_tag.outputs.tag_name }}" ]; then
+            TAG_NAME="${{ steps.detect_tag.outputs.tag_name }}"
             echo "**Tag:** \`${TAG_NAME}\`" >> $GITHUB_STEP_SUMMARY
 
             # If this is a version tag, include release link

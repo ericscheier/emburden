@@ -62,20 +62,48 @@ if [[ ! -f "DESCRIPTION" ]] || [[ ! -f "NEWS.md" ]]; then
     error "Must be run from project root (DESCRIPTION and NEWS.md not found)"
 fi
 
-# Parse arguments
-if [[ $# -lt 1 ]] || [[ $# -gt 2 ]]; then
-    error "Usage: $0 <new_version> [--auto]\nExample: $0 0.5.11\nExample (automated): $0 0.5.11 --auto"
+# Parse arguments - version is now optional
+NEW_VERSION=""
+for arg in "$@"; do
+    if [[ "$arg" == "--auto" ]]; then
+        AUTO_MODE=true
+    elif [[ -z "$NEW_VERSION" ]]; then
+        NEW_VERSION="$arg"
+    else
+        error "Unknown argument: $arg\nUsage: $0 [new_version] [--auto]\nExample: $0 0.5.11\nExample (auto mode): $0 0.5.11 --auto\nExample (auto-increment): $0 --auto"
+    fi
+done
+
+if [[ "$AUTO_MODE" == "true" ]]; then
+    info "Auto mode enabled: will run without interactive prompts"
 fi
 
-NEW_VERSION="$1"
+# If no version specified, auto-increment patch version
+if [[ -z "$NEW_VERSION" ]]; then
+    info "No version specified - auto-incrementing patch version..."
 
-# Check for --auto flag
-if [[ $# -eq 2 ]]; then
-    if [[ "$2" == "--auto" ]]; then
-        AUTO_MODE=true
-        info "Auto mode enabled: will run without interactive prompts"
+    # Extract current version from DESCRIPTION
+    CURRENT_VERSION=$(grep "^Version:" DESCRIPTION | sed 's/Version: //')
+
+    if [[ -z "$CURRENT_VERSION" ]]; then
+        error "Could not extract current version from DESCRIPTION"
+    fi
+
+    info "Current version: $CURRENT_VERSION"
+
+    # Parse version components
+    if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(\..*)?$ ]]; then
+        MAJOR="${BASH_REMATCH[1]}"
+        MINOR="${BASH_REMATCH[2]}"
+        PATCH="${BASH_REMATCH[3]}"
+
+        # Increment patch version
+        NEW_PATCH=$((PATCH + 1))
+        NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+
+        success "Auto-incremented to: $NEW_VERSION (from $CURRENT_VERSION)"
     else
-        error "Unknown flag: $2\nUsage: $0 <new_version> [--auto]"
+        error "Could not parse version from DESCRIPTION: $CURRENT_VERSION"
     fi
 fi
 
