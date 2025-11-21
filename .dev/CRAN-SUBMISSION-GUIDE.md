@@ -41,6 +41,9 @@ export CRAN_EMAIL="your.email@example.com"
 Before making any version changes, ensure your package is CRAN-ready:
 
 ```bash
+# Validate GitHub Actions workflow files
+bash .dev/validate-workflows.sh
+
 # Run comprehensive local validation
 Rscript .dev/pre-tag-cran-check.R
 
@@ -48,7 +51,8 @@ Rscript .dev/pre-tag-cran-check.R
 Rscript .dev/pre-tag-cran-check.R --submit-winbuilder
 ```
 
-This script will:
+This validation will:
+- ✅ Validate GitHub Actions workflow YAML syntax (prevents tagging errors)
 - ✅ Check version consistency across files
 - ✅ Validate NEWS.md is updated
 - ✅ Check git status
@@ -57,6 +61,8 @@ This script will:
 - ✅ Optionally submit to Win-builder
 
 **If any checks fail, fix them before proceeding!**
+
+**Note**: The workflow validation is critical - it prevents YAML syntax errors in GitHub Actions workflows from blocking the automated tagging and release process. The auto-tag workflow will also validate workflows before creating version tags as a safety gate.
 
 ### Step 2: Update Version and Documentation
 
@@ -183,6 +189,9 @@ Public: ericscheier/emburden (CRAN submission happens here)
 ## Quick Reference Commands
 
 ```bash
+# Validate GitHub Actions workflows (prevents tagging issues)
+bash .dev/validate-workflows.sh
+
 # Pre-flight validation
 Rscript .dev/pre-tag-cran-check.R --submit-winbuilder
 

@@ -82,6 +82,25 @@ jobs:
             echo "Warning: .dev/check-version-consistency.R not found, skipping consistency check"
           fi
 
+      - name: Validate workflow files before tagging
+        if: steps.check_version_change.outputs.changed == 'true' && steps.check_tag.outputs.exists == 'false'
+        run: |
+          echo "Validating workflow files to prevent YAML syntax errors..."
+
+          # Install actionlint
+          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          sudo mv ./actionlint /usr/local/bin/
+
+          # Validate all workflow files
+          if actionlint .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null; then
+            echo "✅ All workflow files validated successfully"
+          else
+            echo "❌ Workflow validation failed"
+            echo "ERROR: Cannot create version tag because workflow files have syntax errors"
+            echo "Please fix the workflow errors before bumping the version"
+            exit 1
+          fi
+
       - name: Create and push version tag
         if: steps.check_version_change.outputs.changed == 'true' && steps.check_tag.outputs.exists == 'false'
         env:
