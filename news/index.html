@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">emburden</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,9 +37,92 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/v0.5.7/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ericscheier/emburden/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.10" id="emburden-0510">emburden 0.5.10<a class="anchor" aria-label="anchor" href="#emburden-0510"></a></h2>
+<div class="section level3">
+<h3 id="workflow-organization-0-5-10">Workflow Organization<a class="anchor" aria-label="anchor" href="#workflow-organization-0-5-10"></a></h3>
+<p>This release reorganizes the CRAN release workflows between private and public repositories.</p>
+<div class="section level4">
+<h4 id="changes-0-5-10">Changes<a class="anchor" aria-label="anchor" href="#changes-0-5-10"></a></h4>
+<ul><li>
+<strong>Workflow documentation</strong>:
+<ul><li>Added comprehensive deployment guide for public repository CRAN workflow</li>
+<li>Updated workflow README to clarify automatic triggering and approval gates</li>
+<li>Prepared controlled-release workflow for public repository deployment</li>
+</ul></li>
+<li>
+<strong>Repository architecture</strong>:
+<ul><li>Private repo focuses on fast GitHub releases via auto-release</li>
+<li>Public repo handles CRAN validation with automatic triggering and dual approval gates</li>
+<li>Eliminates workflow conflicts by sequential execution</li>
+</ul></li>
+</ul><hr></div>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.9" id="emburden-059">emburden 0.5.9<a class="anchor" aria-label="anchor" href="#emburden-059"></a></h2>
+<div class="section level3">
+<h3 id="cicd-improvements-0-5-9">CI/CD Improvements<a class="anchor" aria-label="anchor" href="#cicd-improvements-0-5-9"></a></h3>
+<p>This release focuses on improving the robustness and reliability of the CI/CD pipeline.</p>
+<div class="section level4">
+<h4 id="new-features-0-5-9">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-5-9"></a></h4>
+<ul><li>
+<strong>Workflow validation system</strong>:
+<ul><li>Added <code>.github/workflows/validate-workflows.yml</code> for PR validation</li>
+<li>Pre-tag validation gate in auto-tag workflow prevents creating tags when workflow files have syntax errors</li>
+<li>Manual validation script <code>.dev/validate-workflows.sh</code> for local checks</li>
+<li>Prevents misordering of workflow fixes and version bumps</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes-0-5-9">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-9"></a></h4>
+<ul><li>
+<strong>Fixed Windows CI TinyTeX failures</strong>:
+<ul><li>Added <code>tlmgr_update()</code> before installing LaTeX packages</li>
+<li>Resolves “outdated CTAN mirror” errors on Windows runners</li>
+<li>Ensures consistent vignette building across all platforms (Windows, macOS, Linux)</li>
+</ul></li>
+</ul><hr></div>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.8" id="emburden-058">emburden 0.5.8<a class="anchor" aria-label="anchor" href="#emburden-058"></a></h2>
+<div class="section level3">
+<h3 id="cran-automation-and-submission-0-5-8">CRAN Automation and Submission<a class="anchor" aria-label="anchor" href="#cran-automation-and-submission-0-5-8"></a></h3>
+<p>This release introduces comprehensive automation for CRAN submissions.</p>
+<div class="section level4">
+<h4 id="new-features-0-5-8">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-5-8"></a></h4>
+<ul><li>
+<strong>Automated CRAN submission pipeline</strong>:
+<ul><li>Multi-layer validation (local → GitHub Actions → Win-builder → manual approval → auto-submit)</li>
+<li>Win-builder integration for Windows testing</li>
+<li>Manual approval gate via GitHub environment</li>
+<li>Automatic submission using <code>devtools::submit_cran()</code>
+</li>
+</ul></li>
+<li>
+<strong>Pre-tag validation script</strong> (<code>.dev/pre-tag-cran-check.R</code>):
+<ul><li>Local validation before creating version tags</li>
+<li>Comprehensive CRAN checks with <code>--as-cran</code> flag</li>
+<li>Optional Win-builder submission</li>
+<li>Version consistency validation</li>
+</ul></li>
+<li>
+<strong>Complete workflow documentation</strong> (<code>.dev/CRAN-SUBMISSION-GUIDE.md</code>):
+<ul><li>Full CRAN submission process guide</li>
+<li>Multi-repository setup explanation</li>
+<li>Troubleshooting tips and best practices</li>
+</ul></li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes-0-5-8">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-8"></a></h4>
+<ul><li>Fixed R-CMD-check badge URL in README (<code>.yaml</code> → <code>.yml</code>)</li>
+</ul><hr></div>
+</div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.7" id="emburden-057">emburden 0.5.7<a class="anchor" aria-label="anchor" href="#emburden-057"></a></h2>
 <div class="section level3">

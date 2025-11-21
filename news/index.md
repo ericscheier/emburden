@@ -1,5 +1,86 @@
 # Changelog
 
+## emburden 0.5.10
+
+### Workflow Organization
+
+This release reorganizes the CRAN release workflows between private and
+public repositories.
+
+#### Changes
+
+- **Workflow documentation**:
+  - Added comprehensive deployment guide for public repository CRAN
+    workflow
+  - Updated workflow README to clarify automatic triggering and approval
+    gates
+  - Prepared controlled-release workflow for public repository
+    deployment
+- **Repository architecture**:
+  - Private repo focuses on fast GitHub releases via auto-release
+  - Public repo handles CRAN validation with automatic triggering and
+    dual approval gates
+  - Eliminates workflow conflicts by sequential execution
+
+------------------------------------------------------------------------
+
+## emburden 0.5.9
+
+### CI/CD Improvements
+
+This release focuses on improving the robustness and reliability of the
+CI/CD pipeline.
+
+#### New Features
+
+- **Workflow validation system**:
+  - Added `.github/workflows/validate-workflows.yml` for PR validation
+  - Pre-tag validation gate in auto-tag workflow prevents creating tags
+    when workflow files have syntax errors
+  - Manual validation script `.dev/validate-workflows.sh` for local
+    checks
+  - Prevents misordering of workflow fixes and version bumps
+
+#### Bug Fixes
+
+- **Fixed Windows CI TinyTeX failures**:
+  - Added `tlmgr_update()` before installing LaTeX packages
+  - Resolves “outdated CTAN mirror” errors on Windows runners
+  - Ensures consistent vignette building across all platforms (Windows,
+    macOS, Linux)
+
+------------------------------------------------------------------------
+
+## emburden 0.5.8
+
+### CRAN Automation and Submission
+
+This release introduces comprehensive automation for CRAN submissions.
+
+#### New Features
+
+- **Automated CRAN submission pipeline**:
+  - Multi-layer validation (local → GitHub Actions → Win-builder →
+    manual approval → auto-submit)
+  - Win-builder integration for Windows testing
+  - Manual approval gate via GitHub environment
+  - Automatic submission using `devtools::submit_cran()`
+- **Pre-tag validation script** (`.dev/pre-tag-cran-check.R`):
+  - Local validation before creating version tags
+  - Comprehensive CRAN checks with `--as-cran` flag
+  - Optional Win-builder submission
+  - Version consistency validation
+- **Complete workflow documentation** (`.dev/CRAN-SUBMISSION-GUIDE.md`):
+  - Full CRAN submission process guide
+  - Multi-repository setup explanation
+  - Troubleshooting tips and best practices
+
+#### Bug Fixes
+
+- Fixed R-CMD-check badge URL in README (`.yaml` → `.yml`)
+
+------------------------------------------------------------------------
+
 ## emburden 0.5.7
 
 ### CRAN Readiness - Final Fixes

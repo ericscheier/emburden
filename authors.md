@@ -2,22 +2,22 @@
 
 ## Authors
 
-- **Eric Scheier**. Author, maintainer.
+- **Eric Scheier**. Author, maintainer, copyright holder.
 
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/ericscheier/emburden/blob/v0.5.7/inst/CITATION)
+[`inst/CITATION`](https://github.com/ericscheier/emburden/blob/main/inst/CITATION)
 
 Scheier, Eric (2025). emburden: Energy Burden Analysis Using Net Energy
-Return Methodology. R package version 0.5.7
+Return Methodology. R package version 0.5.10
 https://github.com/ericscheier/emburden
 
     @Manual{,
       title = {{emburden}: Energy Burden Analysis Using Net Energy Return Methodology},
       author = {Eric Scheier},
       year = {2025},
-      note = {R package version 0.5.7},
+      note = {R package version 0.5.10},
       url = {https://github.com/ericscheier/emburden},
     }
 
