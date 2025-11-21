@@ -165,6 +165,9 @@ rsconnect/.env
 # Package build artifacts
 *.tar.gz
 *.Rcheck/
+Meta/
+doc/
+.actionlint.yaml
 
 # Zenodo upload staging
 zenodo-upload/

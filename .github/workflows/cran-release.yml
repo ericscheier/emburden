@@ -20,6 +20,17 @@ jobs:
       tarball: ${{ steps.build.outputs.tarball }}
 
     steps:
+      - name: Verify repository
+        run: |
+          # CRAN Release should only run on public repository
+          if [[ "${{ github.repository }}" != "ericscheier/emburden" ]]; then
+            echo "❌ CRAN Release workflow should only run on public repository (ericscheier/emburden)"
+            echo "   Current repository: ${{ github.repository }}"
+            echo "   Skipping CRAN release process on private repository"
+            exit 1
+          fi
+          echo "✅ Verified: Running on public repository"
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
