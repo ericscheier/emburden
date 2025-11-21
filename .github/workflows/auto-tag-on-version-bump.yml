@@ -127,3 +127,10 @@ jobs:
 
           echo "✅ Created and pushed tag: $TAG"
           echo "This will trigger the auto-release workflow to create a GitHub release"
+
+      - name: Trigger auto-release workflow
+        uses: ./.github/workflows/auto-release.yml@main
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          version: ${{ steps.get_version.outputs.version }}
+

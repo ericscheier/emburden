@@ -7,6 +7,14 @@ on:
   push:
     tags:
       - 'v*'  # Triggers on tags like v0.5.5, v1.0.0, etc.
+  workflow_call:  # NEW: Allow direct calls from other workflows
+    inputs:
+      tag_name:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
 
 jobs:
   create-release:
@@ -86,6 +94,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Trigger publish-to-public workflow
+        uses: ./.github/workflows/publish-to-public.yml@main
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_name }}
+
       - name: Summary
         run: |
           echo "## Release Created" >> $GITHUB_STEP_SUMMARY
@@ -97,3 +110,5 @@ jobs:
           echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
           echo "- The \`publish-to-public\` workflow will automatically trigger to push this release to the public repository" >> $GITHUB_STEP_SUMMARY
           echo "- Check the [Actions tab](https://github.com/${{ github.repository }}/actions) to monitor the public repository deployment" >> $GITHUB_STEP_SUMMARY
+
+
