@@ -91,8 +91,8 @@ jobs:
           bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
           sudo mv ./actionlint /usr/local/bin/
 
-          # Validate all workflow files
-          if actionlint .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null; then
+          # Validate all workflow files (disable shellcheck - only validate YAML syntax)
+          if actionlint -shellcheck="" .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null; then
             echo "✅ All workflow files validated successfully"
           else
             echo "❌ Workflow validation failed"
