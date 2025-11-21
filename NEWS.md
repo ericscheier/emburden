@@ -1,3 +1,23 @@
+# emburden 0.5.10
+
+## Workflow Organization
+
+This release reorganizes the CRAN release workflows between private and public repositories.
+
+### Changes
+
+* **Workflow documentation**:
+  - Added comprehensive deployment guide for public repository CRAN workflow
+  - Updated workflow README to clarify automatic triggering and approval gates
+  - Prepared controlled-release workflow for public repository deployment
+
+* **Repository architecture**:
+  - Private repo focuses on fast GitHub releases via auto-release
+  - Public repo handles CRAN validation with automatic triggering and dual approval gates
+  - Eliminates workflow conflicts by sequential execution
+
+---
+
 # emburden 0.5.9
 
 ## CI/CD Improvements

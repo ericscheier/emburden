@@ -20,13 +20,14 @@ This document explains how release workflows are organized between the private a
 
 **Workflows:**
 - `controlled-release.yaml` - CRAN submission workflow (**lives in public repo**)
-  - Triggers: Manual workflow_dispatch only
+  - Triggers: Automatically when release is published (synced from private repo)
+  - Also supports manual workflow_dispatch as fallback
   - Updates existing GitHub release (created by auto-release)
   - Comprehensive CRAN validation (R CMD check --as-cran, Win-builder)
   - Dual approval gates (pre-release-review, public-release)
   - CRAN submission guidance
 
-**Purpose:** CRAN releases with approval gates and comprehensive validation
+**Purpose:** CRAN releases with automatic triggering, approval gates, and comprehensive validation
 
 ## Release Process
 
@@ -36,13 +37,15 @@ This document explains how release workflows are organized between the private a
 3. publish-to-public.yml syncs to public repo
 4. Done!
 
-### CRAN Release
+### CRAN Release (Automatic)
 1. Complete regular release process above
-2. Go to public repo Actions tab
-3. Manually trigger "Controlled Release" workflow
-4. Approve at pre-release-review gate (after validation)
+2. CRAN workflow triggers automatically in public repo
+3. Workflow runs comprehensive CRAN validation
+4. Approve at pre-release-review gate (after reviewing validation results)
 5. Approve at public-release gate (final approval)
 6. Follow CRAN submission instructions from workflow output
+
+**Note:** The workflow can also be triggered manually via Actions tab if needed
 
 ## Why This Organization?
 

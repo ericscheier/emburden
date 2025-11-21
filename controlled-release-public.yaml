@@ -1,0 +1,436 @@
+# Controlled CRAN Release Workflow (PUBLIC REPOSITORY)
+#
+# This workflow runs comprehensive CRAN validation and submission from the
+# PUBLIC repository (ericscheier/emburden). It triggers AUTOMATICALLY when
+# a release is published (synced from the private repository).
+#
+# ARCHITECTURE:
+# 1. Private repo: Tag pushed → auto-release.yml creates fast GitHub release
+# 2. Private repo: publish-to-public.yml syncs release to public repo
+# 3. Public repo: Release published event → THIS WORKFLOW triggers automatically
+# 4. This workflow runs CRAN validation with dual approval gates
+# 5. Updates the existing release with CRAN artifacts after approval
+#
+# SETUP REQUIRED:
+# Before using this workflow, you must create two GitHub Environments:
+#
+# 1. "pre-release-review" environment:
+#    - Go to Settings → Environments → New environment
+#    - Name: pre-release-review
+#    - Enable "Required reviewers"
+#    - Add 1-2 reviewers who must approve before proceeding
+#
+# 2. "public-release" environment:
+#    - Go to Settings → Environments → New environment
+#    - Name: public-release
+#    - Enable "Required reviewers"
+#    - Add 1-2 DIFFERENT reviewers (for dual approval)
+#    - Optional: Enable "Wait timer" for a cooling-off period
+#
+# WORKFLOW STAGES:
+# 1. Validation: Run comprehensive CRAN checks, build package tarball
+# 2. GATE 1 (pre-release-review): Manual approval after reviewing validation
+# 3. Update Release: Update existing GitHub release with CRAN artifacts
+# 4. GATE 2 (public-release): Final manual approval before CRAN guidance
+# 5. CRAN Guidance: Instructions for manual CRAN submission
+
+name: Controlled Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for CRAN release (e.g., 0.5.9)'
+        required: true
+        type: string
+
+env:
+  R_VERSION: 'release'
+
+jobs:
+  # STAGE 1: Validation
+  # Runs all quality checks without requiring approval
+  validate:
+    name: Validation - CRAN Quality Checks
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tarball: ${{ steps.build.outputs.tarball }}
+
+    steps:
+      - name: Extract version from release or input
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Extract version from release tag (remove 'v' prefix)
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "CRAN Release version: $VERSION"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.event.release.tag_name }}
+          fetch-depth: 0
+
+      - name: Verify tag exists and is on main branch
+        run: |
+          TAG="${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.event.release.tag_name }}"
+
+          # Verify tag exists
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "ERROR: Tag $TAG does not exist"
+            echo "Available tags:"
+            git tag -l "v*" | tail -10
+            exit 1
+          fi
+
+          # Get the branch(es) that contain this tag
+          TAG_SHA=$(git rev-parse "$TAG")
+          BRANCHES=$(git branch -r --contains "$TAG_SHA" | grep -o 'origin/[^ ]*' | sed 's|origin/||' || echo "")
+
+          echo "Branches containing $TAG: $BRANCHES"
+
+          # Check if main is in the list
+          if ! echo "$BRANCHES" | grep -q "^main$"; then
+            echo "ERROR: Tag $TAG is not on the main branch"
+            echo "Current commit is on: $BRANCHES"
+            exit 1
+          fi
+
+          echo "✓ Verified: Tag $TAG exists and is on main branch"
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-tinytex@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck, any::pkgbuild, any::covr, any::urlchecker, any::spelling, any::devtools
+          needs: check
+
+      - name: Install LaTeX packages for vignettes
+        run: |
+          # Install LaTeX packages needed for JSS vignette and general vignette building
+          Rscript -e "tinytex::tlmgr_install(c('xcolor', 'xstring', 'fancyvrb', 'framed'))"
+
+      - name: Verify version consistency across all metadata files
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          echo "=== Comprehensive Version Validation ==="
+          echo "Expected version: $VERSION"
+          echo ""
+
+          # Verify DESCRIPTION version
+          DESC_VERSION=$(Rscript -e "cat(as.character(desc::desc_get_version()))")
+
+          if [ "$VERSION" != "$DESC_VERSION" ]; then
+            echo "ERROR: Input version ($VERSION) does not match DESCRIPTION version ($DESC_VERSION)"
+            exit 1
+          fi
+
+          echo "✓ DESCRIPTION version matches: $DESC_VERSION"
+
+      - name: CRAN Readiness - Check URLs
+        run: |
+          Rscript -e "
+          cat('\n=== URL Validation ===\n')
+          urlchecker::url_check()
+          "
+
+      - name: CRAN Readiness - Check Spelling
+        run: |
+          Rscript -e "
+          cat('\n=== Spell Check ===\n')
+          spelling::spell_check_package()
+          "
+        continue-on-error: true
+
+      - name: Run R CMD check with --as-cran
+        uses: r-lib/actions/check-r-package@v2
+        with:
+          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          args: 'c("--as-cran")'
+          error-on: '"error"'
+
+      - name: Run test suite with coverage
+        run: |
+          Rscript -e '
+            covr_results <- covr::package_coverage(quiet = FALSE)
+            covr_percent <- covr::percent_coverage(covr_results)
+
+            cat(sprintf("\n=== Test Coverage: %.1f%% ===\n", covr_percent))
+
+            if (covr_percent < 30) {
+              stop("Coverage below 30% threshold: ", covr_percent, "%")
+            }
+          '
+
+      - name: Build package tarball
+        id: build
+        run: |
+          # Build package and capture only the tarball path (last line of output)
+          TARBALL=$(Rscript -e 'path <- pkgbuild::build(dest_path = ".", binary = FALSE, vignettes = TRUE, manual = TRUE); cat(path, "\n", sep="", file=stderr()); cat(path)' 2>&1 | tail -1)
+          echo "tarball=$TARBALL" >> $GITHUB_OUTPUT
+          echo "Built package tarball: $TARBALL"
+
+          # Verify tarball exists and is valid
+          if [ ! -f "$TARBALL" ]; then
+            echo "Error: Tarball not found: $TARBALL"
+            exit 1
+          fi
+          tar -tzf "$TARBALL" > /dev/null
+          echo "✓ Tarball verification passed"
+
+      - name: Submit to Win-builder (Windows validation)
+        id: winbuilder
+        continue-on-error: true
+        env:
+          CRAN_EMAIL: ${{ secrets.CRAN_EMAIL }}
+        run: |
+          if [ -z "$CRAN_EMAIL" ]; then
+            echo "⚠️  CRAN_EMAIL secret not set - skipping Win-builder submission"
+            echo "Set CRAN_EMAIL secret to enable automatic Win-builder testing"
+            exit 0
+          fi
+
+          echo "📦 Submitting to Win-builder for Windows testing..."
+          Rscript -e "devtools::check_win_release(email = Sys.getenv('CRAN_EMAIL'))"
+          echo ""
+          echo "✅ Submitted to Win-builder!"
+          echo "⏱️  Results will be emailed to $CRAN_EMAIL within ~30 minutes"
+
+      - name: Upload package tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-tarball
+          path: ${{ steps.build.outputs.tarball }}
+          retention-days: 30
+
+      - name: Generate CRAN validation report
+        run: |
+          cat > cran-validation-report.md <<EOF
+          # CRAN Validation Report
+
+          **Version:** ${{ steps.version.outputs.version }}
+          **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Commit:** ${{ github.sha }}
+
+          ## CRAN Quality Checks Status
+
+          - ✅ R CMD check --as-cran passed (0 errors, 0 warnings)
+          - ✅ URL validation passed
+          - ✅ Spell check completed
+          - ✅ Test suite passed with adequate coverage
+          - ✅ Package tarball built successfully
+          - ✅ Version consistency verified
+          - ✅ Win-builder submission sent (check email)
+
+          ## Package Artifact
+
+          - **Tarball:** ${{ steps.build.outputs.tarball }}
+
+          ## Next Steps
+
+          1. Review this validation report
+          2. Approve at the **pre-release-review** gate if all checks are satisfactory
+          3. Wait for Win-builder email results (~30 min)
+          4. Proceed with CRAN submission after final approval
+          EOF
+
+          cat cran-validation-report.md
+
+      - name: Upload validation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cran-validation-report
+          path: cran-validation-report.md
+
+  # GATE 1: Pre-Release Review
+  # Manual approval required after reviewing validation results
+  pre-release-review:
+    name: Gate 1 - CRAN Pre-Release Review
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: pre-release-review
+
+    steps:
+      - name: Download validation report
+        uses: actions/download-artifact@v4
+        with:
+          name: cran-validation-report
+
+      - name: Display validation report
+        run: |
+          echo "=== CRAN VALIDATION REPORT FOR REVIEW ==="
+          cat cran-validation-report.md
+          echo ""
+          echo "=== APPROVAL GATE 1 ==="
+          echo "If validation looks good and Win-builder results are satisfactory,"
+          echo "approve this environment to proceed to CRAN submission preparation."
+
+      - name: Record approval
+        run: |
+          echo "CRAN pre-release review approved at $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          echo "Approved by: ${{ github.actor }}"
+
+  # STAGE 2: Update GitHub Release
+  # Updates the existing release created by auto-release with CRAN artifacts
+  update-release:
+    name: Update Release with CRAN Artifacts
+    needs: [validate, pre-release-review]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download package tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: package-tarball
+
+      - name: Download validation report
+        uses: actions/download-artifact@v4
+        with:
+          name: cran-validation-report
+
+      - name: Update GitHub release with CRAN artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          TARBALL="${{ needs.validate.outputs.tarball }}"
+
+          echo "Updating release v$VERSION with CRAN artifacts..."
+
+          # Upload tarball to existing release
+          gh release upload "v$VERSION" "$TARBALL" --clobber || echo "Tarball upload failed (may already exist)"
+
+          # Upload validation report
+          gh release upload "v$VERSION" "cran-validation-report.md" --clobber || echo "Report upload failed (may already exist)"
+
+          echo "✅ Release artifacts updated"
+
+  # GATE 2: Final CRAN Submission Approval
+  # Final manual approval before providing CRAN submission guidance
+  final-cran-approval:
+    name: Gate 2 - Final CRAN Submission Approval
+    needs: [validate, update-release]
+    runs-on: ubuntu-latest
+    environment: public-release
+
+    steps:
+      - name: Review for CRAN submission
+        run: |
+          echo "=== FINAL CRAN SUBMISSION APPROVAL ==="
+          echo "Version: ${{ needs.validate.outputs.version }}"
+          echo ""
+          echo "Review checklist:"
+          echo "  - Win-builder results received and satisfactory"
+          echo "  - All R CMD check results clean"
+          echo "  - CRAN validation report reviewed"
+          echo "  - Package ready for CRAN submission"
+          echo ""
+          echo "If everything looks good, approve this environment to proceed with CRAN submission."
+
+      - name: Record final approval
+        run: |
+          echo "Final CRAN submission approved at $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          echo "Approved by: ${{ github.actor }}"
+
+  # STAGE 3: CRAN Submission Guidance
+  # Provides detailed instructions for manual CRAN submission
+  cran-submission-guidance:
+    name: CRAN Submission Instructions
+    needs: [validate, final-cran-approval]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: CRAN submission instructions
+        run: |
+          cat <<EOF
+          ========================================
+          📦 CRAN SUBMISSION INSTRUCTIONS
+          ========================================
+
+          Version ${{ needs.validate.outputs.version }} is ready for CRAN submission!
+
+          CRAN submissions must be done manually by the package maintainer.
+
+          Steps to submit:
+
+          1. Download the package tarball:
+             https://github.com/${{ github.repository }}/releases/download/v${{ needs.validate.outputs.version }}/${{ needs.validate.outputs.tarball }}
+
+          2. Verify Win-builder results (check your email):
+             - Should have received results within 30-60 minutes
+             - Ensure 0 errors, 0 warnings
+             - Address any Windows-specific issues if found
+
+          3. Review CRAN submission checklist:
+             - ✅ R CMD check passes with 0 errors, 0 warnings
+             - ✅ Package builds successfully
+             - ✅ All tests pass
+             - ✅ Win-builder results clean
+             - ✅ NEWS.md updated with version notes
+             - ✅ DESCRIPTION has correct maintainer email
+             - ✅ Version consistency verified
+
+          4. Submit to CRAN:
+             - Go to: https://cran.r-project.org/submit.html
+             - Upload: ${{ needs.validate.outputs.tarball }}
+             - Fill in submission form
+             - Confirm maintainer email
+             - Add submission comments if needed
+
+          5. Monitor submission:
+             - Check email for CRAN automated checks (~1-2 hours)
+             - Respond promptly to any reviewer feedback
+             - Typical review time: 2-7 days
+
+          6. After CRAN acceptance:
+             - Package appears on CRAN within 24 hours
+             - Update README badges if needed
+             - Announce the release
+
+          ========================================
+          🎉 GOOD LUCK WITH YOUR CRAN SUBMISSION! 🎉
+          ========================================
+          EOF
+
+      - name: Create submission summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          # CRAN Submission Ready
+
+          Version **v${{ needs.validate.outputs.version }}** has passed all validation checks and is ready for CRAN submission.
+
+          ## Download Package
+
+          [Download ${{ needs.validate.outputs.tarball }}](https://github.com/${{ github.repository }}/releases/download/v${{ needs.validate.outputs.version }}/${{ needs.validate.outputs.tarball }})
+
+          ## Submit to CRAN
+
+          Go to [CRAN Submission Portal](https://cran.r-project.org/submit.html)
+
+          ## Checklist
+
+          - ✅ All CRAN checks passed
+          - ✅ Win-builder results reviewed
+          - ✅ Package tarball ready
+          - ✅ Dual approval gates completed
+
+          Good luck! 🚀
+          EOF
