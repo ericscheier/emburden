@@ -17,7 +17,7 @@ on:
       - 'NEWS.md'
       - 'R/**'
       - 'tests/**'
-      - '.github/workflows/test-coverage.yml'
+      - '.github/workflows/**'
   push:
     branches: [main]
   workflow_dispatch:
