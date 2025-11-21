@@ -122,23 +122,18 @@ if [[ "$CURRENT_BRANCH" != "main" ]]; then
     fi
 fi
 
-# Check if tag already exists
-if git rev-parse "v$NEW_VERSION" >/dev/null 2>&1; then
-    error "Tag v$NEW_VERSION already exists!"
-fi
-
 success "Git repository check passed"
 echo ""
 
 # Run the R version bump script
-info "[Step 2/9] Running version bump script..."
+info "[Step 2/8] Running version bump script..."
 if ! Rscript .dev/bump-version.R "$NEW_VERSION"; then
     error "Version bump script failed"
 fi
 echo ""
 
 # Update NEWS.md
-info "[Step 3/9] Updating NEWS.md..."
+info "[Step 3/8] Updating NEWS.md..."
 
 # Check if NEWS.md already has this version
 if grep -q "^# emburden $NEW_VERSION" NEWS.md; then
@@ -202,7 +197,7 @@ fi
 echo ""
 
 # Show changes
-info "[Step 4/9] Review changes..."
+info "[Step 4/8] Review changes..."
 echo ""
 git diff DESCRIPTION inst/CITATION .zenodo.json NEWS.md || true
 echo ""
@@ -218,13 +213,13 @@ else
 fi
 
 # Stage files
-info "[Step 5/9] Staging files..."
+info "[Step 5/8] Staging files..."
 git add DESCRIPTION inst/CITATION .zenodo.json NEWS.md
 success "Files staged"
 echo ""
 
 # Commit
-info "[Step 6/9] Creating commit..."
+info "[Step 6/8] Creating commit..."
 COMMIT_MSG="Bump version to $NEW_VERSION"
 
 if [[ "$AUTO_MODE" == "true" ]]; then
@@ -241,16 +236,9 @@ fi
 success "Committed changes"
 echo ""
 
-# Create tag
-info "[Step 7/9] Creating git tag..."
-TAG_NAME="v$NEW_VERSION"
-git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
-success "Created tag: $TAG_NAME"
-echo ""
-
 # Push to remote
-info "[Step 8/9] Push to remote..."
-if [[ "$AUTO_MODE" == "true" ]] || prompt_yes_no "Push commit and tag to remote 'scheier'?"; then
+info "[Step 7/8] Push to remote..."
+if [[ "$AUTO_MODE" == "true" ]] || prompt_yes_no "Push commit to remote 'scheier'?"; then
     if [[ "$AUTO_MODE" == "true" ]]; then
         info "Auto mode: automatically pushing to remote"
     fi
@@ -258,14 +246,11 @@ if [[ "$AUTO_MODE" == "true" ]] || prompt_yes_no "Push commit and tag to remote 
     info "Pushing commit to $CURRENT_BRANCH..."
     git push scheier "$CURRENT_BRANCH"
 
-    info "Pushing tag $TAG_NAME..."
-    git push scheier "$TAG_NAME"
-
     success "Pushed to remote!"
     echo ""
 
     # Create or update PR
-    info "[Step 9/9] Creating or updating pull request..."
+    info "[Step 8/8] Creating or updating pull request..."
 
     # Check if PR already exists from this branch to main
     EXISTING_PR=$(gh pr list --head "$CURRENT_BRANCH" --base main --json number --jq '.[0].number' 2>/dev/null || echo "")
@@ -310,13 +295,12 @@ $(git log main..HEAD --pretty=format:'- %s' --reverse)
 
 This PR was created by \`release-version.sh\` and includes:
 - Version bump to $NEW_VERSION
-- Git tag: $TAG_NAME
 - Updated NEWS.md with release notes
 
 ### Next Steps
 
 After merging:
-1. Auto-tag-on-version-bump workflow will trigger
+1. Auto-tag-on-version-bump workflow will create git tag v$NEW_VERSION
 2. Auto-release workflow creates GitHub release
 3. Publish-to-public workflow syncs to public repo
 4. CRAN release workflow runs on public repo (manual approval required)
@@ -338,7 +322,6 @@ After merging:
     info "Release automation complete!"
     info ""
     info "Version: $NEW_VERSION"
-    info "Tag: $TAG_NAME"
     info "Branch: $CURRENT_BRANCH"
     if [[ -n "$PR_URL" ]]; then
         info "Pull Request: $PR_URL"
@@ -346,7 +329,7 @@ After merging:
     info ""
     info "Next steps:"
     info "  1. Review and merge the pull request"
-    info "  2. Monitor auto-tag-on-version-bump workflow"
+    info "  2. Auto-tag-on-version-bump workflow will create tag v$NEW_VERSION"
     info "  3. Check auto-release workflow creates GitHub release"
     info "  4. Verify publish-to-public workflow syncs to public repo"
     info "  5. Monitor CRAN release workflow on public repo"
@@ -358,11 +341,12 @@ else
     info "Local release preparation complete!"
     info ""
     info "Version: $NEW_VERSION"
-    info "Tag: $TAG_NAME (created locally)"
     info ""
     info "To push manually:"
     info "  git push scheier $CURRENT_BRANCH"
-    info "  git push scheier $TAG_NAME"
+    info ""
+    info "Note: Git tag will be created automatically by auto-tag-on-version-bump"
+    info "      workflow after the PR is merged to main"
     info "============================================================"
 fi
 

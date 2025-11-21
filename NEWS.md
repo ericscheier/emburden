@@ -1,3 +1,15 @@
+# emburden 0.5.13
+
+## Changes
+
+  1. Removed redundant tag creation - Release script no longer creates tags; workflow handles it after merge
+  2. Remote tag checking - Workflow now checks both local and remote tags to prevent conflicts
+  3. Automatic PR creation - Bonus feature that extracts NEWS.md content for PR bodies
+
+
+---
+
+
   # emburden 0.5.12
 
   ## Changes

@@ -60,9 +60,14 @@ jobs:
         if: steps.check_version_change.outputs.changed == 'true'
         run: |
           TAG="v${{ steps.get_version.outputs.version }}"
+
+          # Check both local and remote tags to prevent conflicts
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "Tag $TAG already exists"
+            echo "Tag $TAG already exists locally"
+          elif git ls-remote --tags origin | grep -q "refs/tags/$TAG$"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists on remote"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "Tag $TAG does not exist"
