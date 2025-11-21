@@ -25,15 +25,14 @@ Rscript .dev/bump-version.R 0.5.11
 1. ✅ Validates git repository state
 2. ✅ Checks for uncommitted changes
 3. ✅ Warns if not on main branch
-4. ✅ Verifies tag doesn't already exist
-5. ✅ Runs `bump-version.R` to update version files
-6. ✅ Auto-creates NEWS.md template entry
-7. ✅ Opens editor for NEWS.md editing
-8. ✅ Shows git diff for review
-9. ✅ Stages changes
-10. ✅ Creates commit
-11. ✅ Creates git tag
-12. ✅ Pushes to remote (optional)
+4. ✅ Runs `bump-version.R` to update version files
+5. ✅ Auto-creates NEWS.md template entry
+6. ✅ Opens editor for NEWS.md editing
+7. ✅ Shows git diff for review
+8. ✅ Stages changes
+9. ✅ Creates commit
+10. ✅ Pushes to remote (optional)
+11. ✅ Creates or updates pull request
 
 **Usage**:
 ```bash
@@ -79,12 +78,12 @@ git diff
 git add DESCRIPTION inst/CITATION .zenodo.json NEWS.md
 git commit -m "Bump version to 0.5.11"
 
-# 5. Create tag
-git tag -a v0.5.11 -m "Release v0.5.11"
+# 5. Push and create PR
+git push scheier <branch-name>
+gh pr create --base main --head <branch-name>
 
-# 6. Push
-git push scheier main
-git push scheier v0.5.11
+# Note: Git tag will be created automatically by auto-tag-on-version-bump
+#       workflow after the PR is merged to main
 ```
 
 ## Versioning Format
@@ -138,9 +137,13 @@ The release automation integrates with your CI/CD pipeline:
 ```
 release-version.sh (local)
          ↓
-    [Git push]
+    [Push commit to branch]
          ↓
-  auto-tag-on-version-bump.yml (private repo)
+    [Create/update PR]
+         ↓
+    [Merge PR to main]
+         ↓
+  auto-tag-on-version-bump.yml (creates git tag on main)
          ↓
   auto-release.yml (creates GitHub release)
          ↓
@@ -157,7 +160,6 @@ release-version.sh (local)
 - ✅ Validates semantic versioning format
 - ✅ Warns about uncommitted changes
 - ✅ Warns if not on main branch
-- ✅ Prevents duplicate tags
 
 ### Interactive Confirmation
 - Confirms changes before committing
@@ -190,18 +192,6 @@ export EDITOR="nano"
 Falls back to: `nano` → `vi` → manual edit
 
 ## Troubleshooting
-
-### "Tag already exists"
-```bash
-# Delete local tag
-git tag -d v0.5.11
-
-# Delete remote tag
-git push scheier :refs/tags/v0.5.11
-
-# Retry
-bash .dev/release-version.sh 0.5.11
-```
 
 ### "You have uncommitted changes"
 ```bash
@@ -297,8 +287,8 @@ bash .dev/release-version.sh 0.5.11 --auto
 # 2. Auto-create NEWS.md template (no editor)
 # 3. Show diff (no confirmation)
 # 4. Commit with default message
-# 5. Tag automatically
-# 6. Push automatically
+# 5. Push automatically
+# 6. Create/update PR automatically
 ```
 
 ### Development Version
@@ -402,10 +392,10 @@ vim NEWS.md
 git diff DESCRIPTION inst/CITATION .zenodo.json NEWS.md
 git add DESCRIPTION inst/CITATION .zenodo.json NEWS.md
 git commit -m "Bump version to 0.5.11"
-git tag -a v0.5.11 -m "Release v0.5.11"
-git push scheier main
-git push scheier v0.5.11
-# → 8 manual steps, ~5 minutes, error-prone
+git push scheier <branch>
+gh pr create --base main
+# [Wait for merge, then workflow creates tag]
+# → 7 manual steps, ~5 minutes, error-prone
 ```
 
 ## Related Documentation
