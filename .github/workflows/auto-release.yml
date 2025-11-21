@@ -56,15 +56,22 @@ jobs:
           # Append installation and validation information
           cat >> /tmp/release-notes.md <<'RELEASE_EOF'
 
----
+***
 
 ## Installation
 
-```r
+RELEASE_EOF
+
+          # Add code block with proper variable substitution
+          cat >> /tmp/release-notes.md <<CODE_EOF
+\`\`\`r
 # Install from GitHub
 # install.packages("remotes")
 remotes::install_github("ericscheier/emburden@${{ steps.get_version.outputs.tag_name }}")
-```
+\`\`\`
+CODE_EOF
+
+          cat >> /tmp/release-notes.md <<'RELEASE_EOF'
 
 ## Package Validation
 
