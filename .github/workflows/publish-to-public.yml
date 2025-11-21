@@ -14,6 +14,12 @@ name: Publish to Public Repository
 on:
   release:
     types: [published]  # Triggers when auto-release.yaml creates a GitHub release
+  workflow_call:  # NEW
+    inputs:
+      tag_name:
+        required: true
+        type: string
+
   push:
     branches:
       - 'ready-for-public'  # Protected branch for controlled releases
@@ -267,3 +273,4 @@ jobs:
           echo "- \`*_files/\` directories" >> $GITHUB_STEP_SUMMARY
           echo "- Workflow files" >> $GITHUB_STEP_SUMMARY
           echo "- AI attributions from commit messages" >> $GITHUB_STEP_SUMMARY
+
