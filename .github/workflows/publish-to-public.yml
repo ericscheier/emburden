@@ -35,9 +35,74 @@ env:
   PUBLIC_BRANCH: 'main'
 
 jobs:
+  validate-cran:
+    name: CRAN Validation (Private Repo)
+    runs-on: ubuntu-latest
+    # Only run CRAN validation for version tags
+    if: |
+      (github.event.release.tag_name != '' && startsWith(github.event.release.tag_name, 'v')) ||
+      (inputs.tag_name != '' && startsWith(inputs.tag_name, 'v'))
+
+    steps:
+      - name: Detect tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.release.tag_name }}" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          elif [ -n "${{ inputs.tag_name }}" ]; then
+            TAG="${{ inputs.tag_name }}"
+          else
+            TAG=""
+          fi
+          echo "tag_name=$TAG" >> $GITHUB_OUTPUT
+          echo "Validating tag: $TAG"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - name: Setup R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - name: Run CRAN checks (dry-run)
+        run: |
+          echo "🔍 Running CRAN validation on private repo before publishing..."
+          Rscript -e "
+            results <- rcmdcheck::rcmdcheck(
+              path = '.',
+              args = c('--as-cran', '--no-manual'),
+              error_on = 'warning',
+              check_dir = 'check'
+            )
+            print(results)
+          "
+
+      - name: Upload check results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: private-cran-check-results
+          path: check/
+
   publish:
     name: Clean and publish to public repository
     runs-on: ubuntu-latest
+    needs: [validate-cran]
+    # Run if CRAN validation passed OR if not a version tag (skip validation for branch pushes)
+    if: |
+      always() &&
+      (needs.validate-cran.result == 'success' || needs.validate-cran.result == 'skipped')
     environment:
       name: public-release
       url: https://github.com/${{ env.PUBLIC_REPO }}
