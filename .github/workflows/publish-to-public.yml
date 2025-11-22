@@ -185,7 +185,7 @@ jobs:
   # Stage 3: Production dry-run - requires approval before publishing
   dry-run-prod:
     name: "Stage 3: Production Dry-Run (Approval Required)"
-    needs: dry-run-test
+    needs: [validate-cran, dry-run-test]
     if: success()
     runs-on: ubuntu-latest
     environment: cran-production  # Requires manual approval
