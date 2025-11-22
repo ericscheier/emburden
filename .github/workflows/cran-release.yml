@@ -68,7 +68,7 @@ jobs:
         id: build
         run: |
           # Run R CMD build and capture tarball name
-          R CMD build . | tee /tmp/build-output.txt
+          R CMD build --compact-vignettes=both . | tee /tmp/build-output.txt
           tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1)
           echo "tarball=$tarball" >> $GITHUB_OUTPUT
           echo "Built package: $tarball"
