@@ -1,0 +1,249 @@
+name: Auto-Merge Version Bump PRs
+
+# Automatically merge and squash PRs when triggered by auto-merge tag
+# The release-version.sh script creates an auto-merge/vX.X.X tag
+# which triggers this workflow to:
+# 1. Verify all PR checks are passing
+# 2. Auto-merge the PR with squash
+# 3. Delete the auto-merge tag
+
+on:
+  push:
+    tags:
+      - 'auto-merge/**'  # Triggers when release-version.sh creates auto-merge tag
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  auto-merge:
+    name: Auto-merge version bump PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG_NAME#auto-merge/}"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Triggered by tag: $TAG_NAME"
+          echo "Version: $VERSION"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.get_version.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Find PR for this tag
+        id: get_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the commit SHA that this tag points to
+          COMMIT_SHA=$(git rev-parse ${{ steps.get_version.outputs.tag_name }})
+          echo "Tag points to commit: $COMMIT_SHA"
+
+          # Find PR with this commit in its head
+          PR_NUMBER=$(gh pr list --state open --base main --json number,headRefOid,headRefName \
+            --jq ".[] | select(.headRefOid == \"$COMMIT_SHA\") | .number" | head -1)
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "❌ No open PR found for commit $COMMIT_SHA"
+            exit 1
+          fi
+
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "✅ Found PR #$PR_NUMBER"
+
+      - name: Check if PR includes version bump
+        id: check_version_bump
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ steps.get_pr.outputs.pr_number }}"
+
+          echo "Checking if PR #$PR_NUMBER includes version bump..."
+
+          # Get list of changed files
+          CHANGED_FILES=$(gh pr view "$PR_NUMBER" --json files --jq '.files[].path')
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Check if version files were modified
+          HAS_DESCRIPTION=$(echo "$CHANGED_FILES" | grep -c "^DESCRIPTION$" || true)
+          HAS_CITATION=$(echo "$CHANGED_FILES" | grep -c "^inst/CITATION$" || true)
+          HAS_ZENODO=$(echo "$CHANGED_FILES" | grep -c "^.zenodo.json$" || true)
+
+          if [ "$HAS_DESCRIPTION" -gt 0 ] && [ "$HAS_CITATION" -gt 0 ] && [ "$HAS_ZENODO" -gt 0 ]; then
+            echo "✅ PR includes version bump (DESCRIPTION, inst/CITATION, .zenodo.json modified)"
+            echo "has_version_bump=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ PR does not include complete version bump"
+            echo "   DESCRIPTION: $HAS_DESCRIPTION"
+            echo "   inst/CITATION: $HAS_CITATION"
+            echo "   .zenodo.json: $HAS_ZENODO"
+            echo "has_version_bump=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Wait for and check CI status
+        id: check_status
+        if: steps.check_version_bump.outputs.has_version_bump == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ steps.get_pr.outputs.pr_number }}"
+          MAX_WAIT_MINUTES=30
+          CHECK_INTERVAL_SECONDS=30
+          MAX_ITERATIONS=$((MAX_WAIT_MINUTES * 60 / CHECK_INTERVAL_SECONDS))
+
+          echo "Waiting for CI checks to complete on PR #$PR_NUMBER..."
+          echo "Will check every ${CHECK_INTERVAL_SECONDS}s for up to ${MAX_WAIT_MINUTES} minutes"
+          echo ""
+
+          for i in $(seq 1 $MAX_ITERATIONS); do
+            echo "=== Check attempt $i/$MAX_ITERATIONS ==="
+
+            # Get PR checks using simpler gh pr checks command
+            CHECKS_OUTPUT=$(gh pr checks "$PR_NUMBER" 2>&1 || true)
+
+            # Count different status types
+            TOTAL_CHECKS=$(echo "$CHECKS_OUTPUT" | grep -E "^[✓✗○-]" | wc -l || echo "0")
+            PASSED_CHECKS=$(echo "$CHECKS_OUTPUT" | grep -c "^✓" || echo "0")
+            FAILED_CHECKS=$(echo "$CHECKS_OUTPUT" | grep -c "^✗" || echo "0")
+            PENDING_CHECKS=$(echo "$CHECKS_OUTPUT" | grep -cE "^[○-]" || echo "0")
+
+            echo "Total: $TOTAL_CHECKS | Passed: $PASSED_CHECKS | Failed: $FAILED_CHECKS | Pending: $PENDING_CHECKS"
+
+            # Show current status
+            if [ "$TOTAL_CHECKS" -gt 0 ]; then
+              echo "$CHECKS_OUTPUT"
+            fi
+
+            # Check for failures
+            if [ "$FAILED_CHECKS" -gt 0 ]; then
+              echo ""
+              echo "❌ Some checks failed - not auto-merging"
+              echo "all_checks_passed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            # Check if all done and passed
+            if [ "$TOTAL_CHECKS" -gt 0 ] && [ "$PENDING_CHECKS" -eq 0 ] && [ "$PASSED_CHECKS" -eq "$TOTAL_CHECKS" ]; then
+              echo ""
+              echo "✅ All $TOTAL_CHECKS checks passed!"
+              echo "all_checks_passed=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            # Still waiting
+            if [ "$TOTAL_CHECKS" -eq 0 ]; then
+              echo "⏳ Waiting for checks to start..."
+            else
+              echo "⏳ Waiting for $PENDING_CHECKS pending checks to complete..."
+            fi
+
+            # Don't sleep on last iteration
+            if [ $i -lt $MAX_ITERATIONS ]; then
+              sleep $CHECK_INTERVAL_SECONDS
+            fi
+          done
+
+          echo ""
+          echo "⏰ Timeout: Checks did not complete within ${MAX_WAIT_MINUTES} minutes"
+          echo "all_checks_passed=false" >> $GITHUB_OUTPUT
+          exit 0
+
+      - name: Check if PR is approved
+        id: check_approval
+        if: |
+          steps.check_version_bump.outputs.has_version_bump == 'true' &&
+          steps.check_status.outputs.all_checks_passed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ steps.get_pr.outputs.pr_number }}"
+
+          # Check if PR requires reviews
+          REQUIRED_REVIEWS=$(gh api "repos/${{ github.repository }}/branches/main/protection" --jq '.required_pull_request_reviews.required_approving_review_count' 2>/dev/null || echo "0")
+
+          if [ "$REQUIRED_REVIEWS" -eq 0 ]; then
+            echo "✅ No reviews required"
+            echo "is_approved=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check review status
+          APPROVED_REVIEWS=$(gh pr view "$PR_NUMBER" --json reviews --jq '[.reviews[] | select(.state == "APPROVED")] | length')
+
+          if [ "$APPROVED_REVIEWS" -ge "$REQUIRED_REVIEWS" ]; then
+            echo "✅ PR has required approvals ($APPROVED_REVIEWS/$REQUIRED_REVIEWS)"
+            echo "is_approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ PR needs more approvals ($APPROVED_REVIEWS/$REQUIRED_REVIEWS)"
+            echo "is_approved=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Auto-merge PR
+        if: |
+          steps.check_version_bump.outputs.has_version_bump == 'true' &&
+          steps.check_status.outputs.all_checks_passed == 'true' &&
+          steps.check_approval.outputs.is_approved == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ steps.get_pr.outputs.pr_number }}"
+
+          echo "🎉 All conditions met - auto-merging PR #$PR_NUMBER with squash"
+
+          # Merge immediately with squash strategy
+          gh pr merge "$PR_NUMBER" --squash --delete-branch
+
+          echo "✅ PR #$PR_NUMBER merged and squashed"
+          echo "✅ Feature branch deleted"
+
+      - name: Delete auto-merge tag
+        if: |
+          steps.check_version_bump.outputs.has_version_bump == 'true' &&
+          steps.check_status.outputs.all_checks_passed == 'true' &&
+          steps.check_approval.outputs.is_approved == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="${{ steps.get_version.outputs.tag_name }}"
+
+          echo "🧹 Cleaning up auto-merge tag: $TAG_NAME"
+          git push origin ":refs/tags/$TAG_NAME"
+
+          echo "✅ Auto-merge tag deleted"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Auto-Merge Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**PR:** #${{ steps.get_pr.outputs.pr_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.check_version_bump.outputs.has_version_bump }}" = "true" ]; then
+            echo "✅ Version bump detected" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ No version bump detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.check_status.outputs.all_checks_passed }}" = "true" ]; then
+            echo "✅ All checks passed" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.check_status.outputs.all_checks_passed }}" = "false" ]; then
+            echo "❌ Checks not yet passing" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.check_approval.outputs.is_approved }}" = "true" ]; then
+            echo "✅ Required approvals received" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.check_approval.outputs.is_approved }}" = "false" ]; then
+            echo "❌ Waiting for approvals" >> $GITHUB_STEP_SUMMARY
+          fi

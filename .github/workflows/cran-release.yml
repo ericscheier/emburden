@@ -5,6 +5,12 @@ on:
     tags:
       - 'v*.*.*'  # Triggers on semantic version tags like v0.5.7, v1.0.0, etc.
   workflow_dispatch:  # Allow manual triggering for testing
+    inputs:
+      dry_run:
+        description: 'Dry run mode (skip actual CRAN submission)'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -66,6 +72,17 @@ jobs:
         with:
           r-version: 'release'
           use-public-rspm: true
+
+      - name: Validate CRAN_EMAIL secret
+        run: |
+          if [ -z "${{ secrets.CRAN_EMAIL }}" ]; then
+            echo "❌ ERROR: CRAN_EMAIL secret is not set"
+            echo ""
+            echo "To fix: Add CRAN_EMAIL secret in repository settings"
+            echo "Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          echo "✅ CRAN_EMAIL secret is configured"
 
       - name: Setup R dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
@@ -182,7 +199,7 @@ jobs:
           VERSION="${{ needs.validate-cran.outputs.version }}"
           TARBALL="${{ needs.validate-cran.outputs.tarball }}"
 
-          cat > cran_comments.md << 'EOF'
+          cat > cran_comments.md << EOF
           ## Resubmission
           This is version $VERSION of the emburden package.
 
@@ -205,15 +222,24 @@ jobs:
           cat cran_comments.md >> $GITHUB_STEP_SUMMARY
 
       - name: Submit to CRAN
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        if: |
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+          (github.event_name == 'workflow_dispatch' && inputs.dry_run == false)
         env:
           CRAN_EMAIL: ${{ secrets.CRAN_EMAIL }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
         run: |
           TARBALL="${{ needs.validate-cran.outputs.tarball }}"
 
-          # Note: Automatic submission requires CRAN credentials
-          # For now, this creates the submission artifact
-          # Manual submission can be done via: devtools::submit_cran()
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "🔍 DRY RUN MODE - Skipping actual CRAN submission"
+            echo ""
+            echo "Would submit: $TARBALL"
+            echo "To email: $CRAN_EMAIL"
+            echo ""
+            echo "To submit for real, run workflow_dispatch with dry_run=false"
+            exit 0
+          fi
 
           echo "✅ Package validated and ready for CRAN submission"
           echo ""
@@ -225,61 +251,30 @@ jobs:
 
           echo ""
           echo "✅ Package submitted to CRAN!"
-          echo "📬 Check ${{ secrets.CRAN_EMAIL }} for CRAN submission confirmation"
+          echo "📬 Check $CRAN_EMAIL for CRAN submission confirmation"
 
-      - name: Create GitHub Release
+      - name: Upload tarball to existing release
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ needs.validate-cran.outputs.version }}"
           TARBALL="${{ needs.validate-cran.outputs.tarball }}"
           TAG="v$VERSION"
 
-          # Create release notes
-          cat > release_notes.md << 'EOF'
-          ## emburden v$VERSION
+          # The auto-release workflow already created the GitHub release
+          # Just upload the CRAN-validated tarball as an additional asset
+          echo "📦 Uploading CRAN-validated tarball to release $TAG..."
 
-          CRAN release candidate for version $VERSION.
-
-          ### Installation
-
-          ```r
-          # From CRAN (once approved)
-          install.packages("emburden")
-
-          # Or install this version directly
-          install.packages("$TARBALL", repos = NULL, type = "source")
-          ```
-
-          ### CRAN Validation
-
-          ✅ All CRAN checks passed:
-          - No ERRORs
-          - No WARNINGs
-          - No NOTEs
-
-          ### Files
-
-          - Source package: `$TARBALL`
-          - Validated with R CMD check --as-cran
-
-          See [CRAN Submission Policy](https://cran.r-project.org/web/packages/policies.html) for details.
-          EOF
-
-          # Check if release already exists
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists, updating..."
+            echo "Release $TAG exists, uploading tarball..."
             gh release upload "$TAG" "$TARBALL" --clobber
+            echo "✅ Uploaded $TARBALL to release $TAG"
           else
-            echo "Creating new release $TAG..."
-            gh release create "$TAG" \
-              "$TARBALL" \
-              --title "emburden v$VERSION - CRAN Release" \
-              --notes-file release_notes.md
+            echo "⚠️  Release $TAG does not exist yet"
+            echo "The auto-release workflow should create it shortly"
+            echo "Skipping tarball upload"
           fi
-
-          echo "✅ GitHub release created: $TAG"
 
       - name: Post-submission summary
         if: always()

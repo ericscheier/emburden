@@ -1,3 +1,27 @@
+# emburden 0.5.16
+
+## New Features
+
+* Trigger auto-merge via tag push from release script
+* Add auto-merge for version bumps and improve CRAN workflows
+
+## Bug Fixes
+
+* Add wait loop for CI checks in auto-merge workflow
+* Update R dependency to 4.1.0 for native pipe support
+* Prevent duplicate tag creation in release workflow
+* Skip CRAN workflow gracefully on private repo
+* Improve CRAN workflow job dependencies and output visibility
+
+## Other Changes
+
+* Fix public repo releases and add auto-increment version feature
+* Update auto-release.yml
+* Update deployment workflow
+
+---
+
+
 # emburden 0.5.15
 
 ## New Features

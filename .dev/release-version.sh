@@ -423,6 +423,31 @@ After merging:
     fi
     echo ""
 
+    # Create auto-merge tag to trigger automated PR merge
+    info "[Step 9/9] Creating auto-merge tag to trigger PR merge..."
+    AUTO_MERGE_TAG="auto-merge/v$NEW_VERSION"
+
+    # Check if tag already exists
+    if git rev-parse "$AUTO_MERGE_TAG" >/dev/null 2>&1; then
+        info "Auto-merge tag $AUTO_MERGE_TAG already exists, deleting and recreating..."
+        git tag -d "$AUTO_MERGE_TAG" || true
+        git push scheier ":refs/tags/$AUTO_MERGE_TAG" 2>/dev/null || true
+    fi
+
+    # Create and push the auto-merge tag
+    info "Creating tag $AUTO_MERGE_TAG on current branch..."
+    git tag "$AUTO_MERGE_TAG"
+    git push scheier "$AUTO_MERGE_TAG"
+
+    success "Auto-merge tag pushed!"
+    echo ""
+    info "The auto-merge workflow will now:"
+    info "  1. Verify all PR checks are passing"
+    info "  2. Automatically merge and squash the PR"
+    info "  3. Delete the auto-merge tag"
+    info "  4. Trigger auto-tag-on-version-bump to create v$NEW_VERSION on main"
+    echo ""
+
     info "============================================================"
     info "Release automation complete!"
     info ""
@@ -431,13 +456,14 @@ After merging:
     if [[ -n "$PR_URL" ]]; then
         info "Pull Request: $PR_URL"
     fi
+    info "Auto-merge tag: $AUTO_MERGE_TAG"
     info ""
-    info "Next steps:"
-    info "  1. Review and merge the pull request"
-    info "  2. Auto-tag-on-version-bump workflow will create tag v$NEW_VERSION"
-    info "  3. Check auto-release workflow creates GitHub release"
-    info "  4. Verify publish-to-public workflow syncs to public repo"
-    info "  5. Monitor CRAN release workflow on public repo"
+    info "Next steps (automated):"
+    info "  1. Auto-merge workflow validates and merges PR"
+    info "  2. Auto-tag-on-version-bump workflow creates tag v$NEW_VERSION"
+    info "  3. Auto-release workflow creates GitHub release"
+    info "  4. Publish-to-public workflow syncs to public repo"
+    info "  5. CRAN release workflow runs on public repo (manual approval required)"
     info "============================================================"
 else
     warning "Skipped push to remote"
