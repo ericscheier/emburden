@@ -64,17 +64,12 @@ jobs:
         env:
           TINYTEX_INSTALLER: TinyTeX
 
-      - name: Install LaTeX packages for vignettes
-        run: |
-          # Install LaTeX packages needed for JSS vignette
-          tlmgr install xcolor xstring fancyvrb framed
-
       - name: Build source package
         id: build
         run: |
           # Run R CMD build and capture tarball name
           R CMD build . | tee /tmp/build-output.txt
-          tarball=$(grep -o '[^/]*\.tar\.gz$' /tmp/build-output.txt)
+          tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1)
           echo "tarball=$tarball" >> $GITHUB_OUTPUT
           echo "Built package: $tarball"
 
