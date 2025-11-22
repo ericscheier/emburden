@@ -1,3 +1,22 @@
+# emburden 0.5.17
+
+## Bug Fixes
+
+* Prevent duplicate tag creation in release workflow
+* Skip CRAN workflow gracefully on private repo
+* Improve CRAN workflow job dependencies and output visibility
+
+## Other Changes
+
+* hotfix: Skip vignette building in publish-to-public CRAN validation
+* Fix CRAN R dependency and auto-release workflow
+* Fix public repo releases and add auto-increment version feature
+* Update auto-release.yml
+* Update deployment workflow
+
+---
+
+
 # emburden 0.5.16
 
 ## New Features

@@ -78,10 +78,12 @@ jobs:
       - name: Run CRAN checks (dry-run)
         run: |
           echo "🔍 Running CRAN validation on private repo before publishing..."
+          echo "Skipping vignettes (full build happens on public repo)"
           Rscript -e "
             results <- rcmdcheck::rcmdcheck(
               path = '.',
-              args = c('--as-cran', '--no-manual'),
+              args = c('--as-cran', '--no-manual', '--no-build-vignettes', '--ignore-vignettes'),
+              build_args = c('--no-build-vignettes'),
               error_on = 'warning',
               check_dir = 'check'
             )
