@@ -4,13 +4,17 @@ on:
   push:
     tags:
       - 'v*.*.*'  # Triggers on semantic version tags like v0.5.7, v1.0.0, etc.
-  workflow_dispatch:  # Allow manual triggering for testing
+  workflow_dispatch:  # Allow manual triggering with submission mode control
     inputs:
-      dry_run:
-        description: 'Dry run mode (skip actual CRAN submission)'
-        required: false
-        type: boolean
-        default: true
+      submission_mode:
+        description: 'CRAN submission mode'
+        required: true
+        type: choice
+        default: 'dry-run-test'
+        options:
+          - 'dry-run-test'   # Quick test, no approval needed (cran-testing env)
+          - 'dry-run-prod'   # Full test with approval, no submission (cran-production env)
+          - 'submit-prod'    # Real CRAN submission with approval (cran-production env)
 
 permissions:
   contents: write
@@ -169,10 +173,80 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Note:** Win-builder results typically arrive within 30 minutes." >> $GITHUB_STEP_SUMMARY
 
-  submit-to-cran:
-    name: Submit to CRAN
+  # Testing job - no approval required, dry-run only
+  dry-run-test:
+    name: CRAN Dry-Run (Testing)
     needs: validate-cran
-    if: success()  # Only run if validate-cran succeeded
+    if: |
+      success() &&
+      github.event_name == 'workflow_dispatch' &&
+      inputs.submission_mode == 'dry-run-test'
+    runs-on: ubuntu-latest
+    environment: cran-testing  # No approval required
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download package tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: r-package-source
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Install devtools
+        run: Rscript -e "install.packages('devtools')"
+
+      - name: Dry-run validation
+        env:
+          CRAN_EMAIL: ${{ secrets.CRAN_EMAIL }}
+        run: |
+          VERSION="${{ needs.validate-cran.outputs.version }}"
+          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
+
+          echo "🔍 DRY RUN MODE (Testing) - No CRAN submission"
+          echo ""
+          echo "================================"
+          echo "  CRAN Submission Preview"
+          echo "================================"
+          echo ""
+          echo "Package: emburden v$VERSION"
+          echo "Tarball: $TARBALL"
+          echo "Email: $CRAN_EMAIL"
+          echo ""
+          echo "✅ Package validated successfully"
+          echo "✅ Tarball built and ready"
+          echo "✅ All checks passed"
+          echo ""
+          echo "📋 Next steps to submit for real:"
+          echo "  1. Review validation results above"
+          echo "  2. Run workflow_dispatch with mode='dry-run-prod' for production dry-run"
+          echo "  3. Run workflow_dispatch with mode='submit-prod' to submit to CRAN"
+          echo "  4. Or wait for automatic tag-based submission"
+
+      - name: Testing summary
+        run: |
+          echo "### CRAN Testing Dry-Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Testing Mode** - No approval required" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Package validated" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Source tarball created" >> $GITHUB_STEP_SUMMARY
+          echo "- ⏩ CRAN submission skipped (dry-run)" >> $GITHUB_STEP_SUMMARY
+
+  # Production job - requires approval, can dry-run or submit
+  submit-to-cran:
+    name: Submit to CRAN (Production)
+    needs: validate-cran
+    if: |
+      success() && (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+        (github.event_name == 'workflow_dispatch' && inputs.submission_mode != 'dry-run-test')
+      )
     runs-on: ubuntu-latest
     environment: cran-production  # Requires manual approval
 
@@ -192,6 +266,25 @@ jobs:
 
       - name: Install devtools
         run: Rscript -e "install.packages('devtools')"
+
+      - name: Determine submission mode
+        id: mode
+        run: |
+          # Determine if this is a dry-run or real submission
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            # Tag push always submits for real
+            echo "is_dry_run=false" >> $GITHUB_OUTPUT
+            echo "mode=submit-prod" >> $GITHUB_OUTPUT
+          else
+            # Manual trigger - check submission_mode input
+            if [[ "${{ inputs.submission_mode }}" == "dry-run-prod" ]]; then
+              echo "is_dry_run=true" >> $GITHUB_OUTPUT
+              echo "mode=dry-run-prod" >> $GITHUB_OUTPUT
+            else
+              echo "is_dry_run=false" >> $GITHUB_OUTPUT
+              echo "mode=submit-prod" >> $GITHUB_OUTPUT
+            fi
+          fi
 
       - name: Prepare CRAN submission
         id: prepare
@@ -217,27 +310,39 @@ jobs:
 
           echo "Package: emburden v$VERSION" >> $GITHUB_STEP_SUMMARY
           echo "Tarball: $TARBALL" >> $GITHUB_STEP_SUMMARY
+          echo "Mode: ${{ steps.mode.outputs.mode }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### CRAN Submission Comments" >> $GITHUB_STEP_SUMMARY
           cat cran_comments.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Submit to CRAN
-        if: |
-          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
-          (github.event_name == 'workflow_dispatch' && inputs.dry_run == false)
+      - name: Submit to CRAN or Dry-Run
         env:
           CRAN_EMAIL: ${{ secrets.CRAN_EMAIL }}
-          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+          IS_DRY_RUN: ${{ steps.mode.outputs.is_dry_run }}
         run: |
           TARBALL="${{ needs.validate-cran.outputs.tarball }}"
+          VERSION="${{ needs.validate-cran.outputs.version }}"
 
-          if [ "$DRY_RUN" = "true" ]; then
-            echo "🔍 DRY RUN MODE - Skipping actual CRAN submission"
+          if [ "$IS_DRY_RUN" = "true" ]; then
+            echo "🔍 DRY RUN MODE (Production) - Skipping actual CRAN submission"
             echo ""
-            echo "Would submit: $TARBALL"
-            echo "To email: $CRAN_EMAIL"
+            echo "================================"
+            echo "  CRAN Submission Preview"
+            echo "================================"
             echo ""
-            echo "To submit for real, run workflow_dispatch with dry_run=false"
+            echo "Package: emburden v$VERSION"
+            echo "Tarball: $TARBALL"
+            echo "Email: $CRAN_EMAIL"
+            echo "Environment: cran-production (approval required)"
+            echo ""
+            echo "✅ Package validated successfully"
+            echo "✅ Tarball built and ready"
+            echo "✅ All checks passed"
+            echo "✅ Manual approval granted"
+            echo ""
+            echo "📋 To submit for real:"
+            echo "  - Run workflow_dispatch with mode='submit-prod'"
+            echo "  - Or push a version tag to trigger automatic submission"
             exit 0
           fi
 
@@ -254,7 +359,7 @@ jobs:
           echo "📬 Check $CRAN_EMAIL for CRAN submission confirmation"
 
       - name: Upload tarball to existing release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        if: steps.mode.outputs.is_dry_run == 'false' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -279,13 +384,26 @@ jobs:
       - name: Post-submission summary
         if: always()
         run: |
-          echo "### CRAN Submission Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### CRAN Production Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Package validated" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Source tarball created" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ GitHub release created" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Wait for CRAN submission confirmation email" >> $GITHUB_STEP_SUMMARY
-          echo "2. Respond to any CRAN reviewer feedback" >> $GITHUB_STEP_SUMMARY
-          echo "3. Monitor https://cran.r-project.org/web/checks/" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.mode.outputs.is_dry_run }}" = "true" ]; then
+            echo "✅ **Production Dry-Run** - Approval required" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Package validated" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Source tarball created" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Manual approval granted" >> $GITHUB_STEP_SUMMARY
+            echo "- ⏩ CRAN submission skipped (dry-run)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **Production Submission** - Package submitted to CRAN" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Package validated" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Source tarball created" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Manual approval granted" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Submitted to CRAN" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
+            echo "1. Wait for CRAN submission confirmation email" >> $GITHUB_STEP_SUMMARY
+            echo "2. Respond to any CRAN reviewer feedback" >> $GITHUB_STEP_SUMMARY
+            echo "3. Monitor https://cran.r-project.org/web/checks/" >> $GITHUB_STEP_SUMMARY
+          fi
