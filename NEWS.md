@@ -1,3 +1,23 @@
+# emburden 0.5.18
+
+## New Features
+
+* Add full validation pipeline to public repo before CRAN submission
+* Implement multi-stage CRAN submission workflow
+
+## Bug Fixes
+
+* Add validate-cran to dry-run-prod needs for output access
+* Ensure numeric values in auto-merge check loop
+
+## Enhancements
+
+* Move CRAN validation pipeline to private repo
+* Convert to sequential CRAN submission pipeline
+
+---
+
+
 # emburden 0.5.17
 
 ## Bug Fixes
