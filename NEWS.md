@@ -1,3 +1,18 @@
+# emburden 0.5.19
+
+## New Features
+
+* Add tail -1 safety check for tarball extraction
+* Add comprehensive build diagnostics to publish workflow
+
+## Bug Fixes
+
+* Use working grep pattern for tarball extraction
+* Remove fallback tarball extraction, fail explicitly instead
+
+---
+
+
 # emburden 0.5.18
 
 ## New Features
