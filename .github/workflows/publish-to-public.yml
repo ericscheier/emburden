@@ -14,12 +14,20 @@ name: Publish to Public Repository
 on:
   release:
     types: [published]  # Triggers when auto-release.yaml creates a GitHub release
-  workflow_call:  # NEW
+  workflow_call:  # Called by other workflows
     inputs:
       tag_name:
         required: true
         type: string
-
+  pull_request:  # Validate PRs before merge
+    branches:
+      - main
+    paths:
+      - '.github/workflows/publish-to-public.yml'
+      - 'R/**'
+      - 'src/**'
+      - 'DESCRIPTION'
+      - 'NAMESPACE'
   push:
     branches:
       - 'ready-for-public'  # Protected branch for controlled releases
@@ -39,8 +47,12 @@ jobs:
   validate-cran:
     name: "Stage 1: CRAN Validation (Private Repo)"
     runs-on: ubuntu-latest
-    # Only run CRAN validation for version tags
+    # Run on:
+    # - PRs (to validate changes before merge)
+    # - Releases with version tags (for deployment)
+    # - Manual dispatch with version tags
     if: |
+      github.event_name == 'pull_request' ||
       (github.event.release.tag_name != '' && startsWith(github.event.release.tag_name, 'v')) ||
       (inputs.tag_name != '' && startsWith(inputs.tag_name, 'v'))
 
@@ -61,19 +73,31 @@ jobs:
             TAG=""
           fi
           echo "tag_name=$TAG" >> $GITHUB_OUTPUT
-          echo "Validating tag: $TAG"
+          if [ -n "$TAG" ]; then
+            echo "Validating tag: $TAG"
+          else
+            echo "No tag (PR or untagged run)"
+          fi
 
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.tag.outputs.tag_name }}
+          ref: ${{ steps.tag.outputs.tag_name || github.head_ref }}
           fetch-depth: 0
 
-      - name: Extract version from tag
+      - name: Extract version
         id: get_version
         run: |
           TAG="${{ steps.tag.outputs.tag_name }}"
-          VERSION=${TAG#v}
+          if [ -n "$TAG" ]; then
+            # Extract from tag for releases
+            VERSION=${TAG#v}
+            echo "Using version from tag: $VERSION"
+          else
+            # Extract from DESCRIPTION for PRs
+            VERSION=$(grep "^Version:" DESCRIPTION | awk '{print $2}')
+            echo "Using version from DESCRIPTION: $VERSION"
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Found version: $VERSION"
 
@@ -99,27 +123,90 @@ jobs:
         env:
           TINYTEX_INSTALLER: TinyTeX
 
-      - name: Install LaTeX packages for vignettes
-        run: |
-          # Install LaTeX packages needed for JSS vignette
-          tlmgr install xcolor xstring fancyvrb framed
-
       - name: Build source package
         id: build
         run: |
-          # Run R CMD build and capture tarball name
-          R CMD build . | tee /tmp/build-output.txt
-          tarball=$(grep -o '[^/]*\.tar\.gz$' /tmp/build-output.txt)
+          echo "📦 Building R package..."
+          echo "Working directory: $(pwd)"
+          echo "DESCRIPTION file exists: $(test -f DESCRIPTION && echo 'yes' || echo 'no')"
+
+          # Run R CMD build with explicit error checking
+          set -e  # Exit on any error
+          set -o pipefail  # Catch errors in pipes
+
+          echo ""
+          echo "Running: R CMD build --compact-vignettes=both ."
+          R CMD build --compact-vignettes=both . 2>&1 | tee /tmp/build-output.txt
+          BUILD_EXIT=$?
+
+          echo ""
+          echo "Build exit code: $BUILD_EXIT"
+
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo "❌ R CMD build failed with exit code $BUILD_EXIT"
+            echo "Build output:"
+            cat /tmp/build-output.txt
+            exit $BUILD_EXIT
+          fi
+
+          echo "✅ Build succeeded, extracting tarball name..."
+          echo "Build output:"
+          cat /tmp/build-output.txt
+          echo ""
+
+          # Extract tarball name from build output
+          # Expected format: "* building 'packagename_version.tar.gz'"
+          # Using simple regex that works with standard grep (no -P needed)
+          # tail -1 ensures we get the last (newest) match if there are multiple
+          tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1 || true)
+
+          if [ -z "$tarball" ]; then
+            echo "❌ ERROR: Could not extract tarball name from build output"
+            echo ""
+            echo "This likely means the build output format has changed."
+            echo "Please review the full output above and update the extraction pattern."
+            echo ""
+            echo "Expected line format: * building 'packagename_version.tar.gz'"
+            echo ""
+            echo "Directory contents:"
+            ls -la *.tar.gz 2>/dev/null || echo "No .tar.gz files found"
+            exit 1
+          fi
+
+          # Verify tarball exists
+          if [ ! -f "$tarball" ]; then
+            echo "❌ ERROR: Extracted tarball does not exist: $tarball"
+            echo ""
+            echo "Build output indicated tarball name: $tarball"
+            echo "But the file was not found in the working directory."
+            echo ""
+            echo "Directory contents:"
+            ls -la
+            exit 1
+          fi
+
           echo "tarball=$tarball" >> $GITHUB_OUTPUT
-          echo "Built package: $tarball"
+          echo "✅ Built package: $tarball"
+          echo "📊 Tarball size: $(du -h "$tarball" | cut -f1)"
 
       - name: Run CRAN checks (full build with vignettes)
         run: |
           echo "🔍 STAGE 1: Full CRAN validation on private repo (with vignettes)"
+
+          # For PRs: only fail on errors (warnings are informational)
+          # For releases: fail on warnings (strict CRAN compliance)
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            ERROR_LEVEL="error"
+            echo "📝 PR mode: Will only fail on ERRORs, warnings are informational"
+          else
+            ERROR_LEVEL="warning"
+            echo "🎯 Release mode: Will fail on WARNINGs (strict CRAN compliance)"
+          fi
+
           Rscript -e "rcmdcheck::rcmdcheck(
             path = '${{ steps.build.outputs.tarball }}',
             args = c('--as-cran', '--no-manual'),
-            error_on = 'warning',
+            error_on = '$ERROR_LEVEL',
             check_dir = 'check'
           )"
 
@@ -149,7 +236,7 @@ jobs:
   dry-run-test:
     name: "Stage 2: Testing Dry-Run (Private Repo)"
     needs: validate-cran
-    if: success()
+    if: success() && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: cran-testing  # No approval required
 
@@ -186,7 +273,7 @@ jobs:
   dry-run-prod:
     name: "Stage 3: Production Dry-Run (Approval Required)"
     needs: [validate-cran, dry-run-test]
-    if: success()
+    if: success() && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: cran-production  # Requires manual approval
 
@@ -229,7 +316,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate-cran, dry-run-prod]
     # Run if all previous stages succeeded OR if not a version tag (skip validation for branch pushes)
+    # NEVER run on pull_request events
     if: |
+      github.event_name != 'pull_request' &&
       always() &&
       (needs.dry-run-prod.result == 'success' || needs.validate-cran.result == 'skipped')
     environment:
