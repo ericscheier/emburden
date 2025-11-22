@@ -266,8 +266,8 @@ jobs:
           echo "📧 Submitting to CRAN now..."
           echo ""
 
-          # Auto-submit to CRAN using configured CRAN_EMAIL
-          Rscript -e "devtools::submit_cran('$TARBALL', email = Sys.getenv('CRAN_EMAIL'))"
+          # Auto-submit to CRAN (uses maintainer email from DESCRIPTION)
+          Rscript -e "devtools::submit_cran('$TARBALL')"
 
           echo ""
           echo "✅ Package submitted to CRAN!"
