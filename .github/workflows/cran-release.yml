@@ -64,24 +64,25 @@ jobs:
         env:
           TINYTEX_INSTALLER: TinyTeX
 
-      - name: Build source package
-        id: build
-        run: |
-          # Run R CMD build and capture tarball name
-          R CMD build --compact-vignettes=both . | tee /tmp/build-output.txt
-          tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1)
-          echo "tarball=$tarball" >> $GITHUB_OUTPUT
-          echo "Built package: $tarball"
-
       - name: Run CRAN checks (full build with vignettes)
         run: |
           echo "🔍 STAGE 1: Full CRAN validation on public repo (with vignettes)"
           Rscript -e "rcmdcheck::rcmdcheck(
-            path = '${{ steps.build.outputs.tarball }}',
+            path = '.',
             args = c('--as-cran', '--no-manual'),
+            build_args = c('--compact-vignettes=gs+qpdf'),
             error_on = 'warning',
             check_dir = 'check'
           )"
+
+      - name: Build source package
+        id: build
+        run: |
+          # Run R CMD build and capture tarball name
+          R CMD build --compact-vignettes=gs+qpdf . | tee /tmp/build-output.txt
+          tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1)
+          echo "tarball=$tarball" >> $GITHUB_OUTPUT
+          echo "Built package: $tarball"
 
       - name: Upload check results
         if: failure()
