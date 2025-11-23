@@ -1,0 +1,53 @@
+# Code Owners for emburden
+# This file defines who must review changes to specific files/directories
+# Patterns follow .gitignore syntax
+
+# Default owner for everything in the repo
+# Replace @ericscheier with the actual GitHub username(s) of the maintainer(s)
+* @ericscheier
+
+# Critical package configuration files
+# These require careful review as they affect package metadata and behavior
+DESCRIPTION @ericscheier
+NAMESPACE @ericscheier
+inst/CITATION @ericscheier
+.zenodo.json @ericscheier
+
+# Workflow files
+# Changes to CI/CD workflows should be reviewed carefully
+/.github/workflows/ @ericscheier
+/.github/CODEOWNERS @ericscheier
+/.github/BRANCH_PROTECTION_SETUP.md @ericscheier
+
+# Version management and release scripts
+# Critical for maintaining versioning consistency
+/.dev/release-version.sh @ericscheier
+/.dev/bump-version.R @ericscheier
+
+# Build and dependency configuration
+.Rbuildignore @ericscheier
+_pkgdown.yml @ericscheier
+
+# Security-sensitive files
+/.github/workflows/*release*.yml @ericscheier
+/.github/workflows/*publish*.yml @ericscheier
+/.github/workflows/*cran*.yml @ericscheier
+
+# Core package code
+# You may want to relax this for collaborative development
+# Uncomment to require review of all R source code
+# /R/ @ericscheier
+
+# Documentation can be auto-approved (see auto-approve-safe-changes.yml)
+# So we don't add owners for:
+# - README.md
+# - NEWS.md
+# - vignettes/
+# - man/
+# - tests/
+
+# Data and analysis scripts don't need strict ownership
+# These are often exploratory and not part of the package
+# - analysis/
+# - research/
+# - data-raw/

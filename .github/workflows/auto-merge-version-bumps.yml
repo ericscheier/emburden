@@ -1,9 +1,13 @@
 name: Auto-Merge Version Bump PRs
 
-# Automatically merge and squash PRs when triggered by auto-merge tag
-# The release-version.sh script creates an auto-merge/vX.X.X tag
-# which triggers this workflow to:
-# 1. Verify all PR checks are passing
+# ⚠️ DEPRECATED: This workflow has been replaced by promote-to-staging.yml and promote-to-main.yml
+# See .github/workflows/DEPRECATED_WORKFLOWS.md for details
+#
+# ORIGINAL PURPOSE:
+# Automatically merged and squashed PRs when triggered by auto-merge tag
+# The release-version.sh script created an auto-merge/vX.X.X tag
+# which triggered this workflow to:
+# 1. Verify all PR checks were passing
 # 2. Auto-merge the PR with squash
 # 3. Delete the auto-merge tag
 
@@ -21,6 +25,7 @@ jobs:
   auto-merge:
     name: Auto-merge version bump PR
     runs-on: ubuntu-latest
+    if: false  # DEPRECATED - Disabled in favor of promote-to-staging.yml and promote-to-main.yml workflows
 
     steps:
       - name: Extract version from tag
