@@ -2,6 +2,10 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/ericscheier/emburden/actions/workflows/R-CMD-check.yml)
+[![Codecov test coverage](https://codecov.io/gh/ericscheier/emburden/branch/main/graph/badge.svg)](https://app.codecov.io/gh/ericscheier/emburden?branch=main)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5725912.svg)](https://doi.org/10.5281/zenodo.5725912)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 <!-- badges: end -->
 
 R package for analyzing household energy burden - the percentage of income spent on energy costs.
