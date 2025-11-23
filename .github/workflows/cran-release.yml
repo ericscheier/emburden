@@ -166,25 +166,31 @@ jobs:
           echo "Email: $CRAN_EMAIL"
           echo ""
           echo "✅ Stage 1: CRAN validation passed"
-          echo "🚀 Stage 2: Submitting to CRAN..."
+          echo "🚀 Stage 2: Uploading to CRAN via FTP..."
           echo ""
 
-          # CRAN submission requires interactive confirmation and cannot be fully automated
-          # The tarball is ready and validated - provide submission instructions
+          # Upload to CRAN incoming FTP directory
+          # Extract maintainer email from DESCRIPTION
+          MAINTAINER_EMAIL=$(grep -m1 "^Authors@R" -A 10 DESCRIPTION | grep -o '[a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]*\.[a-zA-Z]\{2,\}' | head -1)
 
-          echo "📦 Package tarball ready for CRAN submission!"
+          echo "📦 Package: $TARBALL"
+          echo "📧 Maintainer: $MAINTAINER_EMAIL"
           echo ""
-          echo "✅ All CRAN checks passed"
-          echo "✅ Package tarball: $TARBALL"
-          echo "✅ Maintainer email: $CRAN_EMAIL (from DESCRIPTION)"
-          echo ""
-          echo "📋 Manual submission required:"
-          echo "1. Download the tarball from this workflow's artifacts"
-          echo "2. Submit via CRAN web form: https://cran.r-project.org/submit.html"
-          echo "3. OR use: R -e \"devtools::submit_cran()\" locally with interaction"
-          echo ""
-          echo "The tarball is available as a workflow artifact and will be"
-          echo "attached to the GitHub release once created."
+
+          # Upload tarball to CRAN FTP server
+          echo "Uploading $TARBALL to CRAN FTP server..."
+          curl -T "$TARBALL" ftp://cran.r-project.org/incoming/ --ftp-pasv
+
+          if [ $? -eq 0 ]; then
+            echo "✅ Successfully uploaded $TARBALL to CRAN"
+            echo ""
+            echo "📧 CRAN will send a confirmation email to: $MAINTAINER_EMAIL"
+            echo "⏳ Watch for CRAN's automated email with submission link"
+            echo "📝 You must click the confirmation link in the email to complete submission"
+          else
+            echo "❌ Failed to upload to CRAN FTP server"
+            exit 1
+          fi
 
       - name: Upload tarball to release
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
@@ -211,13 +217,15 @@ jobs:
         run: |
           echo "### CRAN Submission Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **Package Submitted to CRAN**" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Package Uploaded to CRAN**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Pipeline Status:**" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Stage 1: CRAN validation passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Stage 2: Submitted to CRAN" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Stage 2: Uploaded to CRAN FTP server" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Wait for CRAN submission confirmation email" >> $GITHUB_STEP_SUMMARY
-          echo "2. Respond to any CRAN reviewer feedback" >> $GITHUB_STEP_SUMMARY
-          echo "3. Monitor https://cran.r-project.org/web/checks/" >> $GITHUB_STEP_SUMMARY
+          echo "1. Check email for CRAN submission confirmation link" >> $GITHUB_STEP_SUMMARY
+          echo "2. Click the confirmation link in the email to complete submission" >> $GITHUB_STEP_SUMMARY
+          echo "3. Wait for CRAN maintainer review (typically 1-2 weeks)" >> $GITHUB_STEP_SUMMARY
+          echo "4. Respond to any CRAN reviewer feedback if requested" >> $GITHUB_STEP_SUMMARY
+          echo "5. Monitor https://cran.r-project.org/web/checks/ after acceptance" >> $GITHUB_STEP_SUMMARY
