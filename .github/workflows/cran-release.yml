@@ -197,10 +197,10 @@ jobs:
           r-version: 'release'
           use-public-rspm: true
 
-      - name: Install devtools
+      - name: Install rhub for automated CRAN submission
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::devtools
+          extra-packages: any::rhub
           dependencies: NA
 
       - name: Download package tarball
@@ -266,9 +266,9 @@ jobs:
           echo "📧 Submitting to CRAN now..."
           echo ""
 
-          # Auto-submit to CRAN (uses maintainer email from DESCRIPTION)
-          # submit_cran expects package directory, not tarball - it builds tarball internally
-          Rscript -e "devtools::submit_cran()"
+          # Auto-submit to CRAN using rhub (designed for automated submission)
+          # Uses the pre-built tarball from the validate-cran job
+          Rscript -e "rhub::submit_cran('$TARBALL', email = Sys.getenv('CRAN_EMAIL'))"
 
           echo ""
           echo "✅ Package submitted to CRAN!"
