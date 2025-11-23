@@ -78,9 +78,9 @@ if [[ "$AUTO_MODE" == "true" ]]; then
     info "Auto mode enabled: will run without interactive prompts"
 fi
 
-# If no version specified, auto-increment patch version
+# If no version specified, auto-increment version using semantic versioning
 if [[ -z "$NEW_VERSION" ]]; then
-    info "No version specified - auto-incrementing patch version..."
+    info "No version specified - analyzing commits for semantic versioning..."
 
     # Extract current version from DESCRIPTION
     CURRENT_VERSION=$(grep "^Version:" DESCRIPTION | sed 's/Version: //')
@@ -97,11 +97,68 @@ if [[ -z "$NEW_VERSION" ]]; then
         MINOR="${BASH_REMATCH[2]}"
         PATCH="${BASH_REMATCH[3]}"
 
-        # Increment patch version
-        NEW_PATCH=$((PATCH + 1))
-        NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+        # Determine semantic version bump by analyzing commits
+        # Find the last version tag to compare commits
+        LAST_TAG=$(git tag -l "v*" | sort -V | tail -1)
+        if [[ -z "$LAST_TAG" ]]; then
+            warning "No previous version tag found, defaulting to patch bump"
+            BUMP_TYPE="patch"
+        else
+            info "Analyzing commits since $LAST_TAG..."
 
-        success "Auto-incremented to: $NEW_VERSION (from $CURRENT_VERSION)"
+            # Get all commit messages since last tag
+            COMMITS=$(git log "$LAST_TAG..HEAD" --pretty=format:"%s%n%b" 2>/dev/null || echo "")
+
+            # Determine bump level: 0=patch, 1=minor, 2=major
+            BUMP_LEVEL=0
+
+            while IFS= read -r line; do
+                # Skip empty lines
+                [ -z "$line" ] && continue
+
+                # Check for BREAKING CHANGE (major bump)
+                if echo "$line" | grep -qiE '^BREAKING CHANGE:|!:'; then
+                    BUMP_LEVEL=2
+                    break  # Major is highest, no need to check further
+                fi
+
+                # Check for feat/feature (minor bump)
+                if echo "$line" | grep -qiE '^feat(\(.*\))?:|^feature(\(.*\))?:'; then
+                    [ $BUMP_LEVEL -lt 1 ] && BUMP_LEVEL=1
+                fi
+
+                # Everything else (fix, chore, docs, etc.) stays at patch level (0)
+            done <<< "$COMMITS"
+
+            # Set bump type based on level
+            case $BUMP_LEVEL in
+                2) BUMP_TYPE="major" ;;
+                1) BUMP_TYPE="minor" ;;
+                *) BUMP_TYPE="patch" ;;
+            esac
+        fi
+
+        # Apply the version bump
+        case "$BUMP_TYPE" in
+            major)
+                NEW_MAJOR=$((MAJOR + 1))
+                NEW_VERSION="${NEW_MAJOR}.0.0"
+                success "Auto-incremented MAJOR version to: $NEW_VERSION (from $CURRENT_VERSION)"
+                info "Reason: Found BREAKING CHANGE in commits"
+                ;;
+            minor)
+                NEW_MINOR=$((MINOR + 1))
+                NEW_VERSION="${MAJOR}.${NEW_MINOR}.0"
+                success "Auto-incremented MINOR version to: $NEW_VERSION (from $CURRENT_VERSION)"
+                info "Reason: Found new features (feat:) in commits"
+                ;;
+            *)
+                NEW_PATCH=$((PATCH + 1))
+                NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+                success "Auto-incremented PATCH version to: $NEW_VERSION (from $CURRENT_VERSION)"
+                info "Reason: Only fixes/chores/docs in commits"
+                ;;
+        esac
     else
         error "Could not parse version from DESCRIPTION: $CURRENT_VERSION"
     fi

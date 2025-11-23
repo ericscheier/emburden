@@ -128,6 +128,8 @@
 ^config.*\.yml$
 ^\.env$
 ^\.private$
+^\.actionlint\.yaml$
+^controlled-release-public\.yaml$
 
 # Lua filters
 ^.*\.lua$
@@ -174,6 +176,7 @@
 ^\.zenodo\.json$
 ^CODE_OF_CONDUCT\.md$
 ^CONTRIBUTING\.md$
+^WORKFLOW-DEPLOYMENT-GUIDE\.md$
 ^docs$
 
 # Top-level presentation/poster files (not part of package)
