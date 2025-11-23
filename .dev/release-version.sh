@@ -117,7 +117,8 @@ if [[ -z "$NEW_VERSION" ]]; then
                 [ -z "$line" ] && continue
 
                 # Check for BREAKING CHANGE (major bump)
-                if echo "$line" | grep -qiE '^BREAKING CHANGE:|!:'; then
+                # Exclude lines with backticks (documentation) or markdown formatting
+                if echo "$line" | grep -qiE '^BREAKING CHANGE:|^[a-z]+!:' && ! echo "$line" | grep -q '`'; then
                     BUMP_LEVEL=2
                     break  # Major is highest, no need to check further
                 fi
