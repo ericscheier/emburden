@@ -197,11 +197,8 @@ jobs:
           r-version: 'release'
           use-public-rspm: true
 
-      - name: Install rhub for automated CRAN submission
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rhub
-          dependencies: NA
+      - name: Setup for CRAN submission
+        run: echo "Preparing for CRAN submission..."
 
       - name: Download package tarball
         uses: actions/download-artifact@v4
@@ -266,13 +263,22 @@ jobs:
           echo "📧 Submitting to CRAN now..."
           echo ""
 
-          # Auto-submit to CRAN using rhub (designed for automated submission)
-          # Uses the pre-built tarball from the validate-cran job
-          Rscript -e "rhub::submit_cran('$TARBALL', email = Sys.getenv('CRAN_EMAIL'))"
+          # CRAN submission requires interactive confirmation and cannot be fully automated
+          # The tarball is ready and validated - provide submission instructions
 
+          echo "📦 Package tarball ready for CRAN submission!"
           echo ""
-          echo "✅ Package submitted to CRAN!"
-          echo "📬 Check $CRAN_EMAIL for CRAN submission confirmation"
+          echo "✅ All CRAN checks passed"
+          echo "✅ Package tarball: $TARBALL"
+          echo "✅ Maintainer email: $CRAN_EMAIL (from DESCRIPTION)"
+          echo ""
+          echo "📋 Manual submission required:"
+          echo "1. Download the tarball from this workflow's artifacts"
+          echo "2. Submit via CRAN web form: https://cran.r-project.org/submit.html"
+          echo "3. OR use: R -e \"devtools::submit_cran()\" locally with interaction"
+          echo ""
+          echo "The tarball is available as a workflow artifact and will be"
+          echo "attached to the GitHub release once created."
 
       - name: Upload tarball to release
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
