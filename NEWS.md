@@ -1,3 +1,40 @@
+# emburden 0.6.0
+
+## New Features
+
+* Implement comprehensive dev/staging/main branching strategy
+
+## Bug Fixes
+
+* Exclude backtick-wrapped strings from BREAKING CHANGE detection
+* Move LaTeX package installation after R dependencies setup
+* Add LaTeX package installation for vignette builds
+* Exclude deprecated workflows from actionlint validation
+* Exclude heredoc-containing workflows from actionlint
+* Resolve YAML syntax errors in workflow heredocs
+* Replace automated CRAN submission with manual instructions
+* Use rhub::submit_cran for automated CRAN submission
+* Pass package directory to submit_cran, not tarball path
+* Remove email parameter from devtools::submit_cran()
+* Use r-lib/actions to install devtools for CRAN submission
+* Use build_args in rcmdcheck for proper vignette compaction
+* Add --compact-vignettes=both to resolve PDF size warning
+
+## Enhancements
+
+* Add comprehensive branching strategy documentation
+* Add status badges to README
+* Update CONTRIBUTING.md for new branching workflow
+* Add CRAN-SUBMISSION to .Rbuildignore
+
+## Other Changes
+
+* Release: CRAN workflow improvements and semantic versioning
+* config: Limit GitHub Actions to only main branch
+
+---
+
+
 # emburden 0.5.19
 
 ## New Features

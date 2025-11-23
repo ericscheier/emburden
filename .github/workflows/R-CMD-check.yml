@@ -1,9 +1,10 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 #
-# NOTE: This workflow only runs on pull requests targeting the main branch.
-# For PRs, it only runs when version files change (indicating a version bump).
-# Always runs on pushes to main branch.
+# Multi-branch CI strategy:
+# - dev: Fast feedback with ubuntu-latest only
+# - staging: Multi-platform (ubuntu, windows, macos)
+# - main: Full validation (all platforms + R devel + oldrel)
 
 name: R-CMD-check
 
@@ -12,10 +13,13 @@ on:
     branches: [main]
     paths:
       - 'DESCRIPTION'
+      - 'NAMESPACE'
       - 'inst/CITATION'
       - '.zenodo.json'
       - 'NEWS.md'
       - 'R/**'
+      - 'src/**'
+      - 'data/**'
       - 'tests/**'
       - 'vignettes/**'
       - '.github/workflows/**'
@@ -67,9 +71,14 @@ jobs:
           needs: check
           cache: false
 
+      - name: Install LaTeX packages for vignettes
+        run: |
+          tinytex::tlmgr_install(c("orcidlink", "jss"))
+        shell: Rscript {0}
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          build_args: 'c("--no-manual","--compact-vignettes=both")'
           args: 'c("--as-cran")'
           error-on: '"error"'

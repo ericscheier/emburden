@@ -6,6 +6,7 @@ Thank you for your interest in contributing to **emburden**! This package provid
 
 - [Code of Conduct](#code-of-conduct)
 - [How Can I Contribute?](#how-can-i-contribute)
+- [Branching Workflow](#branching-workflow)
 - [Development Setup](#development-setup)
 - [Testing](#testing)
 - [Documentation](#documentation)
@@ -57,6 +58,52 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/ericsc
 
 We welcome pull requests! Here's how to get started:
 
+## Branching Workflow
+
+This repository uses a **Feature → Dev → Staging → Main** branching strategy to ensure code quality and stability. All changes must flow through this pipeline sequentially.
+
+### Branch Overview
+
+| Branch | Purpose | Merge Target | CI Checks |
+|--------|---------|--------------|-----------|
+| `feature/*` | Feature development | `dev` | None |
+| `dev` | Integration & development | `staging` | Ubuntu R CMD check |
+| `staging` | Pre-production validation | `main` | Multi-platform R CMD check |
+| `main` | Production (synced to public repo) | - | Multi-platform + CRAN checks |
+
+### Quick Start
+
+```bash
+# 1. Start from dev branch
+git checkout dev
+git pull scheier dev
+
+# 2. Create your feature branch
+git checkout -b feature/my-new-feature
+
+# 3. Make changes and commit
+git add .
+git commit -m "feat: Add my new feature"
+
+# 4. Push to remote
+git push scheier feature/my-new-feature
+
+# 5. Create PR to dev branch (not main!)
+gh pr create --base dev --head feature/my-new-feature
+```
+
+### Detailed Workflow
+
+**For detailed information about the branching strategy, promotion workflows, and release process, see [.github/BRANCHING_STRATEGY.md](.github/BRANCHING_STRATEGY.md).**
+
+Key points for contributors:
+
+1. **All PRs go to `dev`** - Never create PRs directly to `staging` or `main`
+2. **Auto-approval** - PRs with only docs/tests changes are auto-approved
+3. **Code review required** - PRs with R code changes need maintainer approval
+4. **Delete feature branches** - After merge, delete your feature branch
+5. **Promotions are controlled** - Only maintainers can promote dev→staging→main
+
 ## Development Setup
 
 ### 1. Fork and Clone the Repository
@@ -96,12 +143,21 @@ devtools::load_all()
 
 ### 4. Create a New Branch
 
+**Important:** Always branch from `dev`, not `main`.
+
 ```bash
+# Switch to dev branch and update
+git checkout dev
+git pull scheier dev
+
 # Create a branch for your feature or bug fix
 git checkout -b feature/your-feature-name
 
 # Or for bug fixes:
 git checkout -b fix/issue-description
+
+# Or for documentation:
+git checkout -b docs/update-readme
 ```
 
 ## Testing
@@ -275,12 +331,17 @@ devtools::check()
 
 ### 1. Update Your Branch
 
-```bash
-# Fetch latest changes from upstream
-git fetch upstream
+**Important:** Sync with `dev` branch, not `main`.
 
-# Merge upstream main into your branch
-git merge upstream/main
+```bash
+# Fetch latest changes
+git fetch scheier
+
+# Merge latest dev into your branch
+git checkout feature/your-feature-name
+git merge scheier/dev
+
+# Resolve any conflicts if needed
 ```
 
 ### 2. Run Final Checks
@@ -319,11 +380,23 @@ git push origin feature/your-feature-name
 
 ### 5. Create Pull Request
 
-1. Go to https://github.com/ericscheier/emburden
+**Important:** Create PR to `dev` branch, not `main`.
+
+```bash
+# Using GitHub CLI (recommended)
+gh pr create --base dev --head feature/your-feature-name \
+  --title "feat: Brief description" \
+  --body "Detailed description of changes"
+
+# Or via web UI:
+```
+
+1. Go to https://github.com/ScheierVentures/emburden (private repo)
 2. Click "New Pull Request"
-3. Select your fork and branch
-4. Fill out the PR template:
-   - **Title**: Clear, concise description
+3. **Base branch:** `dev` (not main!)
+4. **Compare branch:** `feature/your-feature-name`
+5. Fill out the PR template:
+   - **Title**: Use conventional commits format (`feat:`, `fix:`, `docs:`, etc.)
    - **Description**: What changes were made and why
    - **Related Issues**: Link to relevant issues
    - **Testing**: Describe how you tested the changes
@@ -342,9 +415,23 @@ Before submitting, ensure:
 
 ### Review Process
 
-- Maintainers will review your PR within 1-2 weeks
-- You may be asked to make changes
-- Once approved, a maintainer will merge your PR
+- **Auto-approval:** PRs with only docs/tests are auto-approved (still need CI to pass)
+- **Manual review:** PRs with code changes need maintainer review (1-2 weeks)
+- **Feedback:** You may be asked to make changes
+- **Merge:** Once approved and CI passes, your PR will be merged to `dev`
+- **Promotion:** Maintainers will later promote changes through staging → main → public repo → CRAN
+
+### After Your PR Merges
+
+Your changes will follow this promotion path:
+
+1. **Merged to `dev`** - Your PR is complete! 🎉
+2. **Promoted to `staging`** - Maintainer runs multi-platform validation
+3. **Released to `main`** - Version is bumped, GitHub release created
+4. **Published to public repo** - Synced to https://github.com/ericscheier/emburden
+5. **Submitted to CRAN** - Available for `install.packages("emburden")`
+
+See [.github/BRANCHING_STRATEGY.md](.github/BRANCHING_STRATEGY.md) for details on the promotion process.
 
 ## Development Workflow Example
 
