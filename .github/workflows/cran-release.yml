@@ -267,7 +267,8 @@ jobs:
           echo ""
 
           # Auto-submit to CRAN (uses maintainer email from DESCRIPTION)
-          Rscript -e "devtools::submit_cran('$TARBALL')"
+          # submit_cran expects package directory, not tarball - it builds tarball internally
+          Rscript -e "devtools::submit_cran()"
 
           echo ""
           echo "✅ Package submitted to CRAN!"
