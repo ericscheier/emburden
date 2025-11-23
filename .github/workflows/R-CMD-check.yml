@@ -10,7 +10,7 @@ name: R-CMD-check
 
 on:
   pull_request:
-    branches: [dev, staging, main]
+    branches: [main]
     paths:
       - 'DESCRIPTION'
       - 'NAMESPACE'
@@ -24,7 +24,7 @@ on:
       - 'vignettes/**'
       - '.github/workflows/**'
   push:
-    branches: [dev, staging, main]
+    branches: [main]
   workflow_dispatch:
 
 # Cancel in-progress runs when a new run is triggered
