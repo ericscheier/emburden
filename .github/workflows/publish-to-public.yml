@@ -13,25 +13,20 @@ name: Publish to Public Repository
 
 on:
   release:
-    types: [published]  # Triggers when auto-release.yaml creates a GitHub release
+    types: [published]  # Triggers when promote-to-main creates a GitHub release on main
   workflow_call:  # Called by other workflows
     inputs:
       tag_name:
         required: true
         type: string
-  pull_request:  # Validate PRs before merge
+  pull_request:  # Validate workflow changes on all branches
     branches:
+      - dev
+      - staging
       - main
     paths:
       - '.github/workflows/publish-to-public.yml'
-      - 'R/**'
-      - 'src/**'
-      - 'DESCRIPTION'
-      - 'NAMESPACE'
-  push:
-    branches:
-      - 'ready-for-public'  # Protected branch for controlled releases
-  workflow_dispatch:    # Manual trigger from GitHub UI
+  workflow_dispatch:    # Manual trigger from GitHub UI (emergency only)
     inputs:
       tag_name:
         description: 'Tag name (e.g., v0.5.13) - optional, defaults to current HEAD'

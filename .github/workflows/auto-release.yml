@@ -1,19 +1,23 @@
 name: Auto Release
 
-# Automatically create GitHub releases when version tags are pushed
-# This workflow is referenced by publish-to-public.yml
+# ⚠️ DEPRECATED: This workflow has been replaced by promote-to-main.yml
+# See .github/workflows/DEPRECATED_WORKFLOWS.md for details
+#
+# ORIGINAL PURPOSE:
+# Automatically created GitHub releases when version tags were pushed
+# This workflow was referenced by publish-to-public.yml
 
 on:
   push:
     tags:
       - 'v*'  # Triggers on tags like v0.5.5, v1.0.0, etc.
-  workflow_dispatch:  # ADD THIS for manual triggering
+  workflow_dispatch:  # Manual triggering
     inputs:
       tag_name:
         description: 'Tag name (e.g., v0.5.13)'
         required: true
         type: string
-  workflow_call:  # NEW: Allow direct calls from other workflows
+  workflow_call:  # Allow direct calls from other workflows
     inputs:
       tag_name:
         required: true
@@ -26,6 +30,7 @@ jobs:
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
+    if: false  # DEPRECATED - Disabled in favor of promote-to-main.yml workflow
     permissions:
       contents: write  # Required to create releases
 

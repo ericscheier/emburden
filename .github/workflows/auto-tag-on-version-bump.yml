@@ -1,9 +1,13 @@
 name: Auto-tag on version bump
 
-# IMPORTANT: This workflow uses PUBLIC_REPO_TOKEN (PAT) instead of GITHUB_TOKEN
-# when pushing tags. This is required because GITHUB_TOKEN cannot trigger other
+# ⚠️ DEPRECATED: This workflow has been replaced by promote-to-main.yml
+# See .github/workflows/DEPRECATED_WORKFLOWS.md for details
+#
+# ORIGINAL PURPOSE:
+# This workflow used PUBLIC_REPO_TOKEN (PAT) instead of GITHUB_TOKEN
+# when pushing tags. This was required because GITHUB_TOKEN cannot trigger other
 # workflows (GitHub security feature to prevent infinite loops). Using a PAT
-# ensures that when we push a tag, it properly triggers:
+# ensured that when we pushed a tag, it properly triggered:
 #   1. auto-release.yml (creates GitHub release)
 #   2. publish-to-public.yml (pushes to public repository)
 
@@ -20,6 +24,7 @@ permissions:
 jobs:
   auto-tag:
     runs-on: ubuntu-latest
+    if: false  # DEPRECATED - Disabled in favor of promote-to-main.yml workflow
 
     steps:
       - name: Checkout code

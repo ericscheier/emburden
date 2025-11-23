@@ -2,14 +2,15 @@ name: Validate Workflows
 
 # Validates GitHub Actions workflow files for syntax errors
 # Prevents YAML parsing errors from reaching production
+# Runs on all branches (dev, staging, main)
 
 on:
   pull_request:
-    branches: [main]
+    branches: [dev, staging, main]
     paths:
       - '.github/workflows/**'
   push:
-    branches: [main]
+    branches: [dev, staging, main]
     paths:
       - '.github/workflows/**'
   workflow_dispatch:
