@@ -183,17 +183,17 @@ This PR has been automatically approved because it only modifies safe files:
 - Development tools
 - Configuration files
 
-**Note:** CI checks must still pass before this PR can be merged.
+> **Note:** CI checks must still pass before this PR can be merged.
 
 ---
 
-**Safe file categories:**
+### Safe file categories
 - 📝 Documentation: \`*.md\`, \`man/\`, \`vignettes/\`
 - 🧪 Tests: \`tests/\`, \`testthat.R\`
 - 🔧 Dev tools: \`.github/\`, \`.dev/\`
 - ⚙️ Config: \`.Rbuildignore\`, \`_pkgdown.yml\`, etc.
 
-**Still required:**
+### Still required
 - ✅ All CI checks must pass (R CMD check, test coverage, etc.)
 - ✅ Branch protection rules still apply
 - ✅ Manual approval can override if needed
