@@ -118,6 +118,11 @@ jobs:
         env:
           TINYTEX_INSTALLER: TinyTeX
 
+      - name: Install LaTeX packages for vignettes
+        run: |
+          tinytex::tlmgr_install(c("orcidlink", "jss"))
+        shell: Rscript {0}
+
       - name: Build source package
         id: build
         run: |

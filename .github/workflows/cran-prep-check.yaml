@@ -54,6 +54,11 @@ jobs:
 
       - uses: r-lib/actions/setup-tinytex@v2
 
+      - name: Install LaTeX packages for vignettes
+        run: |
+          tinytex::tlmgr_install(c("orcidlink", "jss"))
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
