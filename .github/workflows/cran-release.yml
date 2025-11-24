@@ -167,7 +167,7 @@ jobs:
             echo '#!/usr/bin/expect -f'
             echo 'set timeout 300'
             echo ''
-            echo 'spawn Rscript -e "devtools::submit_cran(pkg = '\''.'\''")"'
+            echo "spawn Rscript -e \"devtools::submit_cran(pkg = '.')\""
             echo ''
             echo 'expect {'
             echo '    "Is your email address*" {'
