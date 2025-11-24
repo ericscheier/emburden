@@ -163,27 +163,26 @@ jobs:
           echo ""
 
           # Create expect script to automate interactive prompts
-          cat > submit_cran.exp << 'EXPECT_SCRIPT'
-#!/usr/bin/expect -f
-set timeout 300
-
-spawn Rscript -e "devtools::submit_cran(pkg = '.')"
-
-# Handle email confirmation prompt
-expect {
-    "Is your email address*" {
-        send "2\r"
-        exp_continue
-    }
-    "Ready to submit*" {
-        send "1\r"
-        exp_continue
-    }
-    eof
-}
-
-wait
-EXPECT_SCRIPT
+          {
+            echo '#!/usr/bin/expect -f'
+            echo 'set timeout 300'
+            echo ''
+            echo 'spawn Rscript -e "devtools::submit_cran(pkg = '\''.'\''")"'
+            echo ''
+            echo 'expect {'
+            echo '    "Is your email address*" {'
+            echo '        send "2\r"'
+            echo '        exp_continue'
+            echo '    }'
+            echo '    "Ready to submit*" {'
+            echo '        send "1\r"'
+            echo '        exp_continue'
+            echo '    }'
+            echo '    eof'
+            echo '}'
+            echo ''
+            echo 'wait'
+          } > submit_cran.exp
 
           chmod +x submit_cran.exp
 
