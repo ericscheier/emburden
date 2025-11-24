@@ -118,6 +118,11 @@ jobs:
           r-version: 'release'
           use-public-rspm: true
 
+      - name: Install system dependencies for httr
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev
+
       - name: Install httr package for HTTP POST requests
         run: |
           Rscript -e "install.packages('httr', repos = 'https://cloud.r-project.org')"
