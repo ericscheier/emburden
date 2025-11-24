@@ -158,11 +158,12 @@ jobs:
           echo ""
 
           # Submit to CRAN using devtools (automates web form submission)
-          # The function will prompt for confirmation - we pipe 'y' to auto-confirm
-          echo "y" | Rscript -e "
+          # The function prompts: 1) email confirmation, 2) ready to submit
+          # We pipe answers: 2 (email=Yeah), 1 (submit=For sure)
+          printf "2\n1\n" | Rscript -e "
           cat('\n📦 Submitting package to CRAN...\n')
           result <- tryCatch({
-            devtools::submit_cran(pkg = '.', check = FALSE)
+            devtools::submit_cran(pkg = '.')
             TRUE
           }, error = function(e) {
             cat('Error:', conditionMessage(e), '\n')
