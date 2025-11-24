@@ -146,6 +146,11 @@ jobs:
           echo "### CRAN Submission Comments" >> $GITHUB_STEP_SUMMARY
           cat cran-comments.md >> $GITHUB_STEP_SUMMARY
 
+      - name: Install expect for interactive automation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y expect
+
       - name: Submit to CRAN via devtools
         run: |
           VERSION="${{ needs.validate-cran.outputs.version }}"
@@ -157,37 +162,42 @@ jobs:
           echo "🚀 Stage 2: Submitting to CRAN web form..."
           echo ""
 
-          # Submit to CRAN using devtools (automates web form submission)
-          # The function prompts: 1) email confirmation, 2) ready to submit
-          # We pipe answers: 2 (email=Yeah), 1 (submit=For sure)
-          printf "2\n1\n" | Rscript -e "
-          cat('\n📦 Submitting package to CRAN...\n')
-          result <- tryCatch({
-            devtools::submit_cran(pkg = '.')
-            TRUE
-          }, error = function(e) {
-            cat('Error:', conditionMessage(e), '\n')
-            FALSE
-          })
+          # Create expect script to automate interactive prompts
+          cat > submit_cran.exp << 'EXPECT_SCRIPT'
+#!/usr/bin/expect -f
+set timeout 300
 
-          if (result) {
-            cat('\n✅ Successfully submitted to CRAN web form!\n')
-            cat('📧 CHECK YOUR EMAIL for the confirmation link\n')
-            cat('⚠️  You MUST click the link to complete submission\n')
-            cat('\n')
-            cat('Next steps:\n')
-            cat('1. Check email for CRAN submission confirmation\n')
-            cat('2. Click the confirmation link in the email\n')
-            cat('3. Wait for CRAN review (typically 1-2 weeks)\n')
-          } else {
-            cat('❌ Submission failed - check logs above\n')
-            quit(status = 1)
-          }
-          "
+spawn Rscript -e "devtools::submit_cran(pkg = '.')"
 
-          if [ $? -eq 0 ]; then
+# Handle email confirmation prompt
+expect {
+    "Is your email address*" {
+        send "2\r"
+        exp_continue
+    }
+    "Ready to submit*" {
+        send "1\r"
+        exp_continue
+    }
+    eof
+}
+
+wait
+EXPECT_SCRIPT
+
+          chmod +x submit_cran.exp
+
+          echo "📦 Submitting package to CRAN..."
+          if ./submit_cran.exp; then
             echo ""
-            echo "✅ Package submitted successfully to CRAN!"
+            echo "✅ Successfully submitted to CRAN web form!"
+            echo "📧 CHECK YOUR EMAIL for the confirmation link"
+            echo "⚠️  You MUST click the link to complete submission"
+            echo ""
+            echo "Next steps:"
+            echo "1. Check email for CRAN submission confirmation"
+            echo "2. Click the confirmation link in the email"
+            echo "3. Wait for CRAN review (typically 1-2 weeks)"
           else
             echo "❌ Failed to submit to CRAN"
             exit 1
