@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.git$
+^doc$
 ^\.github$
 ^\.gitignore$
 ^\.gitattributes$
