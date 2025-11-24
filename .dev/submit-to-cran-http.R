@@ -49,8 +49,18 @@ if (length(maintainer_line) == 0) {
   # Try to get from Authors@R
   authors_line_idx <- grep("^Authors@R:", desc_lines)
   if (length(authors_line_idx) > 0) {
-    # Parse Authors@R field (simplified - assumes single line or can eval)
-    authors_text <- desc_lines[authors_line_idx]
+    # Parse Authors@R field - may span multiple indented lines
+    authors_lines <- desc_lines[authors_line_idx]
+
+    # Read continuation lines (indented lines that follow)
+    i <- authors_line_idx + 1
+    while (i <= length(desc_lines) && grepl("^\\s+", desc_lines[i])) {
+      authors_lines <- c(authors_lines, desc_lines[i])
+      i <- i + 1
+    }
+
+    # Combine and strip the field name
+    authors_text <- paste(authors_lines, collapse = "\n")
     authors_text <- sub("^Authors@R:\\s*", "", authors_text)
 
     # Try to evaluate if it's R code
