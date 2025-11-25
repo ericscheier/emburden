@@ -6,7 +6,7 @@
 \alias{emburden-package}
 \title{emburden: Energy Burden Analysis Using Net Energy Return Methodology}
 \description{
-Provides tools for calculating and analyzing household energy burden using the Net Energy Return aggregation methodology. Functions support weighted statistical calculations across geographic and demographic cohorts, with utilities for formatting results into publication-ready tables. Based on methods from "Net energy metrics reveal striking disparities across United States household energy burdens".
+Provides tools for calculating and analyzing household energy burden using the Net Energy Return aggregation methodology. Functions support weighted statistical calculations across geographic and demographic cohorts, with utilities for formatting results into publication-ready tables. Methods are based on Scheier & Kittner (2022) \doi{10.1038/s41467-021-27673-y}.
 }
 \seealso{
 Useful links:
