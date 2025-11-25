@@ -453,3 +453,85 @@ test_that("MVP demo: compare_energy_burden('fpl', 'NC', 'income_bracket') works 
   # Verify mocking was called correctly
   mockery::expect_called(mock_load, 2)  # Once for 2018, once for 2022
 })
+
+# ==============================================================================
+# BRACKET HARMONIZATION TESTS
+# ==============================================================================
+
+test_that("get_income_brackets returns correct brackets for each dataset/vintage", {
+  # AMI 2018
+  ami_2018_brackets <- get_income_brackets("ami", 2018)
+  expect_equal(length(ami_2018_brackets), 3)
+  expect_true(all(c("very_low", "low_mod", "mid_high") %in% ami_2018_brackets))
+
+  # AMI 2022
+  ami_2022_brackets <- get_income_brackets("ami", 2022)
+  expect_equal(length(ami_2022_brackets), 5)
+  expect_true(all(c("very_low", "low_mod", "mid_high", "100-150%", "150%+") %in% ami_2022_brackets))
+
+  # FPL 2018
+  fpl_2018_brackets <- get_income_brackets("fpl", 2018)
+  expect_equal(length(fpl_2018_brackets), 5)
+  expect_true(all(c("0-100%", "100-150%", "150-200%", "200-400%", "400%+") %in% fpl_2018_brackets))
+
+  # FPL 2022
+  fpl_2022_brackets <- get_income_brackets("fpl", 2022)
+  expect_equal(length(fpl_2022_brackets), 5)
+  expect_true(all(c("0-100%", "100-150%", "150-200%", "200-400%", "400%+") %in% fpl_2022_brackets))
+})
+
+test_that("get_income_brackets errors on invalid inputs", {
+  expect_error(get_income_brackets("invalid", 2018))
+  expect_error(get_income_brackets("ami", 2030))  # Unknown vintage
+})
+
+test_that("harmonize_income_brackets identifies bracket mismatches", {
+  # Create mock AMI 2022 data
+  mock_data <- data.frame(
+    geoid = rep("01001020100", 5),
+    income_bracket = c("very_low", "low_mod", "mid_high", "100-150%", "150%+"),
+    households = c(100, 200, 300, 400, 500)
+  )
+
+  # Harmonize with strict matching (using ::: to access internal function)
+  result <- emburden:::harmonize_income_brackets(
+    data = mock_data,
+    dataset = "ami",
+    vintage = 2022,
+    strict_matching = TRUE,
+    comparison_vintages = c(2018, 2022)
+  )
+
+  # Should drop the 2022-only brackets
+  expect_equal(length(result$warnings), 1)
+  expect_true(grepl("mismatch", result$warnings[1], ignore.case = TRUE))
+  expect_equal(length(result$dropped_brackets), 2)
+  expect_true(all(c("100-150%", "150%+") %in% result$dropped_brackets))
+
+  # Harmonized data should only have 3 brackets
+  expect_equal(nrow(result$data), 3)
+  expect_true(all(result$data$income_bracket %in% c("very_low", "low_mod", "mid_high")))
+})
+
+test_that("harmonize_income_brackets handles FPL data without warnings", {
+  # Create mock FPL data (consistent across vintages)
+  mock_data <- data.frame(
+    geoid = rep("01001020100", 5),
+    income_bracket = c("0-100%", "100-150%", "150-200%", "200-400%", "400%+"),
+    households = c(100, 200, 300, 400, 500)
+  )
+
+  # Harmonize FPL data (using ::: to access internal function)
+  result <- emburden:::harmonize_income_brackets(
+    data = mock_data,
+    dataset = "fpl",
+    vintage = 2022,
+    strict_matching = TRUE,
+    comparison_vintages = c(2018, 2022)
+  )
+
+  # Should have no warnings or dropped brackets (FPL is consistent)
+  expect_equal(length(result$warnings), 0)
+  expect_equal(length(result$dropped_brackets), 0)
+  expect_equal(nrow(result$data), 5)
+})
