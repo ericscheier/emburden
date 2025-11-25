@@ -1,5 +1,8 @@
 # Global variable bindings to satisfy R CMD check
-utils::globalVariables(c("geoid", "geo_id", "income_bracket", "AMI150", "AMI68"))
+utils::globalVariables(c(
+  "geoid", "geo_id", "income_bracket", "AMI150", "AMI68",
+  "TEN", "TEN-YBL6", "TEN-BLD", "TEN-HFL"
+))
 
 #' Load DOE LEAD Tool Cohort Data
 #'
@@ -29,7 +32,10 @@ utils::globalVariables(c("geoid", "geo_id", "income_bracket", "AMI150", "AMI68")
 #'   - total_electricity_spend: Total electricity spending ($)
 #'   - total_gas_spend: Total gas spending ($)
 #'   - total_other_spend: Total other fuel spending ($)
-#'   - Additional demographic columns depending on vintage
+#'   - TEN: Housing tenure (owner vs renter)
+#'   - TEN-YBL6: Tenure + year built composite
+#'   - TEN-BLD: Tenure + building type composite
+#'   - TEN-HFL: Tenure + heating fuel composite
 #'
 #' @export
 #'
@@ -1274,9 +1280,24 @@ aggregate_cohort_data <- function(data, dataset, vintage, verbose = FALSE) {
     message("  Aggregating ", nrow(data), " rows by FIP and ", income_col, "...")
   }
 
-  # Aggregate by summing across housing characteristics
+  # Identify housing characteristic columns to preserve
+  housing_cols <- c("TEN", "TEN-YBL6", "TEN-BLD", "TEN-HFL")
+  housing_cols <- intersect(housing_cols, names(data))
+
+  # Group by FIP, income_bracket, AND housing characteristics to preserve dimensions
+  group_cols <- c("FIP", income_col, housing_cols)
+
+  if (verbose) {
+    if (length(housing_cols) > 0) {
+      message("  Preserving housing dimensions: ", paste(housing_cols, collapse = ", "))
+    } else {
+      message("  No housing dimension columns found, aggregating without them")
+    }
+  }
+
+  # Aggregate by summing across the specified grouping
   aggregated <- data |>
-    dplyr::group_by(FIP, !!rlang::sym(income_col)) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_cols))) |>
     dplyr::summarise(
       dplyr::across(dplyr::all_of(agg_cols), ~sum(.x, na.rm = TRUE)),
       .groups = "drop"
