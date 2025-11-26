@@ -11,7 +11,8 @@ compare_energy_burden(
   counties = NULL,
   vintage_1 = "2022",
   vintage_2 = "2018",
-  format = TRUE
+  format = TRUE,
+  strict_matching = TRUE
 )
 }
 \arguments{
@@ -32,6 +33,10 @@ Requires \code{states} to be specified.}
 \item{vintage_2}{Character, second vintage year: "2018" or "2022" (default "2018")}
 
 \item{format}{Logical, if TRUE returns formatted percentages (default TRUE)}
+
+\item{strict_matching}{Logical, if TRUE (default) only compares income brackets
+that exist in both vintages and warns about mismatched brackets. If FALSE,
+compares all brackets (may result in NA values for brackets unique to one vintage).}
 }
 \value{
 A data.frame with energy burden comparison showing:

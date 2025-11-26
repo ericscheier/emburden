@@ -21,6 +21,9 @@ utils::globalVariables(c(
 #' @param vintage_1 Character, first vintage year: "2018" or "2022" (default "2022")
 #' @param vintage_2 Character, second vintage year: "2018" or "2022" (default "2018")
 #' @param format Logical, if TRUE returns formatted percentages (default TRUE)
+#' @param strict_matching Logical, if TRUE (default) only compares income brackets
+#'   that exist in both vintages and warns about mismatched brackets. If FALSE,
+#'   compares all brackets (may result in NA values for brackets unique to one vintage).
 #'
 #' @return A data.frame with energy burden comparison showing:
 #'   - neb_YYYY: Net Energy Burden for each vintage (where YYYY is the year)
@@ -65,7 +68,8 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
                                   counties = NULL,
                                   vintage_1 = "2022",
                                   vintage_2 = "2018",
-                                  format = TRUE) {
+                                  format = TRUE,
+                                  strict_matching = TRUE) {
 
   # Validate inputs
   dataset <- match.arg(dataset)
@@ -110,6 +114,52 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
     vintage = vintage_2,
     verbose = FALSE
   )
+
+  # Apply bracket harmonization if requested and grouping includes income brackets
+  if (strict_matching && grouping_method %in% c("income_bracket", "custom")) {
+    # Check if income_bracket is in the grouping
+    if (grouping_method == "income_bracket" ||
+        (grouping_method == "custom" && "income_bracket" %in% custom_group_cols)) {
+
+      # Harmonize both vintages
+      harm_1 <- harmonize_income_brackets(
+        data = data_1,
+        dataset = dataset,
+        vintage = as.integer(vintage_1),
+        strict_matching = TRUE,
+        comparison_vintages = c(as.integer(vintage_1), as.integer(vintage_2))
+      )
+
+      harm_2 <- harmonize_income_brackets(
+        data = data_2,
+        dataset = dataset,
+        vintage = as.integer(vintage_2),
+        strict_matching = TRUE,
+        comparison_vintages = c(as.integer(vintage_1), as.integer(vintage_2))
+      )
+
+      # Update data with harmonized versions
+      data_1 <- harm_1$data
+      data_2 <- harm_2$data
+
+      # Display warnings
+      all_warnings <- unique(c(harm_1$warnings, harm_2$warnings))
+      if (length(all_warnings) > 0) {
+        for (warn_msg in all_warnings) {
+          message(warn_msg)
+        }
+      }
+
+      # Inform about dropped brackets
+      all_dropped <- unique(c(harm_1$dropped_brackets, harm_2$dropped_brackets))
+      if (length(all_dropped) > 0) {
+        message(
+          "Note: Dropped brackets not present in both vintages: ",
+          paste(all_dropped, collapse = ", ")
+        )
+      }
+    }
+  }
 
   # Select only required columns before combining
   # This ensures both datasets have matching column sets regardless of vintage
