@@ -475,31 +475,92 @@ jobs:
           git commit -F /tmp/commit_msg.txt
           echo "✓ Changes committed"
 
-      - name: Push to public repository
+      - name: Push to public repository branch
+        id: push_branch
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
           # Add public remote with token embedded
           git remote add public https://x-access-token:${GITHUB_TOKEN}@github.com/${PUBLIC_REPO}.git
 
-          # Push to public repository
-          # Use --force since we're rewriting history and don't have remote tracking
-          GIT_ASKPASS=true git push public HEAD:${PUBLIC_BRANCH} --force
+          # Fetch public repo to check if branch exists
+          git fetch public
+
+          # Create a unique branch name for the update
+          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
+          UPDATE_BRANCH="publish/update-from-private-${TIMESTAMP}"
+
+          echo "Creating update branch: ${UPDATE_BRANCH}"
+
+          # Push to a temporary branch on public repo
+          git push public HEAD:${UPDATE_BRANCH}
 
           echo ""
           echo "================================================================"
-          echo "  Successfully published to ${PUBLIC_REPO}"
+          echo "  Pushed to ${PUBLIC_REPO} branch ${UPDATE_BRANCH}"
           echo "================================================================"
           echo ""
           echo "Public repository: https://github.com/${PUBLIC_REPO}"
-          echo "Branch: ${PUBLIC_BRANCH}"
+          echo "Update branch: ${UPDATE_BRANCH}"
+          echo "update_branch=${UPDATE_BRANCH}" >> $GITHUB_OUTPUT
 
-          # If we have a tag, push it to public repo
-          if [ -n "${{ steps.detect_tag.outputs.tag_name }}" ]; then
-            TAG_NAME="${{ steps.detect_tag.outputs.tag_name }}"
-            echo "Pushing tag: ${TAG_NAME}"
-            git push public ${TAG_NAME} || echo "Note: Tag may already exist on public repo"
+      - name: Create pull request on public repo
+        id: create_pr
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          GH_REPO: ${{ env.PUBLIC_REPO }}
+        run: |
+          UPDATE_BRANCH="${{ steps.push_branch.outputs.update_branch }}"
+          TAG_NAME="${{ steps.detect_tag.outputs.tag_name }}"
+
+          # Build PR title and body
+          if [ -n "$TAG_NAME" ]; then
+            PR_TITLE="Release ${TAG_NAME} from private repository"
+          else
+            PR_TITLE="Update from private repository ($(date -u +"%Y-%m-%d"))"
           fi
+
+          # Create PR body with release notes if available
+          cat > pr_body.md <<'EOF'
+## 🔄 Update from Private Repository
+
+This PR syncs the latest changes from the private development repository.
+
+EOF
+
+          # Add release notes if we have a version tag
+          if [ -n "$TAG_NAME" ] && [ -f "NEWS.md" ]; then
+            VERSION=${TAG_NAME#v}
+            echo "### Release Notes for ${TAG_NAME}" >> pr_body.md
+            echo "" >> pr_body.md
+            awk "/^# emburden $VERSION/,/^# emburden [0-9]/" NEWS.md | head -n -1 >> pr_body.md || echo "See NEWS.md for details." >> pr_body.md
+          fi
+
+          # Create the PR
+          PR_URL=$(gh pr create \
+            --repo "${PUBLIC_REPO}" \
+            --base "${PUBLIC_BRANCH}" \
+            --head "${UPDATE_BRANCH}" \
+            --title "${PR_TITLE}" \
+            --body-file pr_body.md)
+
+          echo "Created PR: ${PR_URL}"
+          echo "pr_url=${PR_URL}" >> $GITHUB_OUTPUT
+
+          # Extract PR number
+          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
+          echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+
+      - name: Push tag to public repository
+        if: steps.detect_tag.outputs.is_version_tag == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          TAG_NAME="${{ steps.detect_tag.outputs.tag_name }}"
+          echo "Pushing tag: ${TAG_NAME}"
+
+          # Push tag to public repo
+          git push public ${TAG_NAME} || echo "Note: Tag may already exist on public repo"
 
       - name: Create GitHub release on public repo
         if: steps.detect_tag.outputs.is_version_tag == 'true'
