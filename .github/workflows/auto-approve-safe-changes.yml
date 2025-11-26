@@ -183,7 +183,7 @@ This PR has been automatically approved because it only modifies safe files:
 - Development tools
 - Configuration files
 
-> **Note:** CI checks must still pass before this PR can be merged.
+NOTE: CI checks must still pass before this PR can be merged.
 
 ---
 

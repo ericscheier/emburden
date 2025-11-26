@@ -298,10 +298,10 @@ jobs:
           cat > pr_body.md << EOFBODY
 ## 🚀 Production Release v$NEW_VERSION
 
-- **Release timestamp:** $TIMESTAMP
-- **Version bump:** $CURRENT_VERSION → **$NEW_VERSION**
-- **Staging SHA:** \`$STAGING_SHORT_SHA\` (\`$STAGING_SHA\`)
-- **Commits included:** $COMMIT_COUNT
++ **Release timestamp:** $TIMESTAMP
++ **Version bump:** $CURRENT_VERSION → **$NEW_VERSION**
++ **Staging SHA:** \`$STAGING_SHORT_SHA\` (\`$STAGING_SHA\`)
++ **Commits included:** $COMMIT_COUNT
 
 ---
 
