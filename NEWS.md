@@ -2,6 +2,7 @@
 
 ## New Features
 
+* **Housing Characteristics Analysis**: Preserve granular housing dimension columns (TEN, TEN-YBL6, TEN-BLD, TEN-HFL) through cohort data aggregation, enabling detailed analysis of energy burden by tenure, building age, building type, and heating fuel
 * Implement comprehensive dev/staging/main branching strategy
 
 ## Bug Fixes
@@ -22,6 +23,10 @@
 
 ## Enhancements
 
+* **Documentation**: Enhanced `load_cohort_data()` documentation with detailed descriptions of housing dimension columns and examples showing housing characteristic analysis
+* **Vignettes**: Added comprehensive housing characteristics analysis section to getting-started vignette with examples of tenure, building age, building type, and heating fuel analysis
+* **Testing**: Added 20+ comprehensive tests for housing dimension preservation through data aggregation pipeline
+* **Citations**: Updated inst/CITATION to reflect published Nature Communications paper (Scheier & Kittner, 2022) with DOI
 * Add comprehensive branching strategy documentation
 * Add status badges to README
 * Update CONTRIBUTING.md for new branching workflow

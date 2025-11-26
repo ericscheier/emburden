@@ -223,6 +223,87 @@ state_comparison$neb_change_pct   # Relative change percentage
 
 This is much simpler than manually loading and aggregating both vintages!
 
+## Analyzing Energy Burden by Housing Characteristics
+
+The LEAD Tool data includes detailed housing characteristics that enable analysis of how building attributes affect energy burden. Four key housing dimension columns are available:
+
+- **TEN**: Housing tenure (1=Owned free/clear, 2=Owned with mortgage, 3=Rented, 4=Occupied without rent)
+- **TEN-YBL6**: Tenure crossed with year structure built (6 categories)
+- **TEN-BLD**: Tenure crossed with building type (single-family, multi-unit, etc.)
+- **TEN-HFL**: Tenure crossed with primary heating fuel type (gas, electric, oil, etc.)
+
+These columns preserve granular housing detail through the data aggregation process, allowing you to analyze energy burden patterns across different housing types.
+
+### Example: Comparing Renters vs Owners by Heating Fuel
+
+```{r housing-analysis, eval=FALSE}
+# Load data with housing characteristics
+nc_housing <- load_cohort_data(dataset = "ami", states = "NC")
+
+# Analyze energy burden by tenure and heating fuel
+housing_analysis <- nc_housing %>%
+  filter(!is.na(TEN), !is.na(`TEN-HFL`)) %>%
+  mutate(
+    mean_income = total_income / households,
+    mean_energy_spending = (total_electricity_spend +
+                           coalesce(total_gas_spend, 0) +
+                           coalesce(total_other_spend, 0)) / households,
+    nh = ner_func(mean_income, mean_energy_spending)
+  ) %>%
+  group_by(TEN, `TEN-HFL`) %>%
+  summarise(
+    total_households = sum(households),
+    nh_mean = weighted.mean(nh, households),
+    neb = 1 / (1 + nh_mean),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(neb))
+
+# View the top 10 tenure-heating fuel combinations with highest burden
+head(housing_analysis, 10)
+```
+
+### Example: Energy Burden by Building Age and Type
+
+```{r building-analysis, eval=FALSE}
+# Analyze by building characteristics
+building_analysis <- nc_housing %>%
+  filter(!is.na(`TEN-YBL6`), !is.na(`TEN-BLD`)) %>%
+  mutate(
+    mean_income = total_income / households,
+    mean_energy_spending = (total_electricity_spend +
+                           coalesce(total_gas_spend, 0) +
+                           coalesce(total_other_spend, 0)) / households,
+    nh = ner_func(mean_income, mean_energy_spending)
+  ) %>%
+  group_by(`TEN-YBL6`, `TEN-BLD`) %>%
+  summarise(
+    total_households = sum(households),
+    nh_mean = weighted.mean(nh, households),
+    neb = 1 / (1 + nh_mean),
+    .groups = "drop"
+  )
+
+# Identify building age/type combinations with highest burden
+high_burden_buildings <- building_analysis %>%
+  filter(neb > 0.06) %>%  # Above 6% burden threshold
+  arrange(desc(neb))
+
+print(high_burden_buildings)
+```
+
+### Key Insights from Housing Analysis
+
+Housing characteristic analysis can reveal:
+
+1. **Tenure effects**: How renters vs owners experience different energy burdens
+2. **Heating fuel disparities**: Which fuel types create higher burden (often oil/propane)
+3. **Building age impacts**: Older buildings typically have higher burden due to poor insulation
+4. **Structure type patterns**: Multi-family vs single-family burden differences
+5. **Vulnerable populations**: Combinations like "renter + old building + expensive fuel" often show extreme burden
+
+This granular analysis helps target energy efficiency interventions to the housing types and populations that need them most.
+
 ## Next Steps
 
 - See `vignette("methodology")` for mathematical details

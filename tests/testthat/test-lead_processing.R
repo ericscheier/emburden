@@ -279,3 +279,99 @@ test_that("process_lead_cohort_data handles NA income gracefully", {
   expect_true(is.na(result$energy_burden[1]))
   expect_false(is.na(result$energy_burden[2]))
 })
+
+
+# ============================================================================
+# Housing Dimension Column Tests
+# ============================================================================
+
+test_that("raw_to_lead preserves housing dimension columns", {
+  raw_data <- data.frame(
+    FIP = c("37183020100", "37051003400"),
+    ABV = c("NC", "NC"),
+    TEN = c("OWNER", "RENTER"),
+    YBL6 = c("2000-2009", "1990-1999"),
+    BLD = c("1 1 DETACHED", "2 4"),
+    HFL = c("Natural gas", "Electricity"),
+    AMI68 = c("0-30% AMI", "30-50% AMI"),
+    UNITS = c(100, 150),
+    HINCP = c(25000, 35000),
+    ELEP = c(1200, 1500),
+    GASP = c(800, 0),
+    FULP = c(200, 100)
+  )
+
+  result <- raw_to_lead(raw_data, "2018")
+
+  # Verify individual housing dimension columns are preserved
+  expect_true("housing_tenure" %in% names(result))
+  expect_true("year_constructed" %in% names(result))
+  expect_true("building_type" %in% names(result))
+  expect_true("primary_heating_fuel" %in% names(result))
+
+  # Verify values are preserved
+  expect_equal(result$housing_tenure, c("OWNER", "RENTER"))
+  expect_equal(result$year_constructed, c("2000-2009", "1990-1999"))
+  expect_equal(result$primary_heating_fuel, c("Natural gas", "Electricity"))
+})
+
+
+test_that("process_lead_cohort_data preserves housing dimension columns", {
+  raw_data <- data.frame(
+    FIP = rep("37183020100", 4),
+    ABV = rep("NC", 4),
+    TEN = c("OWNER", "OWNER", "RENTER", "RENTER"),
+    YBL6 = c("2000-2009", "1990-1999", "2000-2009", "1990-1999"),
+    BLD = c("1 1 DETACHED", "2 4", "1 1 DETACHED", "2 4"),
+    HFL = c("Natural gas", "Electricity", "Natural gas", "Electricity"),
+    AMI68 = rep("0-30% AMI", 4),
+    UNITS = c(100, 150, 120, 180),
+    HINCP = c(25000, 35000, 28000, 32000),
+    ELEP = c(1200, 1500, 1300, 1400),
+    GASP = c(800, 0, 700, 0),
+    FULP = c(200, 100, 150, 120)
+  )
+
+  result <- process_lead_cohort_data(raw_data, "ami", "2018", aggregate_poverty = FALSE)
+
+  # Verify housing dimension columns are present in output
+  expect_true("housing_tenure" %in% names(result))
+  expect_true("year_constructed" %in% names(result))
+  expect_true("building_type" %in% names(result))
+  expect_true("primary_heating_fuel" %in% names(result))
+
+  # Verify distinct combinations are preserved
+  expect_equal(nrow(result), 4)  # All 4 combinations should be distinct
+  expect_setequal(unique(result$housing_tenure), c("OWNER", "RENTER"))
+  expect_setequal(unique(result$year_constructed), c("2000-2009", "1990-1999"))
+})
+
+
+test_that("process_lead_cohort_data with aggregate_poverty preserves housing dims", {
+  raw_data <- data.frame(
+    FIP = rep("37183020100", 4),
+    ABV = rep("NC", 4),
+    TEN = c("OWNER", "OWNER", "RENTER", "RENTER"),
+    YBL6 = rep("2000-2009", 4),
+    BLD = rep("1 1 DETACHED", 4),
+    HFL = c("Natural gas", "Natural gas", "Electricity", "Electricity"),
+    FPL15 = c("0-100%", "100-150%", "0-100%", "100-150%"),
+    UNITS = c(50, 75, 60, 80),
+    HINCP = c(15000, 30000, 18000, 32000),
+    ELEP = c(1200, 1400, 1300, 1500),
+    GASP = c(800, 900, 0, 0),
+    FULP = c(100, 150, 120, 160)
+  )
+
+  result <- process_lead_cohort_data(raw_data, "fpl", "2018", aggregate_poverty = TRUE)
+
+  # Even with aggregation, housing characteristics should be preserved
+  expect_true("housing_tenure" %in% names(result))
+  expect_true("primary_heating_fuel" %in% names(result))
+
+  # Check that different housing characteristics create separate groups
+  # With 2 tenure types, 2 fuel types, and 2 poverty categories = up to 8 groups
+  # But we only have 4 input rows, so max 4 groups
+  expect_true(nrow(result) <= 4)
+  expect_gt(nrow(result), 1)  # Should have multiple groups
+})

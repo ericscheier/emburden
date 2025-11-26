@@ -79,45 +79,11 @@ jobs:
         id: build
         run: |
           # Run R CMD build and capture tarball name
+          # Note: --compact-vignettes=both uses gs_quality='ebook' by default
           R CMD build --compact-vignettes=both . | tee /tmp/build-output.txt
           tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1)
           echo "tarball=$tarball" >> $GITHUB_OUTPUT
           echo "Built package: $tarball"
-
-      - name: Compact vignette PDFs with ebook quality
-        run: |
-          tarball="${{ steps.build.outputs.tarball }}"
-
-          echo "📦 Extracting tarball: $tarball"
-          tar -xzf "$tarball"
-          pkg_dir=$(echo "$tarball" | sed 's/\.tar\.gz$//')
-
-          echo "🔧 Compacting PDFs with ebook quality (as CRAN recommends)..."
-          if [ -d "$pkg_dir/inst/doc" ]; then
-            Rscript -e "tools::compactPDF('$pkg_dir/inst/doc', gs_quality='ebook')"
-            echo "✅ PDFs compacted"
-          else
-            echo "ℹ️  No inst/doc directory found"
-          fi
-
-          echo "📦 Repackaging tarball with compacted PDFs..."
-          tar -czf "$tarball" "$pkg_dir"
-          rm -rf "$pkg_dir"
-
-          echo "✅ Package repackaged: $tarball"
-
-      - name: Verify PDF compression
-        run: |
-          tarball="${{ steps.build.outputs.tarball }}"
-          tar -xzf "$tarball"
-          pkg_dir=$(echo "$tarball" | sed 's/\.tar\.gz$//')
-
-          if [ -d "$pkg_dir/inst/doc" ]; then
-            echo "📊 PDF sizes after compaction:"
-            ls -lh "$pkg_dir/inst/doc"/*.pdf || true
-          fi
-
-          rm -rf "$pkg_dir"
 
       - name: Upload check results
         if: failure()

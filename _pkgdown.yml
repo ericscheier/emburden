@@ -36,6 +36,7 @@ reference:
     desc: "Functions for exploring available data structure"
     contents:
       - list_income_brackets
+      - get_income_brackets
       - list_states
       - list_cohort_columns
       - get_dataset_info
