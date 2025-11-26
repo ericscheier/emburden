@@ -1,3 +1,45 @@
+# emburden 0.6.0
+
+## New Features
+
+* **Housing Characteristics Analysis**: Preserve granular housing dimension columns (TEN, TEN-YBL6, TEN-BLD, TEN-HFL) through cohort data aggregation, enabling detailed analysis of energy burden by tenure, building age, building type, and heating fuel
+* Implement comprehensive dev/staging/main branching strategy
+
+## Bug Fixes
+
+* Exclude backtick-wrapped strings from BREAKING CHANGE detection
+* Move LaTeX package installation after R dependencies setup
+* Add LaTeX package installation for vignette builds
+* Exclude deprecated workflows from actionlint validation
+* Exclude heredoc-containing workflows from actionlint
+* Resolve YAML syntax errors in workflow heredocs
+* Replace automated CRAN submission with manual instructions
+* Use rhub::submit_cran for automated CRAN submission
+* Pass package directory to submit_cran, not tarball path
+* Remove email parameter from devtools::submit_cran()
+* Use r-lib/actions to install devtools for CRAN submission
+* Use build_args in rcmdcheck for proper vignette compaction
+* Add --compact-vignettes=both to resolve PDF size warning
+
+## Enhancements
+
+* **Documentation**: Enhanced `load_cohort_data()` documentation with detailed descriptions of housing dimension columns and examples showing housing characteristic analysis
+* **Vignettes**: Added comprehensive housing characteristics analysis section to getting-started vignette with examples of tenure, building age, building type, and heating fuel analysis
+* **Testing**: Added 20+ comprehensive tests for housing dimension preservation through data aggregation pipeline
+* **Citations**: Updated inst/CITATION to reflect published Nature Communications paper (Scheier & Kittner, 2022) with DOI
+* Add comprehensive branching strategy documentation
+* Add status badges to README
+* Update CONTRIBUTING.md for new branching workflow
+* Add CRAN-SUBMISSION to .Rbuildignore
+
+## Other Changes
+
+* Release: CRAN workflow improvements and semantic versioning
+* config: Limit GitHub Actions to only main branch
+
+---
+
+
 # emburden 0.5.19
 
 ## New Features
