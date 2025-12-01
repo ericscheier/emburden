@@ -1,0 +1,236 @@
+#!/bin/bash
+#
+# Pre-push hook to catch CI issues before pushing
+# Runs comprehensive CRAN-style R CMD check in temporary directory
+#
+
+set -e  # Exit on error
+
+# First check version consistency across metadata files
+if [ -f ".dev/check-version-consistency.R" ]; then
+    Rscript .dev/check-version-consistency.R
+    VERSION_STATUS=$?
+    echo ""
+
+    if [ $VERSION_STATUS -ne 0 ]; then
+        echo "Push cancelled."
+        exit 1
+    fi
+fi
+
+echo "=========================================="
+echo "  Pre-push: Spelling Validation"
+echo "=========================================="
+echo ""
+
+Rscript -e "
+if (requireNamespace('spelling', quietly = TRUE)) {
+  cat('📝 Checking spelling...\n\n')
+  results <- spelling::spell_check_package()
+
+  if (nrow(results) > 0) {
+    cat('❌ Spelling errors found:\n\n')
+    print(results)
+    cat('\n')
+    cat('Please fix spelling errors or add valid technical terms to inst/WORDLIST\n')
+    cat('Push cancelled.\n')
+    quit(status = 1)
+  }
+
+  cat('✅ No spelling errors found\n')
+  quit(status = 0)
+} else {
+  cat('⚠️  spelling package not installed - skipping spell check\n')
+  cat('   Install with: install.packages(\"spelling\")\n')
+  quit(status = 0)
+}
+"
+
+SPELL_STATUS=$?
+
+echo ""
+if [ $SPELL_STATUS -ne 0 ]; then
+    echo "Push cancelled."
+    exit 1
+else
+    echo "=========================================="
+    echo "  ✅ Spelling check passed!"
+    echo "=========================================="
+fi
+
+echo ""
+
+echo "=========================================="
+echo "  Pre-push: CRAN-style R CMD check"
+echo "=========================================="
+echo ""
+
+# Check if we have LaTeX/TinyTeX for vignettes (non-interactive)
+if ! command -v pdflatex &> /dev/null; then
+    echo "⚠️  WARNING: pdflatex not found - skipping vignette build"
+    echo "   Install TinyTeX with: Rscript .dev/install-tinytex.R"
+    echo ""
+    SKIP_VIGNETTES="TRUE"
+else
+    SKIP_VIGNETTES="FALSE"
+fi
+
+# Create temporary directory for CRAN check
+CHECK_DIR=$(mktemp -d -t emburden-check-XXXXXX)
+echo "📦 Building package in temporary directory: $CHECK_DIR"
+echo ""
+
+# Ensure cleanup on exit
+cleanup() {
+    if [ -d "$CHECK_DIR" ]; then
+        echo ""
+        echo "🧹 Cleaning up temporary directory..."
+        rm -rf "$CHECK_DIR"
+    fi
+}
+trap cleanup EXIT INT TERM
+
+# Run comprehensive CRAN check
+echo "🔍 Running R CMD check --as-cran..."
+echo "   (This may take 2-3 minutes for full vignette build)"
+echo ""
+
+Rscript -e "
+# Set environment to simulate CRAN
+Sys.setenv(
+  '_R_CHECK_CRAN_INCOMING_' = 'TRUE',
+  '_R_CHECK_CRAN_INCOMING_REMOTE_' = 'FALSE',  # Skip URL checks (slow)
+  'NOT_CRAN' = 'false'
+)
+
+# Run comprehensive check
+skip_vignettes <- as.logical('$SKIP_VIGNETTES')
+
+check_args <- c('--as-cran')
+build_args <- c('--no-manual')  # PDF manual requires pandoc
+
+if (skip_vignettes) {
+  cat('⚠️  Skipping vignette build (no pdflatex)\n\n')
+  check_args <- c(check_args, '--no-build-vignettes', '--ignore-vignettes')
+  build_args <- c(build_args, '--no-build-vignettes')
+} else {
+  # Use gs+qpdf for optimal PDF compression (as recommended by CRAN)
+  build_args <- c(build_args, '--compact-vignettes=gs+qpdf')
+  cat('ℹ️  Using --compact-vignettes=gs+qpdf for optimal PDF compression\n\n')
+}
+
+cat('Check arguments:', paste(check_args, collapse=' '), '\n')
+cat('Build arguments:', paste(build_args, collapse=' '), '\n\n')
+
+# Run check with rcmdcheck (cleaner output)
+if (requireNamespace('rcmdcheck', quietly = TRUE)) {
+  results <- rcmdcheck::rcmdcheck(
+    path = '.',
+    args = check_args,
+    build_args = build_args,
+    error_on = 'never',  # Don't stop, show results
+    check_dir = '$CHECK_DIR'
+  )
+
+  # Print summary
+  cat('\n')
+  cat(strrep('=', 60), '\n')
+  cat('R CMD check results:\n')
+  cat(strrep('=', 60), '\n')
+  print(results)
+
+  # Check for errors or warnings (fail on errors only, allow warnings)
+  if (length(results\$errors) > 0) {
+    cat('\n❌ ERRORS found:\n')
+    cat(paste(results\$errors, collapse='\n'), '\n')
+    quit(status = 1)
+  }
+
+  if (length(results\$warnings) > 0) {
+    cat('\n⚠️  WARNINGS found (allowed, push will continue):\n')
+    cat(paste(results\$warnings, collapse='\n'), '\n')
+    # Don't fail on warnings - CI will catch critical ones
+  }
+
+  if (length(results\$notes) > 0) {
+    cat('\nℹ️  NOTES:\n')
+    cat(paste(results\$notes, collapse='\n'), '\n')
+    # Notes are OK, don't fail
+  }
+
+  cat('\n✅ R CMD check passed!\n')
+  quit(status = 0)
+
+} else {
+  cat('Installing rcmdcheck package...\n')
+  install.packages('rcmdcheck', repos = 'https://cran.rstudio.com')
+  cat('❌ Please re-run push after rcmdcheck is installed.\n')
+  quit(status = 1)
+}
+"
+
+CHECK_STATUS=$?
+
+echo ""
+if [ $CHECK_STATUS -ne 0 ]; then
+    echo "❌ R CMD check --as-cran failed with errors!"
+    echo "   Fix errors before pushing. Push cancelled."
+    exit 1
+else
+    echo "=========================================="
+    echo "  ✅ CRAN check passed (or warnings only)!"
+    echo "=========================================="
+fi
+
+echo ""
+
+# Optional: CRAN submission dry-run test
+if [ "$SKIP_CRAN_DRYRUN" != "true" ]; then
+    echo "=========================================="
+    echo "  Pre-push: CRAN Submission Dry-Run"
+    echo "=========================================="
+    echo ""
+    echo "Testing CRAN submission process (no actual submission)..."
+    echo ""
+
+    Rscript -e "
+    # Find the tarball from R CMD build
+    tarball <- list.files(pattern = 'emburden_.*\\.tar\\.gz$', full.names = TRUE)
+    if (length(tarball) == 0) {
+      cat('⚠️  No tarball found - skipping CRAN submission test\n')
+      quit(status = 0)
+    }
+
+    tarball <- tarball[1]
+    cat('Found tarball:', tarball, '\n\n')
+
+    # Test CRAN submission preparation (doesn't actually submit)
+    if (requireNamespace('devtools', quietly = TRUE)) {
+      cat('📋 Checking CRAN submission readiness...\n\n')
+
+      # Check if package can be submitted
+      tryCatch({
+        # This checks the package is ready but doesn't submit
+        devtools::check_built(tarball, cran = TRUE, remote = FALSE, manual = FALSE)
+        cat('\n✅ CRAN submission dry-run passed!\n')
+        cat('   Package is ready for CRAN submission.\n')
+      }, error = function(e) {
+        cat('\n❌ CRAN submission test failed:\n')
+        cat('  ', conditionMessage(e), '\n')
+        cat('\nNote: This is just a dry-run test. Fix issues before actual submission.\n')
+        # Don't fail the push on dry-run errors
+      })
+    } else {
+      cat('ℹ️  devtools not installed - skipping CRAN submission test\n')
+    }
+    " || true  # Don't fail push if dry-run has issues
+
+    echo ""
+    echo "=========================================="
+else
+    echo "ℹ️  Skipping CRAN submission dry-run (SKIP_CRAN_DRYRUN=true)"
+    echo ""
+fi
+
+echo "🚀 Proceeding with push..."
+exit 0

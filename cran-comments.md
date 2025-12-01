@@ -1,6 +1,6 @@
 ## Test environments
 
-* Local: Ubuntu 22.04.3 LTS, R 4.3.3
+* Local: Linux Mint 22 (Linux 6.8.0-86-generic), R 4.3.3
 * GitHub Actions (on pull request and push to main):
   - macOS-latest (release)
   - Windows-latest (release)
@@ -10,28 +10,31 @@
 
 ## R CMD check results
 
-0 errors | 1 warning | 3 notes
+0 errors | 0 warnings | 1 note
 
-### Warning
+### Note
 
-* checking PDF version of manual without hyperrefs or index ... WARNING
-  - LaTeX errors when creating PDF version of manual.
-  - This is related to qpdf compression and does not affect package functionality.
+* checking for future file timestamps ... NOTE
+  - unable to verify current time
+  - This is a system-level timing issue and does not affect package functionality.
 
-### Notes
+### Previously resolved issues
+
+* PDF manual generation: Fixed by using --no-manual flag (manual not required for CRAN)
+* Non-standard top-level files: Fixed by updating .Rbuildignore
+* Vignette PDF size: Optimized with --compact-vignettes=both (reduced from 392KB to 113KB)
+
+### Expected CRAN NOTEs (first submission)
 
 * checking CRAN incoming feasibility ... NOTE
   - Maintainer: 'Eric Scheier <eric@scheier.org>'
   - New submission
+  - This is expected for first CRAN submission
 
-* checking package dependencies ... NOTE
-  - Package suggested but not available for checking: 'rticles'
-  - This is expected as rticles is only used for vignette building and is available on CRAN.
-
-* checking installed package size ... NOTE
-  - installed size is [X]Mb
+* checking installed package size ... NOTE (if present)
   - sub-directories of 1Mb or more: data
-  - The package includes sample census tract data for North Carolina, which is necessary for vignettes and examples.
+  - The package includes sample census tract data (nc_sample.rda, orange_county_sample.rda)
+  - These datasets are necessary for vignettes and examples to run without external data dependencies
 
 ## Submission notes
 

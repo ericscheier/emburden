@@ -130,8 +130,8 @@ jobs:
           set -o pipefail  # Catch errors in pipes
 
           echo ""
-          echo "Running: R CMD build --compact-vignettes=both ."
-          R CMD build --compact-vignettes=both . 2>&1 | tee /tmp/build-output.txt
+          echo "Running: R CMD build --compact-vignettes=gs+qpdf ."
+          R CMD build --compact-vignettes=gs+qpdf . 2>&1 | tee /tmp/build-output.txt
           BUILD_EXIT=$?
 
           echo ""
