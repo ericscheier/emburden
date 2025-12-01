@@ -1,0 +1,285 @@
+name: Auto-Approve Safe Changes
+
+# Automatically approve PRs that only modify documentation, tests, or other safe files
+# Still requires CI checks to pass before merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - dev  # Only auto-approve for dev branch
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  check-safe-files:
+    name: "Check if PR contains only safe changes"
+    runs-on: ubuntu-latest
+    if: github.repository == 'ScheierVentures/emburden'
+
+    outputs:
+      is_safe: ${{ steps.check_files.outputs.is_safe }}
+      unsafe_files: ${{ steps.check_files.outputs.unsafe_files }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed_files
+        run: |
+          # Get base branch
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          HEAD_REF="${{ github.event.pull_request.head.ref }}"
+
+          echo "Comparing $BASE_REF...$HEAD_REF"
+
+          # Fetch base and head
+          git fetch origin "$BASE_REF:$BASE_REF" || true
+          git fetch origin "$HEAD_REF:$HEAD_REF" || true
+
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF...origin/$HEAD_REF" | sort | uniq)
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo ""
+
+          # Save to file for next step
+          echo "$CHANGED_FILES" > /tmp/changed_files.txt
+
+      - name: Check if files are safe
+        id: check_files
+        run: |
+          # Define safe file patterns (grep -E regex)
+          # These are files that can be auto-approved without human review
+          SAFE_PATTERNS=(
+            # Documentation
+            '^README\.md$'
+            '^NEWS\.md$'
+            '^CHANGELOG\.md$'
+            '^CONTRIBUTING\.md$'
+            '^CODE_OF_CONDUCT\.md$'
+            '^LICENSE\.md$'
+            '^.*\.md$'  # All markdown files in general
+            '^docs/'
+            '^\.github/.*\.md$'
+
+            # Tests
+            '^tests/'
+            '^testthat\.R$'
+
+            # Generated documentation
+            '^man/'
+            '^vignettes/'
+
+            # Comments and roxygen
+            '^R/.*#.*$'  # Comment-only changes (detected by git diff later)
+
+            # Development tools
+            '^\.github/workflows/'
+            '^\.dev/'
+            '^\.lintr$'
+            '^\.Rbuildignore$'
+            '^\.gitignore$'
+
+            # Configuration (some safe configs)
+            '^codecov\.yml$'
+            '^_pkgdown\.yml$'
+
+            # Data documentation
+            '^data-raw/'
+
+            # Presentation/analysis (not in package)
+            '^analysis/'
+            '^research/'
+            '^deprecated/'
+
+            # R Markdown / Quarto
+            '^.*\.Rmd$'
+            '^.*\.qmd$'
+
+            # Other documentation formats
+            '^.*\.bib$'
+            '^.*\.csl$'
+          )
+
+          # Build grep pattern
+          PATTERN=$(printf "|%s" "${SAFE_PATTERNS[@]}")
+          PATTERN="${PATTERN:1}"  # Remove leading |
+
+          echo "Safe file pattern: $PATTERN"
+          echo ""
+
+          # Check each file
+          IS_SAFE=true
+          UNSAFE_FILES=""
+
+          while IFS= read -r file; do
+            if [[ -z "$file" ]]; then
+              continue
+            fi
+
+            # Check if file matches safe patterns
+            if echo "$file" | grep -E "$PATTERN" >/dev/null; then
+              echo "✅ SAFE: $file"
+            else
+              echo "❌ UNSAFE: $file"
+              IS_SAFE=false
+              UNSAFE_FILES="${UNSAFE_FILES}${file}\n"
+            fi
+          done < /tmp/changed_files.txt
+
+          echo ""
+          echo "===================="
+          if [[ "$IS_SAFE" == "true" ]]; then
+            echo "✅ All files are safe for auto-approval"
+            echo "is_safe=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Some files require manual review:"
+            echo -e "$UNSAFE_FILES"
+            echo "is_safe=false" >> $GITHUB_OUTPUT
+            echo "unsafe_files<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$UNSAFE_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+          echo "===================="
+
+  auto-approve:
+    name: "Auto-Approve Safe Changes"
+    needs: [check-safe-files]
+    runs-on: ubuntu-latest
+    if: |
+      needs.check-safe-files.outputs.is_safe == 'true' &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.draft == false
+
+    steps:
+      - name: Approve PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr_number = context.payload.pull_request.number;
+            const repo = context.repo;
+
+            console.log(`Auto-approving PR #${pr_number}...`);
+
+            try {
+              await github.rest.pulls.createReview({
+                owner: repo.owner,
+                repo: repo.repo,
+                pull_request_number: pr_number,
+                event: 'APPROVE',
+                body: `## ✅ Auto-Approved: Safe Changes Only
+
+This PR has been automatically approved because it only modifies safe files:
+- Documentation (README, NEWS, vignettes, etc.)
+- Tests
+- Development tools
+- Configuration files
+
+> **Note:** CI checks must still pass before this PR can be merged.
+
+---
+
+### Safe file categories
+- 📝 Documentation: \`*.md\`, \`man/\`, \`vignettes/\`
+- 🧪 Tests: \`tests/\`, \`testthat.R\`
+- 🔧 Dev tools: \`.github/\`, \`.dev/\`
+- ⚙️ Config: \`.Rbuildignore\`, \`_pkgdown.yml\`, etc.
+
+### Still required
+- ✅ All CI checks must pass (R CMD check, test coverage, etc.)
+- ✅ Branch protection rules still apply
+- ✅ Manual approval can override if needed
+
+If you believe this auto-approval was incorrect, please leave a review.`
+              });
+
+              console.log(`✅ PR #${pr_number} auto-approved successfully`);
+            } catch (error) {
+              console.error(`Failed to approve PR #${pr_number}:`, error.message);
+              throw error;
+            }
+
+      - name: Add auto-merge label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr_number = context.payload.pull_request.number;
+            const repo = context.repo;
+
+            await github.rest.issues.addLabels({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: pr_number,
+              labels: ['auto-approved', 'safe-changes']
+            });
+
+  notify-unsafe:
+    name: "Notify: Manual Review Required"
+    needs: [check-safe-files]
+    runs-on: ubuntu-latest
+    if: needs.check-safe-files.outputs.is_safe == 'false'
+
+    steps:
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr_number = context.payload.pull_request.number;
+            const repo = context.repo;
+            const unsafe_files = `${{ needs.check-safe-files.outputs.unsafe_files }}`;
+
+            const comment_body = `## 🔍 Manual Review Required
+
+This PR modifies files that require manual code review and cannot be auto-approved.
+
+**Files requiring review:**
+\`\`\`
+${unsafe_files}
+\`\`\`
+
+**What this means:**
+- A code review approval is required before merge
+- All CI checks must still pass
+- Reviewers should examine code quality, logic, and potential side effects
+
+**Safe files** (would be auto-approved):
+- 📝 Documentation: \`*.md\`, \`man/\`, \`vignettes/\`
+- 🧪 Tests: \`tests/\`
+- 🔧 Dev tools: \`.github/\`, \`.dev/\`
+- ⚙️ Config: \`.Rbuildignore\`, \`_pkgdown.yml\`, etc.
+
+---
+
+**For reviewers:** Please review the changes and approve if they meet quality standards.`;
+
+            await github.rest.issues.createComment({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: pr_number,
+              body: comment_body
+            });
+
+      - name: Add review required label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr_number = context.payload.pull_request.number;
+            const repo = context.repo;
+
+            await github.rest.issues.addLabels({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: pr_number,
+              labels: ['review-required']
+            });

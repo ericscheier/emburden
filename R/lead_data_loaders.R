@@ -1,5 +1,8 @@
 # Global variable bindings to satisfy R CMD check
-utils::globalVariables(c("geoid", "geo_id", "income_bracket", "AMI150", "AMI68"))
+utils::globalVariables(c(
+  "geoid", "geo_id", "income_bracket", "AMI150", "AMI68",
+  "TEN", "TEN-YBL6", "TEN-BLD", "TEN-HFL"
+))
 
 #' Load DOE LEAD Tool Cohort Data
 #'
@@ -29,7 +32,18 @@ utils::globalVariables(c("geoid", "geo_id", "income_bracket", "AMI150", "AMI68")
 #'   - total_electricity_spend: Total electricity spending ($)
 #'   - total_gas_spend: Total gas spending ($)
 #'   - total_other_spend: Total other fuel spending ($)
-#'   - Additional demographic columns depending on vintage
+#'   - TEN: Housing tenure category (1=Owned free/clear, 2=Owned with mortgage,
+#'     3=Rented, 4=Occupied without rent). Enables analysis of energy burden
+#'     differences between renters and owners.
+#'   - TEN-YBL6: Housing tenure crossed with year structure built (6 categories).
+#'     Allows analysis of how building age and ownership status interact to affect
+#'     energy burden (e.g., older rental units vs newer owner-occupied homes).
+#'   - TEN-BLD: Housing tenure crossed with building type (e.g., single-family,
+#'     multi-unit). Enables analysis of energy burden across different housing
+#'     structures and ownership patterns.
+#'   - TEN-HFL: Housing tenure crossed with primary heating fuel type (e.g., gas,
+#'     electric, oil). Critical for analyzing how heating fuel choice and tenure
+#'     status jointly influence energy costs and burden.
 #'
 #' @export
 #'
@@ -75,6 +89,25 @@ utils::globalVariables(c("geoid", "geo_id", "income_bracket", "AMI150", "AMI68")
 #'   households > 100,
 #'   total_electricity_spend / total_income > 0.06
 #' )
+#'
+#' # Analyze energy burden by housing characteristics
+#' # Compare renters vs owners by heating fuel type
+#' nc_housing <- load_cohort_data(dataset = "ami", states = "NC")
+#' library(dplyr)
+#'
+#' # Group by tenure and heating fuel to analyze energy burden patterns
+#' housing_analysis <- nc_housing %>%
+#'   filter(!is.na(TEN), !is.na(`TEN-HFL`)) %>%
+#'   group_by(TEN, `TEN-HFL`) %>%
+#'   summarise(
+#'     total_households = sum(households),
+#'     avg_energy_burden = weighted.mean(
+#'       (total_electricity_spend + total_gas_spend + total_other_spend) / total_income,
+#'       w = households,
+#'       na.rm = TRUE
+#'     ),
+#'     .groups = "drop"
+#'   )
 #' }
 load_cohort_data <- function(dataset = c("ami", "fpl"),
                               states = NULL,
@@ -1274,9 +1307,24 @@ aggregate_cohort_data <- function(data, dataset, vintage, verbose = FALSE) {
     message("  Aggregating ", nrow(data), " rows by FIP and ", income_col, "...")
   }
 
-  # Aggregate by summing across housing characteristics
+  # Identify housing characteristic columns to preserve
+  housing_cols <- c("TEN", "TEN-YBL6", "TEN-BLD", "TEN-HFL")
+  housing_cols <- intersect(housing_cols, names(data))
+
+  # Group by FIP, income_bracket, AND housing characteristics to preserve dimensions
+  group_cols <- c("FIP", income_col, housing_cols)
+
+  if (verbose) {
+    if (length(housing_cols) > 0) {
+      message("  Preserving housing dimensions: ", paste(housing_cols, collapse = ", "))
+    } else {
+      message("  No housing dimension columns found, aggregating without them")
+    }
+  }
+
+  # Aggregate by summing across the specified grouping
   aggregated <- data |>
-    dplyr::group_by(FIP, !!rlang::sym(income_col)) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_cols))) |>
     dplyr::summarise(
       dplyr::across(dplyr::all_of(agg_cols), ~sum(.x, na.rm = TRUE)),
       .groups = "drop"
