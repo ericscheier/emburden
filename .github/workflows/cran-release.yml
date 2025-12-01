@@ -70,7 +70,7 @@ jobs:
           Rscript -e "rcmdcheck::rcmdcheck(
             path = '.',
             args = c('--as-cran', '--no-manual'),
-            build_args = c('--compact-vignettes=both'),
+            build_args = c('--compact-vignettes=gs+qpdf'),
             error_on = 'warning',
             check_dir = 'check'
           )"
@@ -79,8 +79,8 @@ jobs:
         id: build
         run: |
           # Run R CMD build and capture tarball name
-          # Note: --compact-vignettes=both uses gs_quality='ebook' by default
-          R CMD build --compact-vignettes=both . | tee /tmp/build-output.txt
+          # Note: --compact-vignettes=gs+qpdf uses both ghostscript and qpdf
+          R CMD build --compact-vignettes=gs+qpdf . | tee /tmp/build-output.txt
           tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1)
           echo "tarball=$tarball" >> $GITHUB_OUTPUT
           echo "Built package: $tarball"
