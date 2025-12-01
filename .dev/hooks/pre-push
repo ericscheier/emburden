@@ -28,7 +28,7 @@ if (requireNamespace('spelling', quietly = TRUE)) {
   cat('📝 Checking spelling...\n\n')
   results <- spelling::spell_check_package()
 
-  if (length(results) > 0) {
+  if (nrow(results) > 0) {
     cat('❌ Spelling errors found:\n\n')
     print(results)
     cat('\n')
