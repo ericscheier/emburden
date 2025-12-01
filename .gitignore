@@ -169,6 +169,13 @@ Meta/
 doc/
 .actionlint.yaml
 
+# Archived bad data (large files, not needed in repo)
+data/.archived_bad_data/
+
+# Test databases (large binary files, should be generated)
+tests/testthat/data/*.sqlite
+tests/testthat/data/*.db
+
 # Zenodo upload staging
 zenodo-upload/
 zenodo-upload-nationwide/

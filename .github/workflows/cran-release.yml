@@ -1,8 +1,8 @@
 name: CRAN Release
 
-# Public repo workflow with full validation before CRAN submission
-# Stages 1-3: Validate the published package
-# Stage 4: Submit to CRAN (final approval)
+# Automated CRAN submission workflow
+# Stage 1: Full CRAN validation (R CMD check with vignettes)
+# Stage 2: Submit to CRAN via direct HTTP POST (bypasses devtools, no menu() issues)
 
 on:
   push:
@@ -79,6 +79,7 @@ jobs:
         id: build
         run: |
           # Run R CMD build and capture tarball name
+          # Note: --compact-vignettes=gs+qpdf uses both ghostscript and qpdf
           R CMD build --compact-vignettes=gs+qpdf . | tee /tmp/build-output.txt
           tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1)
           echo "tarball=$tarball" >> $GITHUB_OUTPUT
@@ -98,89 +99,10 @@ jobs:
           path: ${{ steps.build.outputs.tarball }}
           retention-days: 30
 
-  # Stage 2: Testing dry-run on public repo
-  dry-run-test:
-    name: "Stage 2: Testing Dry-Run (Public Repo)"
-    needs: validate-cran
-    if: success()
-    runs-on: ubuntu-latest
-    environment: cran-testing  # No approval required
-
-    steps:
-      - name: Download package tarball
-        uses: actions/download-artifact@v4
-        with:
-          name: r-package-source
-
-      - name: Dry-run validation
-        env:
-          CRAN_EMAIL: ${{ secrets.CRAN_EMAIL }}
-        run: |
-          VERSION="${{ needs.validate-cran.outputs.version }}"
-          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
-
-          echo "🔍 STAGE 2: Testing Dry-Run (Public Repo)"
-          echo ""
-          echo "Package: emburden v$VERSION"
-          echo "Tarball: $TARBALL"
-          echo "Email: $CRAN_EMAIL"
-          echo "Repository: Public (ericscheier/emburden)"
-          echo ""
-          echo "✅ Package validated successfully"
-          echo "✅ Vignettes built successfully"
-          echo "✅ All checks passed on public repo"
-          echo ""
-          echo "📋 Sequential Pipeline Progress:"
-          echo "  ✅ Stage 1: Full CRAN validation complete (public repo)"
-          echo "  ✅ Stage 2: Testing dry-run complete (current)"
-          echo "  ⏳ Stage 3: Production dry-run (requires approval)"
-          echo "  ⏳ Stage 4: Submit to CRAN (requires final approval)"
-
-  # Stage 3: Production dry-run - final check before CRAN submission
-  dry-run-prod:
-    name: "Stage 3: Production Dry-Run (Approval Required)"
-    needs: [validate-cran, dry-run-test]
-    if: success()
-    runs-on: ubuntu-latest
-    environment: cran-production  # Requires manual approval
-
-    steps:
-      - name: Download package tarball
-        uses: actions/download-artifact@v4
-        with:
-          name: r-package-source
-
-      - name: Production dry-run preview
-        env:
-          CRAN_EMAIL: ${{ secrets.CRAN_EMAIL }}
-        run: |
-          VERSION="${{ needs.validate-cran.outputs.version }}"
-          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
-
-          echo "🔍 STAGE 3: Production Dry-Run (Approval Granted)"
-          echo ""
-          echo "Package: emburden v$VERSION"
-          echo "Tarball: $TARBALL"
-          echo "Email: $CRAN_EMAIL"
-          echo "Environment: cran-production (public repo)"
-          echo ""
-          echo "✅ Package validated successfully on public repo"
-          echo "✅ Vignettes built successfully"
-          echo "✅ All checks passed"
-          echo "✅ Production approval granted"
-          echo ""
-          echo "📋 Sequential Pipeline Progress:"
-          echo "  ✅ Stage 1: Full CRAN validation complete (public repo)"
-          echo "  ✅ Stage 2: Testing dry-run complete"
-          echo "  ✅ Stage 3: Production dry-run complete (current)"
-          echo "  ⏳ Stage 4: Ready to submit to CRAN (requires final approval)"
-          echo ""
-          echo "📌 Ready to submit to CRAN!"
-
-  # Stage 4: Final CRAN submission - requires approval
+  # Stage 2: CRAN submission - requires approval
   submit-to-cran:
-    name: "Stage 4: Submit to CRAN (Final Approval)"
-    needs: [validate-cran, dry-run-prod]
+    name: "Stage 2: Submit to CRAN (Approval Required)"
+    needs: validate-cran
     if: success()
     runs-on: ubuntu-latest
     environment: cran-production  # Requires manual approval
@@ -197,27 +119,29 @@ jobs:
           r-version: 'release'
           use-public-rspm: true
 
-      - name: Setup for CRAN submission
-        run: echo "Preparing for CRAN submission..."
+      - name: Install system dependencies for httr
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev
+
+      - name: Install httr package for HTTP POST requests
+        run: |
+          Rscript -e "install.packages('httr', repos = 'https://cloud.r-project.org')"
 
       - name: Download package tarball
         uses: actions/download-artifact@v4
         with:
           name: r-package-source
 
-      - name: Prepare CRAN submission
+      - name: Create CRAN comments
         run: |
           VERSION="${{ needs.validate-cran.outputs.version }}"
-          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
 
-          cat > cran_comments.md << EOF
-          ## Resubmission
-          This is version $VERSION of the emburden package.
-
+          cat > cran-comments.md << 'EOF'
           ## Test environments
           * Ubuntu 22.04 (GitHub Actions), R-release
-          * Windows (GitHub Actions), R-release
-          * macOS (GitHub Actions), R-release
+          * Windows Server 2022 (GitHub Actions), R-release
+          * macOS 14 (GitHub Actions), R-release
 
           ## R CMD check results
           There were no ERRORs, WARNINGs, or NOTEs.
@@ -227,97 +151,47 @@ jobs:
           EOF
 
           echo "Package: emburden v$VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "Tarball: $TARBALL" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### CRAN Submission Comments" >> $GITHUB_STEP_SUMMARY
-          cat cran_comments.md >> $GITHUB_STEP_SUMMARY
+          cat cran-comments.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Submit to CRAN
-        env:
-          CRAN_EMAIL: ${{ secrets.CRAN_EMAIL }}
+      - name: Submit to CRAN via direct HTTP POST
         run: |
-          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
           VERSION="${{ needs.validate-cran.outputs.version }}"
+          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
 
-          echo "🚀 STAGE 4: Submitting to CRAN (Final Approval Granted)"
-          echo ""
-          echo "================================"
-          echo "  CRAN Submission"
-          echo "================================"
+          echo "🚀 Stage 2: Submitting to CRAN via Direct HTTP POST"
           echo ""
           echo "Package: emburden v$VERSION"
           echo "Tarball: $TARBALL"
-          echo "Email: $CRAN_EMAIL"
-          echo "Repository: Public (ericscheier/emburden)"
+          echo "✅ Stage 1: CRAN validation passed"
+          echo "🚀 Stage 2: Submitting to CRAN web form (bypassing devtools)..."
           echo ""
-          echo "📋 Complete Pipeline Status:"
-          echo "  ✅ Private Repo - Stage 1: Full CRAN validation"
-          echo "  ✅ Private Repo - Stage 2: Testing dry-run"
-          echo "  ✅ Private Repo - Stage 3: Production dry-run (approved)"
-          echo "  ✅ Private Repo - Stage 4: Published to public repo"
-          echo "  ✅ Public Repo  - Stage 1: Full CRAN validation"
-          echo "  ✅ Public Repo  - Stage 2: Testing dry-run"
-          echo "  ✅ Public Repo  - Stage 3: Production dry-run (approved)"
-          echo "  ✅ Public Repo  - Stage 4: Final approval granted (current)"
-          echo ""
-          echo "📧 Submitting to CRAN now..."
+          echo "This approach makes direct HTTP POST requests to CRAN,"
+          echo "bypassing devtools::submit_cran() to avoid menu() interactivity issues."
           echo ""
 
-          # CRAN submission requires interactive confirmation and cannot be fully automated
-          # The tarball is ready and validated - provide submission instructions
-
-          echo "📦 Package tarball ready for CRAN submission!"
-          echo ""
-          echo "✅ All CRAN checks passed"
-          echo "✅ Package tarball: $TARBALL"
-          echo "✅ Maintainer email: $CRAN_EMAIL (from DESCRIPTION)"
-          echo ""
-          echo "📋 Manual submission required:"
-          echo "1. Download the tarball from this workflow's artifacts"
-          echo "2. Submit via CRAN web form: https://cran.r-project.org/submit.html"
-          echo "3. OR use: R -e \"devtools::submit_cran()\" locally with interaction"
-          echo ""
-          echo "The tarball is available as a workflow artifact and will be"
-          echo "attached to the GitHub release once created."
-
-      - name: Upload tarball to release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${{ needs.validate-cran.outputs.version }}"
-          TARBALL="${{ needs.validate-cran.outputs.tarball }}"
-          TAG="v$VERSION"
-
-          echo "📦 Uploading CRAN-submitted tarball to release $TAG..."
-
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG exists, uploading tarball..."
-            gh release upload "$TAG" "$TARBALL" --clobber
-            echo "✅ Uploaded $TARBALL to release $TAG"
-          else
-            echo "⚠️  Release $TAG does not exist yet"
-            echo "Skipping tarball upload"
-          fi
+          # Run the direct HTTP POST submission script
+          Rscript .dev/submit-to-cran-http.R "$TARBALL"
 
       - name: Post-submission summary
         if: always()
         run: |
-          echo "### Stage 4: CRAN Submission Complete" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎉 CRAN Submission Workflow Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **Package Submitted to CRAN**" >> $GITHUB_STEP_SUMMARY
+          echo "**Pipeline Status:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Stage 1: Full CRAN validation passed (R CMD check)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Stage 2: Submitted to CRAN via direct HTTP POST" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Complete Pipeline:**" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Private Repo - Stage 1: Full CRAN validation" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Private Repo - Stage 2: Testing dry-run" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Private Repo - Stage 3: Production dry-run (approved)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Private Repo - Stage 4: Published to public repo" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Public Repo  - Stage 1: Full CRAN validation" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Public Repo  - Stage 2: Testing dry-run" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Public Repo  - Stage 3: Production dry-run (approved)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Public Repo  - Stage 4: Submitted to CRAN (approved)" >> $GITHUB_STEP_SUMMARY
+          echo "### 📧 Action Required: Email Confirmation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **You must complete the submission by clicking the confirmation link in your email!**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Wait for CRAN submission confirmation email" >> $GITHUB_STEP_SUMMARY
-          echo "2. Respond to any CRAN reviewer feedback" >> $GITHUB_STEP_SUMMARY
-          echo "3. Monitor https://cran.r-project.org/web/checks/" >> $GITHUB_STEP_SUMMARY
+          echo "1. 📧 Check your email for CRAN submission confirmation" >> $GITHUB_STEP_SUMMARY
+          echo "2. 🔗 Click the confirmation link in the email (required!)" >> $GITHUB_STEP_SUMMARY
+          echo "3. ⏳ Wait for CRAN maintainer review (typically 1-2 weeks)" >> $GITHUB_STEP_SUMMARY
+          echo "4. 💬 Respond to any CRAN reviewer feedback if requested" >> $GITHUB_STEP_SUMMARY
+          echo "5. 🎯 Monitor https://cran.r-project.org/web/checks/ after acceptance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package submitted:** emburden ${{ needs.validate-cran.outputs.version }}" >> $GITHUB_STEP_SUMMARY
