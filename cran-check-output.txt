@@ -1,0 +1,18 @@
+Loading required package: usethis
+
+═══════════════════════════════════════════════════════════════════
+  Pre-Tag CRAN Validation for emburden
+═══════════════════════════════════════════════════════════════════
+
+
+[1/6] Checking version consistency across files...
+======================================
+  Pre-push: Version Consistency Check
+======================================
+
+Version found in DESCRIPTION:   0.5.20 
+Version found in inst/CITATION: 0.5.20 
+Version found in .zenodo.json:  0.5.20 
+
+✅ Version consistency check PASSED
+   All files have version: 0.5.20 
