@@ -1,7 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.git$
-^doc$
 ^\.github$
 ^\.gitignore$
 ^\.gitattributes$
@@ -129,8 +128,6 @@
 ^config.*\.yml$
 ^\.env$
 ^\.private$
-^\.actionlint\.yaml$
-^controlled-release-public\.yaml$
 
 # Lua filters
 ^.*\.lua$
@@ -150,6 +147,10 @@
 ^pkgdown$
 ^_pkgdown\.yml$
 ^\.lintr$
+^TESTING_REPORT\.md$
+^WORKFLOW-DEPLOYMENT-GUIDE\.md$
+^controlled-release-public\.yaml$
+^cran-check-output\.txt$
 ^codecov\.yml$
 ^\.dev$
 
@@ -177,7 +178,6 @@
 ^\.zenodo\.json$
 ^CODE_OF_CONDUCT\.md$
 ^CONTRIBUTING\.md$
-^WORKFLOW-DEPLOYMENT-GUIDE\.md$
 ^docs$
 
 # Top-level presentation/poster files (not part of package)
