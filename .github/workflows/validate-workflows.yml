@@ -45,7 +45,7 @@ jobs:
           # Skip workflows with heredocs/template literals that cause actionlint false positives
           # Also skip deprecated workflows (intentionally disabled with if: false)
           # Disable shellcheck integration (only validate YAML syntax, not bash style)
-          SKIP_PATTERN="auto-release.yml\|promote-to-staging.yml\|promote-to-main.yml\|auto-approve-safe-changes.yml\|auto-tag-on-version-bump.yml\|auto-merge-version-bumps.yml"
+          SKIP_PATTERN="auto-release.yml\|promote-to-staging.yml\|promote-to-main.yml\|auto-approve-safe-changes.yml\|auto-tag-on-version-bump.yml\|auto-merge-version-bumps.yml\|publish-to-public.yml"
           if find .github/workflows -name "*.yml" -o -name "*.yaml" | grep -v "$SKIP_PATTERN" | xargs actionlint -color -shellcheck=""; then
             echo "✅ All workflow files passed validation" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
@@ -55,7 +55,7 @@ jobs:
             done
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Note:** Skipped workflows:" >> $GITHUB_STEP_SUMMARY
-            echo "- Heredocs/template literals: auto-release.yml, promote-to-staging.yml, promote-to-main.yml, auto-approve-safe-changes.yml" >> $GITHUB_STEP_SUMMARY
+            echo "- Heredocs/template literals: auto-release.yml, promote-to-staging.yml, promote-to-main.yml, auto-approve-safe-changes.yml, publish-to-public.yml" >> $GITHUB_STEP_SUMMARY
             echo "- Deprecated workflows: auto-tag-on-version-bump.yml, auto-merge-version-bumps.yml" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Workflow validation failed" >> $GITHUB_STEP_SUMMARY
