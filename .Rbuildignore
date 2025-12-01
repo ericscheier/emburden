@@ -147,6 +147,10 @@
 ^pkgdown$
 ^_pkgdown\.yml$
 ^\.lintr$
+^TESTING_REPORT\.md$
+^WORKFLOW-DEPLOYMENT-GUIDE\.md$
+^controlled-release-public\.yaml$
+^cran-check-output\.txt$
 ^codecov\.yml$
 ^\.dev$
 
