@@ -140,9 +140,9 @@ jobs:
           cat > pr_body.md << EOF
 ## 🚀 Dev → Staging Promotion
 
-- **Promotion timestamp:** $TIMESTAMP
-- **Dev branch SHA:** \`$DEV_SHORT_SHA\` (\`$DEV_SHA\`)
-- **Commits included:** $COMMIT_COUNT
++ **Promotion timestamp:** $TIMESTAMP
++ **Dev branch SHA:** \`$DEV_SHORT_SHA\` (\`$DEV_SHA\`)
++ **Commits included:** $COMMIT_COUNT
 
 ### Changes in this promotion
 
