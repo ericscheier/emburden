@@ -170,35 +170,39 @@ jobs:
             console.log(`Auto-approving PR #${pr_number}...`);
 
             try {
+              const approvalBody = [
+                '## ✅ Auto-Approved' + ': Safe Changes Only',
+                '',
+                'This PR has been automatically approved because it only modifies safe files' + ':',
+                '- Documentation (README, NEWS, vignettes, etc.)',
+                '- Tests',
+                '- Development tools',
+                '- Configuration files',
+                '',
+                '**Note' + ':** CI checks must still pass before this PR can be merged.',
+                '',
+                '___',
+                '',
+                '### Safe file categories',
+                '- 📝 Documentation' + ': `*.md`, `man/`, `vignettes/`',
+                '- 🧪 Tests' + ': `tests/`, `testthat.R`',
+                '- 🔧 Dev tools' + ': `.github/`, `.dev/`',
+                '- ⚙️ Config' + ': `.Rbuildignore`, `_pkgdown.yml`, etc.',
+                '',
+                '### Still required',
+                '- ✅ All CI checks must pass (R CMD check, test coverage, etc.)',
+                '- ✅ Branch protection rules still apply',
+                '- ✅ Manual approval can override if needed',
+                '',
+                'If you believe this auto-approval was incorrect, please leave a review.'
+              ].join('\n');
+
               await github.rest.pulls.createReview({
                 owner: repo.owner,
                 repo: repo.repo,
                 pull_request_number: pr_number,
                 event: 'APPROVE',
-                body: `## ✅ Auto-Approved: Safe Changes Only
-
-This PR has been automatically approved because it only modifies safe files:
-- Documentation (README, NEWS, vignettes, etc.)
-- Tests
-- Development tools
-- Configuration files
-
-NOTE: CI checks must still pass before this PR can be merged.
-
----
-
-### Safe file categories
-- 📝 Documentation: \`*.md\`, \`man/\`, \`vignettes/\`
-- 🧪 Tests: \`tests/\`, \`testthat.R\`
-- 🔧 Dev tools: \`.github/\`, \`.dev/\`
-- ⚙️ Config: \`.Rbuildignore\`, \`_pkgdown.yml\`, etc.
-
-### Still required
-- ✅ All CI checks must pass (R CMD check, test coverage, etc.)
-- ✅ Branch protection rules still apply
-- ✅ Manual approval can override if needed
-
-If you believe this auto-approval was incorrect, please leave a review.`
+                body: approvalBody
               });
 
               console.log(`✅ PR #${pr_number} auto-approved successfully`);
@@ -238,29 +242,32 @@ If you believe this auto-approval was incorrect, please leave a review.`
             const repo = context.repo;
             const unsafe_files = `${{ needs.check-safe-files.outputs.unsafe_files }}`;
 
-            const comment_body = `## 🔍 Manual Review Required
-
-This PR modifies files that require manual code review and cannot be auto-approved.
-
-**Files requiring review:**
-\`\`\`
-${unsafe_files}
-\`\`\`
-
-**What this means:**
-- A code review approval is required before merge
-- All CI checks must still pass
-- Reviewers should examine code quality, logic, and potential side effects
-
-**Safe files** (would be auto-approved):
-- 📝 Documentation: \`*.md\`, \`man/\`, \`vignettes/\`
-- 🧪 Tests: \`tests/\`
-- 🔧 Dev tools: \`.github/\`, \`.dev/\`
-- ⚙️ Config: \`.Rbuildignore\`, \`_pkgdown.yml\`, etc.
-
----
-
-**For reviewers:** Please review the changes and approve if they meet quality standards.`;
+            const commentParts = [
+              '## 🔍 Manual Review Required',
+              '',
+              'This PR modifies files that require manual code review and cannot be auto-approved.',
+              '',
+              '**Files requiring review' + ':**',
+              '```',
+              unsafe_files,
+              '```',
+              '',
+              '**What this means' + ':**',
+              '- A code review approval is required before merge',
+              '- All CI checks must still pass',
+              '- Reviewers should examine code quality, logic, and potential side effects',
+              '',
+              '**Safe files** (would be auto-approved)' + ':',
+              '- 📝 Documentation' + ': `*.md`, `man/`, `vignettes/`',
+              '- 🧪 Tests' + ': `tests/`',
+              '- 🔧 Dev tools' + ': `.github/`, `.dev/`',
+              '- ⚙️ Config' + ': `.Rbuildignore`, `_pkgdown.yml`, etc.',
+              '',
+              '___',
+              '',
+              '**For reviewers' + ':** Please review the changes and approve if they meet quality standards.'
+            ];
+            const comment_body = commentParts.join('\n');
 
             await github.rest.issues.createComment({
               owner: repo.owner,
