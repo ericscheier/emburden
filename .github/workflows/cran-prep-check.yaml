@@ -78,9 +78,14 @@ jobs:
         run: |
           Rscript -e "
           cat('\\n=== Spell Check ===\\n')
-          spelling::spell_check_package()
+          results <- spelling::spell_check_package()
+          if (length(results) > 0) {
+            print(results)
+            stop('Spelling errors found. Add valid terms to inst/WORDLIST')
+          }
+          cat('✓ No spelling errors found\\n')
           "
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Check Package Size
         run: |
@@ -98,7 +103,7 @@ jobs:
         uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-          build_args: 'c("--no-manual","--compact-vignettes=both")'
+          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
           args: 'c("--as-cran")'
           error-on: '"error"'
 
