@@ -21,6 +21,14 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
     exit 1
 fi
 
+# Install pre-commit hook
+echo "📦 Installing pre-commit hook..."
+cp "$HOOKS_DIR/pre-commit" "$GIT_HOOKS_DIR/pre-commit"
+chmod +x "$GIT_HOOKS_DIR/pre-commit"
+echo "✅ pre-commit hook installed"
+
+echo ""
+
 # Install pre-push hook
 echo "📦 Installing pre-push hook..."
 cp "$HOOKS_DIR/pre-push" "$GIT_HOOKS_DIR/pre-push"
@@ -32,11 +40,17 @@ echo "================================================"
 echo "  ✅ Git Hooks Installation Complete!"
 echo "================================================"
 echo ""
-echo "The pre-push hook will now run before every push:"
+echo "The pre-commit hook will run before every commit:"
+echo "  1. Version consistency check"
+echo "  2. Check for debugger statements"
+echo "  3. Quick R syntax validation"
+echo ""
+echo "The pre-push hook will run before every push:"
 echo "  1. Version consistency check"
 echo "  2. Spelling validation (blocking)"
-echo "  3. CRAN-style R CMD check"
+echo "  3. CRAN-style R CMD check with --compact-vignettes=both"
 echo ""
-echo "To bypass the hook (not recommended):"
+echo "To bypass hooks (not recommended):"
+echo "  git commit --no-verify"
 echo "  git push --no-verify"
 echo ""

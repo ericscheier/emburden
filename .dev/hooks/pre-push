@@ -114,9 +114,9 @@ if (skip_vignettes) {
   check_args <- c(check_args, '--no-build-vignettes', '--ignore-vignettes')
   build_args <- c(build_args, '--no-build-vignettes')
 } else {
-  # Use gs+qpdf for optimal PDF compression (as recommended by CRAN)
-  build_args <- c(build_args, '--compact-vignettes=gs+qpdf')
-  cat('ℹ️  Using --compact-vignettes=gs+qpdf for optimal PDF compression\n\n')
+  # Use 'both' to match GitHub Actions workflow (tries gs+qpdf, falls back to qpdf)
+  build_args <- c(build_args, '--compact-vignettes=both')
+  cat('ℹ️  Using --compact-vignettes=both (matches GitHub Actions workflow)\n\n')
 }
 
 cat('Check arguments:', paste(check_args, collapse=' '), '\n')
