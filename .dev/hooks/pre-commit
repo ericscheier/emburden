@@ -69,16 +69,37 @@ if [ -n "$STAGED_R_FILES" ]; then
     echo ""
     echo "📋 Checking R syntax..."
 
-    for file in $STAGED_R_FILES; do
-        Rscript -e "source('$file', echo=FALSE)" > /dev/null 2>&1
-        if [ $? -ne 0 ]; then
-            echo "❌ Syntax error in $file"
-            Rscript -e "source('$file', echo=FALSE)"
-            echo ""
-            echo "Commit cancelled."
-            exit 1
-        fi
-    done
+    # Separate package files from scripts
+    PACKAGE_R_FILES=$(echo "$STAGED_R_FILES" | grep "^R/" || true)
+    SCRIPT_R_FILES=$(echo "$STAGED_R_FILES" | grep -v "^R/" || true)
+
+    # Check package R files using parse() instead of source()
+    if [ -n "$PACKAGE_R_FILES" ]; then
+        for file in $PACKAGE_R_FILES; do
+            Rscript -e "parse('$file')" > /dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                echo "❌ Syntax error in $file"
+                Rscript -e "parse('$file')"
+                echo ""
+                echo "Commit cancelled."
+                exit 1
+            fi
+        done
+    fi
+
+    # Check script R files using source()
+    if [ -n "$SCRIPT_R_FILES" ]; then
+        for file in $SCRIPT_R_FILES; do
+            Rscript -e "source('$file', echo=FALSE)" > /dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                echo "❌ Syntax error in $file"
+                Rscript -e "source('$file', echo=FALSE)"
+                echo ""
+                echo "Commit cancelled."
+                exit 1
+            fi
+        done
+    fi
 
     echo "✅ R syntax check passed"
 fi
