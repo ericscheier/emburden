@@ -26,61 +26,97 @@ energy_burden_func <- function(g, s, se = NULL) {
 
 #' Calculate Net Energy Burden (NEB)
 #'
-#' Calculates Net Energy Burden as the ratio of energy spending to gross income.
-#' **Note**: NEB is mathematically identical to Energy Burden (EB = S/G). The
-#' distinction is conceptual - "NEB" emphasizes that proper aggregation methodology
-#' should be used via Net Energy Return (Nh).
+#' Calculates Net Energy Burden with proper aggregation methodology via the
+#' Net Energy Return (Nh) framework. For individual households, NEB = EB = S/G.
+#' When aggregating across households (with weights), automatically uses the
+#' Nh method to avoid 1-5% aggregation errors.
 #'
 #' @param g Numeric vector of gross income values
 #' @param s Numeric vector of energy spending values
 #' @param se Optional numeric vector of effective energy spending (defaults to s)
+#' @param weights Optional numeric vector of weights for aggregation (e.g., household counts).
+#'   When provided, uses Nh method: `1 / (1 + weighted.mean(nh, weights))`
+#' @param aggregate Logical, if TRUE forces aggregation even without weights (uses unweighted mean).
+#'   Default FALSE for backwards compatibility.
 #'
-#' @returns Numeric vector of Net Energy Burden values (identical to energy burden)
+#' @returns
+#' - If `weights = NULL` and `aggregate = FALSE`: Numeric vector of individual NEB values (S/G)
+#' - If `weights` provided or `aggregate = TRUE`: Single aggregated NEB value via Nh method
 #'
 #' @details
-#' **Mathematical Identity:** At the household level, NEB = EB = S/G.
+#' **Individual Level:** NEB = EB = S/G (mathematically identical)
 #'
-#' **For aggregation across households:**
-#' - **Individual household data**: Use `ner_func()` first, then `weighted.mean(nh)`,
-#'   then convert back via `neb = 1/(1+nh_mean)`. This uses arithmetic mean instead
-#'   of harmonic mean, providing both computational simplicity and numerical stability.
-#' - **Cohort data** (pre-aggregated totals): Can use direct calculation
-#'   `sum(spending)/sum(income)` which is equivalent to the Nh method.
-#' - **Never use** `weighted.mean(neb)` or `weighted.mean(eb)` - this introduces
-#'   1-5% error.
+#' **Aggregation Modes:**
+#' 1. **No aggregation** (default): Returns vector of individual NEB values
+#'    ```
+#'    neb_func(income, spending)  # Returns vector
+#'    ```
 #'
-#' **Why "NEB" vs "EB"?** The "Net" terminology connects to the Nh (Net Energy Return)
-#' framework and reminds users to use proper aggregation. Mathematically identical,
-#' conceptually clarifying.
+#' 2. **Weighted aggregation**: Automatically uses Nh method when weights provided
+#'    ```
+#'    neb_func(income, spending, weights = households)  # Returns single value
+#'    ```
 #'
-#' @seealso [ner_func()] for the Net Energy Return calculation used in proper aggregation
-#' @seealso [energy_burden_func()] for the mathematically identical calculation
+#' 3. **Unweighted aggregation**: Use `aggregate = TRUE` for simple mean
+#'    ```
+#'    neb_func(income, spending, aggregate = TRUE)  # Returns single value
+#'    ```
+#'
+#' **Why Nh Method?** Avoids 1-5% error from naive averaging:
+#' - **CORRECT**: `neb_func(g, s, weights = w)` → Uses Nh internally
+#' - **WRONG**: `weighted.mean(s/g, w)` → Introduces bias
+#'
+#' The Nh method: `1 / (1 + weighted.mean(nh, weights))` where `nh = (g-s)/se`
+#' uses arithmetic mean instead of harmonic mean, providing computational
+#' simplicity and numerical stability.
+#'
+#' @seealso [ner_func()] for the Net Energy Return (Nh) calculation
+#' @seealso [energy_burden_func()] for simple EB without aggregation support
 #' @export
 #'
 #' @examples
-#' # Individual household - NEB identical to EB
+#' # Individual household - returns vector
 #' neb_func(50000, 3000)  # 0.06
-#' energy_burden_func(50000, 3000)  # 0.06 (same)
+#' neb_func(c(30000, 50000), c(3000, 3500))  # c(0.10, 0.07)
 #'
-#' # For aggregation - use Nh method (individual HH data)
+#' # Aggregation with weights - returns single value (CORRECT method)
 #' incomes <- c(30000, 50000, 75000)
 #' spending <- c(3000, 3500, 4000)
 #' households <- c(100, 150, 200)
+#' neb_func(incomes, spending, weights = households)
 #'
-#' # CORRECT: Via Nh (arithmetic mean)
-#' nh <- ner_func(incomes, spending)
-#' nh_mean <- weighted.mean(nh, households)
-#' neb_correct <- 1 / (1 + nh_mean)
+#' # Unweighted aggregation
+#' neb_func(incomes, spending, aggregate = TRUE)
 #'
-#' # WRONG: Direct mean of NEB
-#' neb_wrong <- weighted.mean(neb_func(incomes, spending), households)
-#'
-#' # For cohort data (totals already aggregated)
-#' total_income <- c(3000000, 7500000, 15000000)
-#' total_spend <- c(300000, 525000, 750000)
-#' neb_direct <- sum(total_spend) / sum(total_income)  # Simple and correct
-neb_func <- function(g, s, se = NULL) {
-  energy_burden_func(g, s, se)
+#' # Comparison: naive mean (WRONG) vs Nh method (CORRECT)
+#' neb_naive <- weighted.mean(spending/incomes, households)  # Biased
+#' neb_correct <- neb_func(incomes, spending, weights = households)  # Correct
+#' abs(neb_naive - neb_correct) / neb_correct  # ~1-5% error
+neb_func <- function(g, s, se = NULL, weights = NULL, aggregate = FALSE) {
+  if (is.null(se)) {
+    se <- s
+  }
+
+  # Individual household calculation (no aggregation) - backwards compatible
+  if (is.null(weights) && !aggregate) {
+    return(s / g)
+  }
+
+  # Aggregation via Nh method (proper methodology)
+  nh <- ner_func(g, s, se)
+
+  if (is.null(weights)) {
+    # Unweighted aggregation (aggregate = TRUE case)
+    nh_mean <- mean(nh, na.rm = TRUE)
+  } else {
+    # Weighted aggregation (when weights provided)
+    nh_mean <- weighted.mean(nh, weights, na.rm = TRUE)
+  }
+
+  # Convert aggregated Nh back to NEB
+  neb_aggregated <- 1 / (1 + nh_mean)
+
+  return(neb_aggregated)
 }
 
 #' Calculate Energy Return on Investment (EROI)
