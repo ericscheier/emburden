@@ -197,3 +197,58 @@ test_that("neb_func handles NA values in aggregation", {
   expect_false(is.na(result))  # Should compute with non-NA values
   expect_length(result, 1)
 })
+
+test_that("neb_func with weights matches manual Nh aggregation (documentation test)", {
+  # This test verifies examples from documentation work correctly
+  # Simulates cohort data (pre-aggregated means)
+  mean_incomes <- c(30000, 50000, 75000)
+  mean_spending <- c(3000, 3500, 4000)
+  households <- c(100, 150, 200)
+
+  # Manual Nh method (documented approach)
+  nh <- ner_func(mean_incomes, mean_spending)
+  nh_mean <- weighted.mean(nh, households)
+  neb_manual <- 1 / (1 + nh_mean)
+
+  # Using neb_func() with weights (new approach)
+  neb_auto <- neb_func(mean_incomes, mean_spending, weights = households)
+
+  # Should be identical
+  expect_equal(neb_auto, neb_manual)
+
+  # Verify both differ from naive averaging (which is wrong)
+  neb_naive <- weighted.mean(mean_spending / mean_incomes, households)
+  expect_false(isTRUE(all.equal(neb_auto, neb_naive, tolerance = 0.001)))
+})
+
+test_that("neb_func aggregation works in dplyr workflows", {
+  # Simulate grouped aggregation as in vignettes
+  library(dplyr)
+
+  cohort_data <- data.frame(
+    group = rep(c("A", "B"), each = 3),
+    mean_income = c(30000, 50000, 75000, 40000, 60000, 90000),
+    mean_spending = c(3000, 3500, 4000, 3200, 3800, 4500),
+    households = c(100, 150, 200, 120, 180, 150)
+  )
+
+  # Method 1: Manual Nh aggregation
+  result_manual <- cohort_data %>%
+    group_by(group) %>%
+    summarise(
+      nh_mean = weighted.mean(ner_func(mean_income, mean_spending), households),
+      neb = 1 / (1 + nh_mean),
+      .groups = "drop"
+    )
+
+  # Method 2: Using neb_func() with weights
+  result_auto <- cohort_data %>%
+    group_by(group) %>%
+    summarise(
+      neb = neb_func(mean_income, mean_spending, weights = households),
+      .groups = "drop"
+    )
+
+  # Should give identical results
+  expect_equal(result_auto$neb, result_manual$neb)
+})
