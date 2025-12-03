@@ -114,24 +114,42 @@ eb_wrong <- weighted.mean(nc_data$eb, nc_data$households)
 ### The CORRECT Way: Via Net Energy Return
 
 ```{r correct-aggregation, eval=FALSE}
-# ✅ CORRECT: Aggregate using Nh, then convert to NEB
+# ✅ CORRECT Method 1: Aggregate using Nh, then convert to NEB
 nh_mean <- weighted.mean(nc_data$nh, nc_data$households)
 neb_correct <- 1 / (1 + nh_mean)
 
-print(paste("Correct NEB:", scales::percent(neb_correct)))
+# ✅ CORRECT Method 2: Use neb_func() with weights (simpler!)
+# neb_func() automatically uses the Nh method internally
+neb_correct2 <- neb_func(nc_data$mean_income,
+                         nc_data$mean_energy_spending,
+                         weights = nc_data$households)
+
+print(paste("Correct NEB (manual Nh):", scales::percent(neb_correct)))
+print(paste("Correct NEB (neb_func): ", scales::percent(neb_correct2)))
+# Both give identical results!
 ```
 
-**Why does this work?** The Nh transformation allows us to use simple arithmetic weighted mean instead of harmonic mean, making aggregation both simpler and more intuitive.
+**Why does this work?** The Nh transformation allows us to use simple arithmetic weighted mean instead of harmonic mean, making aggregation both simpler and more intuitive. The `neb_func()` with weights does this automatically.
 
 ## Analysis by Income Bracket
 
 ```{r by-income, eval=FALSE}
+# Method 1: Manual Nh aggregation
 nc_by_income <- nc_data %>%
   group_by(income_bracket) %>%
   summarise(
     households = sum(households),
     nh_mean = weighted.mean(nh, households),
     neb = 1 / (1 + nh_mean),  # Correct aggregation
+    .groups = "drop"
+  )
+
+# Method 2: Using neb_func() with weights (simpler!)
+nc_by_income2 <- nc_data %>%
+  group_by(income_bracket) %>%
+  summarise(
+    neb = neb_func(mean_income, mean_energy_spending, weights = households),
+    households = sum(households),
     .groups = "drop"
   )
 
