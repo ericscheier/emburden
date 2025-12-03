@@ -87,3 +87,113 @@ test_that("energy metrics handle edge cases", {
   # Negative values (unrealistic but should compute)
   expect_true(energy_burden_func(50000, -1000) < 0)
 })
+
+test_that("neb_func works without aggregation (backwards compatible)", {
+  # Individual household - should return vector identical to EB
+  expect_equal(neb_func(50000, 3000), 0.06)
+  expect_equal(neb_func(50000, 3000), energy_burden_func(50000, 3000))
+
+  # Multiple households without weights - should return vector
+  incomes <- c(30000, 50000, 75000)
+  spending <- c(3000, 3500, 4000)
+  result <- neb_func(incomes, spending)
+
+  expect_length(result, 3)
+  expect_equal(result, spending / incomes)
+  expect_equal(result, energy_burden_func(incomes, spending))
+})
+
+test_that("neb_func aggregates correctly with weights (Nh method)", {
+  # Test data
+  incomes <- c(30000, 50000, 75000)
+  spending <- c(3000, 3500, 4000)
+  households <- c(100, 150, 200)
+
+  # Calculate via neb_func with weights
+  neb_aggregated <- neb_func(incomes, spending, weights = households)
+
+  # Verify it's a single value
+  expect_length(neb_aggregated, 1)
+
+  # Verify it uses Nh method internally
+  nh <- ner_func(incomes, spending)
+  nh_mean <- weighted.mean(nh, households)
+  neb_expected <- 1 / (1 + nh_mean)
+  expect_equal(neb_aggregated, neb_expected)
+
+  # Verify it avoids naive averaging error
+  neb_naive <- weighted.mean(spending / incomes, households)
+  expect_false(isTRUE(all.equal(neb_aggregated, neb_naive)))
+  # Error should be small but present (1-5%)
+  error_pct <- abs(neb_naive - neb_aggregated) / neb_aggregated * 100
+  expect_gt(error_pct, 0.1)  # At least 0.1% difference
+})
+
+test_that("neb_func aggregates without weights when aggregate=TRUE", {
+  incomes <- c(30000, 50000, 75000)
+  spending <- c(3000, 3500, 4000)
+
+  # Aggregate without weights
+  neb_agg <- neb_func(incomes, spending, aggregate = TRUE)
+
+  # Should return single value
+  expect_length(neb_agg, 1)
+
+  # Should use unweighted mean of Nh
+  nh <- ner_func(incomes, spending)
+  nh_mean <- mean(nh)
+  neb_expected <- 1 / (1 + nh_mean)
+  expect_equal(neb_agg, neb_expected)
+})
+
+test_that("neb_func handles effective spending with aggregation", {
+  incomes <- c(30000, 50000)
+  spending <- c(3000, 3500)
+  se <- c(2500, 3000)  # Effective spending
+  weights <- c(100, 150)
+
+  # With weights and effective spending
+  neb_agg <- neb_func(incomes, spending, se = se, weights = weights)
+
+  # Should use se in Nh calculation
+  nh <- ner_func(incomes, spending, se)
+  nh_mean <- weighted.mean(nh, weights)
+  neb_expected <- 1 / (1 + nh_mean)
+  expect_equal(neb_agg, neb_expected)
+})
+
+test_that("neb_func demonstrates Nh method superiority", {
+  # Realistic income distribution
+  incomes <- c(25000, 35000, 50000, 75000, 100000)
+  spending <- c(3500, 3800, 4000, 4500, 5000)
+  households <- c(200, 300, 250, 150, 100)
+
+  # CORRECT: Via neb_func (uses Nh method)
+  neb_correct <- neb_func(incomes, spending, weights = households)
+
+  # WRONG: Naive weighted mean
+  neb_naive <- weighted.mean(spending / incomes, households)
+
+  # Should be different
+  expect_false(isTRUE(all.equal(neb_correct, neb_naive, tolerance = 0.001)))
+
+  # Verify the correct method gives reasonable value
+  expect_gt(neb_correct, 0)
+  expect_lt(neb_correct, 1)
+
+  # Verify relationship: correct = 1/(1 + weighted.mean(Nh))
+  nh <- ner_func(incomes, spending)
+  nh_mean <- weighted.mean(nh, households)
+  expect_equal(neb_correct, 1 / (1 + nh_mean))
+})
+
+test_that("neb_func handles NA values in aggregation", {
+  incomes <- c(30000, NA, 75000)
+  spending <- c(3000, 3500, 4000)
+  weights <- c(100, 150, 200)
+
+  # With weights - should handle NA gracefully
+  result <- neb_func(incomes, spending, weights = weights)
+  expect_false(is.na(result))  # Should compute with non-NA values
+  expect_length(result, 1)
+})
