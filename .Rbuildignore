@@ -197,3 +197,4 @@
 ^state_prosumer_ratios.*\.png$
 ^.*_region_poster_map\.svg$
 ^CRAN-SUBMISSION$
+^LICENSE$
