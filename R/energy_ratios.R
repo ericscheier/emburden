@@ -33,6 +33,7 @@ energy_burden_func <- function(g, s, se = NULL) {
 #'
 #' @param g Numeric vector of gross income values
 #' @param s Numeric vector of energy spending values
+#' @importFrom stats weighted.mean
 #' @param se Optional numeric vector of effective energy spending (defaults to s)
 #' @param weights Optional numeric vector of weights for aggregation (e.g., household counts).
 #'   When provided, uses Nh method: `1 / (1 + weighted.mean(nh, weights))`
