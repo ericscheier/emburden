@@ -67,7 +67,7 @@ Load household energy burden cohort data with automatic fallback:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Single state (fast, good for learning)
 nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 

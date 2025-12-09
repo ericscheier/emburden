@@ -19,7 +19,7 @@ Nuclear option: clears ALL cached data and database.
 Use with caution - will require re-downloading all data.
 }
 \examples{
-\dontrun{
+\donttest{
 # Clear everything (requires confirm = TRUE)
 clear_all_cache(confirm = TRUE)
 }

@@ -33,7 +33,7 @@ utils::globalVariables(c(
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Single state comparison (fast, good for learning)
 #' nc_comparison <- compare_energy_burden("ami", "NC", "income_bracket")
 #'
@@ -58,9 +58,6 @@ utils::globalVariables(c(
 #'
 #' # Custom grouping by tract-level geoid
 #' compare_energy_burden("ami", "NC", group_by = "geoid")
-#'
-#' # Multi-level custom grouping (requires joining with tract data)
-#' # compare_energy_burden("fpl", "NC", group_by = c("state_abbr", "income_bracket"))
 #' }
 compare_energy_burden <- function(dataset = c("ami", "fpl"),
                                   states = NULL,
@@ -305,6 +302,8 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
 #'
 #' @param x Comparison result from compare_energy_burden()
 #' @param ... Additional arguments (not used)
+#'
+#' @return Returns \code{x} invisibly for use in pipe chains.
 #'
 #' @export
 print.energy_burden_comparison <- function(x, ...) {

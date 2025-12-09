@@ -10,7 +10,15 @@
 #' @return Path to database file
 #' @keywords internal
 get_db_path <- function(test = FALSE) {
-  cache_dir <- rappdirs::user_cache_dir("emburden")
+  # During R CMD check, tests, or CRAN checks, use tempdir()
+  is_checking <- !identical(Sys.getenv("NOT_CRAN"), "true") ||
+                 nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+
+  if (is_checking) {
+    cache_dir <- file.path(tempdir(), "emburden_cache")
+  } else {
+    cache_dir <- rappdirs::user_cache_dir("emburden")
+  }
 
   if (test) {
     # Test database - safe to delete
@@ -152,7 +160,16 @@ clear_test_environment <- function() {
   }
 
   # Clear test cache (but not production!)
-  cache_dir <- rappdirs::user_cache_dir("emburden")
+  # During R CMD check, tests, or CRAN checks, use tempdir()
+  is_checking <- !identical(Sys.getenv("NOT_CRAN"), "true") ||
+                 nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+
+  if (is_checking) {
+    cache_dir <- file.path(tempdir(), "emburden_cache")
+  } else {
+    cache_dir <- rappdirs::user_cache_dir("emburden")
+  }
+
   test_csv_pattern <- "test_.*\\.csv$"
 
   if (dir.exists(cache_dir)) {

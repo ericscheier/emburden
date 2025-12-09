@@ -17,7 +17,7 @@ Check which data sources are available locally (database, CSV files, or
 will require download from OpenEI).
 }
 \examples{
-\dontrun{
+\donttest{
 # Check what data is available
 check_data_sources()
 }

@@ -27,7 +27,7 @@ Load census tract demographics and utility service territory information
 with automatic fallback to CSV or OpenEI download.
 }
 \examples{
-\dontrun{
+\donttest{
 # Single state
 nc_tracts <- load_census_tract_data(states = "NC")
 
