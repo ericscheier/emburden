@@ -294,8 +294,8 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
 #' @export
 #'
 #' @examples
-#' \donttest{
-#' # Single state
+#' \dontrun{
+#' # Single state (requires census data download)
 #' nc_tracts <- load_census_tract_data(states = "NC")
 #'
 #' # Multiple states (regional)
