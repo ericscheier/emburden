@@ -52,14 +52,16 @@ utils::globalVariables(c(
 #' # Single state (fast, good for learning)
 #' nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 #'
-#' # Multiple states (regional analysis)
+#' # Load specific vintage
+#' nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
+#' }
+#'
+#' \dontrun{
+#' # Multiple states (regional analysis - requires data download)
 #' southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
 #'
 #' # Nationwide (all 51 states - no filter)
 #' us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
-#'
-#' # Load specific vintage
-#' nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
 #'
 #' # Filter to specific income brackets
 #' low_income <- load_cohort_data(
