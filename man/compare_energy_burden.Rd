@@ -51,7 +51,7 @@ Compare household energy burden metrics across different data vintages,
 using proper Net Energy Return (Nh) aggregation methodology.
 }
 \examples{
-\dontrun{
+\donttest{
 # Single state comparison (fast, good for learning)
 nc_comparison <- compare_energy_burden("ami", "NC", "income_bracket")
 
@@ -76,8 +76,5 @@ compare_energy_burden("fpl", "NC", counties = c("Orange", "Durham", "Wake"))
 
 # Custom grouping by tract-level geoid
 compare_energy_burden("ami", "NC", group_by = "geoid")
-
-# Multi-level custom grouping (requires joining with tract data)
-# compare_energy_burden("fpl", "NC", group_by = c("state_abbr", "income_bracket"))
 }
 }

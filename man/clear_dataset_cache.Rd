@@ -25,7 +25,7 @@ Removes cached CSV files and database entries for a specific dataset/vintage.
 Useful when you know a specific dataset is corrupted.
 }
 \examples{
-\dontrun{
+\donttest{
 # Clear corrupted AMI 2018 cache
 clear_dataset_cache("ami", "2018")
 

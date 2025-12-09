@@ -48,7 +48,7 @@ utils::globalVariables(c(
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Single state (fast, good for learning)
 #' nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 #'
@@ -294,7 +294,7 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Single state
 #' nc_tracts <- load_census_tract_data(states = "NC")
 #'
@@ -375,7 +375,7 @@ load_census_tract_data <- function(states = NULL, verbose = TRUE) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Check what data is available
 #' check_data_sources()
 #' }
@@ -1247,9 +1247,19 @@ find_emburden_db <- function() {
 #' @keywords internal
 get_cache_dir <- function() {
 
-  if (requireNamespace("rappdirs", quietly = TRUE)) {
+  # During R CMD check, tests, or CRAN checks, use tempdir()
+  # This satisfies CRAN policy: no writes to user's home directory during check
+  is_checking <- !identical(Sys.getenv("NOT_CRAN"), "true") ||
+                 nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+
+  if (is_checking) {
+    # Use tempdir() during R CMD check, CRAN checks, and automated testing
+    cache_dir <- file.path(tempdir(), "emburden_cache")
+  } else if (requireNamespace("rappdirs", quietly = TRUE)) {
+    # Use persistent cache directory during interactive use
     cache_dir <- rappdirs::user_cache_dir("emburden")
   } else {
+    # Fallback if rappdirs not available
     cache_dir <- file.path(tempdir(), "emburden_cache")
   }
 
