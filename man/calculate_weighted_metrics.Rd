@@ -61,7 +61,7 @@ The function adds an "All" category row that aggregates across all groups,
 in addition to the individual group statistics.
 }
 \examples{
-\dontrun{
+\donttest{
 # Calculate metrics for NC cooperatives using Nh
 library(dplyr)
 

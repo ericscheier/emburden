@@ -28,7 +28,7 @@ with automatic fallback to CSV or OpenEI download.
 }
 \examples{
 \dontrun{
-# Single state
+# Single state (requires census data download)
 nc_tracts <- load_census_tract_data(states = "NC")
 
 # Multiple states (regional)

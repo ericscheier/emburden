@@ -33,11 +33,16 @@ utils::globalVariables(c(
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Single state comparison (fast, good for learning)
 #' nc_comparison <- compare_energy_burden("ami", "NC", "income_bracket")
 #'
-#' # Multi-state regional comparison
+#' # Overall comparison (no grouping)
+#' compare_energy_burden("ami", "NC", "none")
+#' }
+#'
+#' \dontrun{
+#' # Multi-state regional comparison (requires census data download)
 #' southeast <- compare_energy_burden(
 #'   dataset = "fpl",
 #'   states = c("NC", "SC", "GA", "FL"),
@@ -47,20 +52,14 @@ utils::globalVariables(c(
 #' # Nationwide comparison by income bracket (all 51 states)
 #' us_comparison <- compare_energy_burden(
 #'   dataset = "ami",
-#'   group_by = "income_bracket"  # No states filter = all states
+#'   group_by = "income_bracket"
 #' )
 #'
-#' # Overall comparison (no grouping)
-#' compare_energy_burden("ami", "NC", "none")
-#'
-#' # Compare specific counties within a state
+#' # Compare specific counties within a state (requires census data)
 #' compare_energy_burden("fpl", "NC", counties = c("Orange", "Durham", "Wake"))
 #'
-#' # Custom grouping by tract-level geoid
+#' # Custom grouping by tract-level geoid (requires census data)
 #' compare_energy_burden("ami", "NC", group_by = "geoid")
-#'
-#' # Multi-level custom grouping (requires joining with tract data)
-#' # compare_energy_burden("fpl", "NC", group_by = c("state_abbr", "income_bracket"))
 #' }
 compare_energy_burden <- function(dataset = c("ami", "fpl"),
                                   states = NULL,
@@ -305,6 +304,8 @@ compare_energy_burden <- function(dataset = c("ami", "fpl"),
 #'
 #' @param x Comparison result from compare_energy_burden()
 #' @param ... Additional arguments (not used)
+#'
+#' @return Returns \code{x} invisibly for use in pipe chains.
 #'
 #' @export
 print.energy_burden_comparison <- function(x, ...) {
