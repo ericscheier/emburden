@@ -11,6 +11,8 @@ name: Publish to Public Repository
 # By triggering on 'release' events, we run automatically when the GitHub
 # release is created.
 
+# Force re-index: 2025-12-10
+
 on:
   release:
     types: [published]  # Triggers when promote-to-main creates a GitHub release on main
@@ -26,7 +28,7 @@ on:
       - main
     paths:
       - '.github/workflows/publish-to-public.yml'
-  workflow_dispatch:    # Manual trigger from GitHub UI (emergency only)
+  workflow_dispatch:    # Manual trigger from GitHub UI
     inputs:
       tag_name:
         description: 'Tag name (e.g., v0.5.13) - optional, defaults to current HEAD'
