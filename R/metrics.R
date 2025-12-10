@@ -42,7 +42,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Calculate metrics for NC cooperatives using Nh
 #' library(dplyr)
 #'

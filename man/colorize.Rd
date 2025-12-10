@@ -25,7 +25,7 @@ formatting. For LaTeX output, it uses \verb{\\\\textcolor\{\}}. For HTML output,
 uses \verb{<span style='color: ...'>}.
 }
 \examples{
-\dontrun{
+\donttest{
 # In an R Markdown document:
 colorize("Important text", "red")
 }

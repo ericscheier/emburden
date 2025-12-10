@@ -1,0 +1,113 @@
+#!/bin/bash
+#
+# Pre-commit hook for quick validation checks
+# Runs before every commit to catch issues early
+#
+
+set -e  # Exit on error
+
+echo "=========================================="
+echo "  Pre-commit: Quick Validation"
+echo "=========================================="
+echo ""
+
+# 1. Check for BREAKING CHANGE commitments without version bumps
+echo "📋 Checking commit message format..."
+COMMIT_MSG_FILE=".git/COMMIT_EDITMSG"
+if [ -f "$COMMIT_MSG_FILE" ]; then
+    if grep -q "BREAKING CHANGE" "$COMMIT_MSG_FILE"; then
+        echo "⚠️  BREAKING CHANGE detected in commit message"
+        echo "   Remember to bump major version in DESCRIPTION before release!"
+    fi
+fi
+
+# 2. Check version consistency (quick check only)
+echo ""
+echo "📋 Checking version consistency..."
+if [ -f ".dev/check-version-consistency.R" ]; then
+    Rscript .dev/check-version-consistency.R > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "✅ Version consistency check passed"
+    else
+        echo "❌ Version inconsistency detected!"
+        echo ""
+        Rscript .dev/check-version-consistency.R
+        echo ""
+        echo "Commit cancelled."
+        exit 1
+    fi
+else
+    echo "⚠️  Version consistency script not found"
+fi
+
+# 3. Check for common issues in staged files
+echo ""
+echo "📋 Checking staged files..."
+
+# Check for debugger statements in R code (exclude hook files)
+STAGED_R_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.R$' || true)
+if [ -n "$STAGED_R_FILES" ]; then
+    # Only check the actual R files, not all staged content
+    if git diff --cached -- $STAGED_R_FILES | grep -E '^\+.*browser\(\)' > /dev/null; then
+        echo "❌ Found browser() debugger call in staged R code!"
+        echo "   Remove debugger statements before committing."
+        exit 1
+    fi
+fi
+
+# Check for TODO/FIXME in committed code (warn only)
+if git diff --cached | grep -E '^\+.*(TODO|FIXME|XXX)' > /dev/null; then
+    echo "⚠️  Found TODO/FIXME markers in staged code"
+    echo "   Consider addressing these before committing"
+    echo "   (commit will proceed)"
+fi
+
+echo "✅ Staged files check passed"
+
+# 4. Quick R syntax check for staged .R files (if any)
+if [ -n "$STAGED_R_FILES" ]; then
+    echo ""
+    echo "📋 Checking R syntax..."
+
+    # Separate package files from scripts
+    PACKAGE_R_FILES=$(echo "$STAGED_R_FILES" | grep "^R/" || true)
+    SCRIPT_R_FILES=$(echo "$STAGED_R_FILES" | grep -v "^R/" || true)
+
+    # Check package R files using parse() instead of source()
+    if [ -n "$PACKAGE_R_FILES" ]; then
+        for file in $PACKAGE_R_FILES; do
+            Rscript -e "parse('$file')" > /dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                echo "❌ Syntax error in $file"
+                Rscript -e "parse('$file')"
+                echo ""
+                echo "Commit cancelled."
+                exit 1
+            fi
+        done
+    fi
+
+    # Check script R files using source()
+    if [ -n "$SCRIPT_R_FILES" ]; then
+        for file in $SCRIPT_R_FILES; do
+            Rscript -e "source('$file', echo=FALSE)" > /dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                echo "❌ Syntax error in $file"
+                Rscript -e "source('$file', echo=FALSE)"
+                echo ""
+                echo "Commit cancelled."
+                exit 1
+            fi
+        done
+    fi
+
+    echo "✅ R syntax check passed"
+fi
+
+echo ""
+echo "=========================================="
+echo "  ✅ Pre-commit checks passed!"
+echo "=========================================="
+echo ""
+
+exit 0

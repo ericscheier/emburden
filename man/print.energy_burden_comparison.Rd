@@ -11,6 +11,9 @@
 
 \item{...}{Additional arguments (not used)}
 }
+\value{
+Returns \code{x} invisibly for use in pipe chains.
+}
 \description{
 Pretty-print a comparison table from compare_energy_burden()
 }

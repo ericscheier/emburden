@@ -85,12 +85,29 @@ if (length(git_status) > 0) {
   print_status("Working directory clean", "OK")
 }
 
-# 4. Build package
+# 4. Build package with vignette compaction (matches GitHub Actions)
 cat("\n[4/6] Building source package...\n")
+cat("Building with --compact-vignettes=both (matches GitHub Actions workflow)\n\n")
 tarball <- tryCatch({
-  built <- devtools::build(quiet = FALSE)
-  print_status(sprintf("Package built: %s", basename(built)), "OK")
-  built
+  # Use system2 to call R CMD build directly with compaction flags
+  # This matches the GitHub Actions workflow exactly
+  temp_dir <- tempdir()
+  build_cmd <- sprintf(
+    'R CMD build . --no-manual --compact-vignettes=both'
+  )
+
+  build_result <- system2("sh", args = c("-c", build_cmd), stdout = TRUE, stderr = TRUE)
+
+  # Find the generated tarball
+  desc_version <- as.character(read.dcf("DESCRIPTION", fields = "Version"))
+  tarball_name <- sprintf("emburden_%s.tar.gz", desc_version)
+
+  if (file.exists(tarball_name)) {
+    print_status(sprintf("Package built: %s", tarball_name), "OK")
+    normalizePath(tarball_name)
+  } else {
+    stop("Tarball not found after build")
+  }
 }, error = function(e) {
   print_status(paste("Build failed:", e$message), "ERROR")
   checks_passed <<- FALSE

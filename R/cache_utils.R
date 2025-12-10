@@ -7,13 +7,37 @@ NULL
 #' Get the emburden cache directory
 #' @keywords internal
 get_cache_dir <- function() {
-  rappdirs::user_cache_dir("emburden", "emburden")
+  # During R CMD check, tests, or CRAN checks, use tempdir()
+  # This satisfies CRAN policy: no writes to user's home directory during check
+  is_checking <- !identical(Sys.getenv("NOT_CRAN"), "true") ||
+                 nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+
+  if (is_checking) {
+    cache_dir <- file.path(tempdir(), "emburden_cache")
+  } else {
+    cache_dir <- rappdirs::user_cache_dir("emburden", "emburden")
+  }
+
+  dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
+  return(cache_dir)
 }
 
 #' Get the emburden database directory
 #' @keywords internal
 get_database_dir <- function() {
-  rappdirs::user_data_dir("emburden", "emburden")
+  # During R CMD check, tests, or CRAN checks, use tempdir()
+  # This satisfies CRAN policy: no writes to user's home directory during check
+  is_checking <- !identical(Sys.getenv("NOT_CRAN"), "true") ||
+                 nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+
+  if (is_checking) {
+    db_dir <- file.path(tempdir(), "emburden_db")
+  } else {
+    db_dir <- rappdirs::user_data_dir("emburden", "emburden")
+  }
+
+  dir.create(db_dir, showWarnings = FALSE, recursive = TRUE)
+  return(db_dir)
 }
 
 #' Get the full path to the emburden database file
@@ -241,7 +265,7 @@ validate_before_caching <- function(data, dataset, vintage, expected_states = 51
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Clear corrupted AMI 2018 cache
 #' clear_dataset_cache("ami", "2018")
 #'
@@ -321,7 +345,7 @@ clear_dataset_cache <- function(dataset = c("ami", "fpl"), vintage = c("2018", "
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Clear everything (requires confirm = TRUE)
 #' clear_all_cache(confirm = TRUE)
 #' }
