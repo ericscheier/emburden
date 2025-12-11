@@ -14,6 +14,8 @@ name: Publish to Public Repository
 # Force re-index: 2025-12-10
 
 on:
+  repository_dispatch:  # Alternative trigger via repository dispatch API
+    types: [publish-release]
   release:
     types: [published]  # Triggers when promote-to-main creates a GitHub release on main
   workflow_call:  # Called by other workflows
@@ -48,8 +50,10 @@ jobs:
     # - PRs (to validate changes before merge)
     # - Releases with version tags (for deployment)
     # - Manual dispatch with version tags
+    # - Repository dispatch events
     if: |
       github.event_name == 'pull_request' ||
+      github.event_name == 'repository_dispatch' ||
       (github.event.release.tag_name != '' && startsWith(github.event.release.tag_name, 'v')) ||
       (inputs.tag_name != '' && startsWith(inputs.tag_name, 'v'))
 
