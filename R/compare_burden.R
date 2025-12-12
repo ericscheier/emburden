@@ -41,7 +41,7 @@ utils::globalVariables(c(
 #' compare_energy_burden("ami", "NC", "none")
 #' }
 #'
-#' \dontrun{
+#' \donttest{
 #' # Multi-state regional comparison (requires census data download)
 #' southeast <- compare_energy_burden(
 #'   dataset = "fpl",

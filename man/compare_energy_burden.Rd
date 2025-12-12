@@ -59,7 +59,7 @@ nc_comparison <- compare_energy_burden("ami", "NC", "income_bracket")
 compare_energy_burden("ami", "NC", "none")
 }
 
-\dontrun{
+\donttest{
 # Multi-state regional comparison (requires census data download)
 southeast <- compare_energy_burden(
   dataset = "fpl",
