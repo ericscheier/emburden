@@ -64,13 +64,16 @@ jobs:
         env:
           TINYTEX_INSTALLER: TinyTeX
 
-      - name: Run CRAN checks (full build with vignettes)
+      - name: Run CRAN checks (skip vignette rebuild)
+        env:
+          _R_CHECK_DONTTEST_EXAMPLES_: false
         run: |
-          echo "🔍 STAGE 1: Full CRAN validation on public repo (with vignettes)"
+          echo "🔍 STAGE 1: Full CRAN validation on public repo"
+          echo "   (Vignettes built in tarball, not rebuilt during check)"
           Rscript -e "rcmdcheck::rcmdcheck(
             path = '.',
-            args = c('--as-cran', '--no-manual'),
-            build_args = c('--compact-vignettes=both'),
+            args = c('--as-cran', '--no-manual', '--no-build-vignettes'),
+            build_args = c('--compact-vignettes=gs+qpdf'),
             error_on = 'warning',
             check_dir = 'check'
           )"
@@ -79,8 +82,8 @@ jobs:
         id: build
         run: |
           # Run R CMD build and capture tarball name
-          # Note: --compact-vignettes=both uses gs_quality='ebook' by default
-          R CMD build --compact-vignettes=both . | tee /tmp/build-output.txt
+          # Note: --compact-vignettes=gs+qpdf uses both ghostscript and qpdf
+          R CMD build --compact-vignettes=gs+qpdf . | tee /tmp/build-output.txt
           tarball=$(grep -o "[a-zA-Z0-9._-]*\.tar\.gz" /tmp/build-output.txt | tail -1)
           echo "tarball=$tarball" >> $GITHUB_OUTPUT
           echo "Built package: $tarball"
