@@ -65,6 +65,8 @@ jobs:
           TINYTEX_INSTALLER: TinyTeX
 
       - name: Run CRAN checks (full build with vignettes)
+        env:
+          _R_CHECK_DONTTEST_EXAMPLES_: false
         run: |
           echo "🔍 STAGE 1: Full CRAN validation on public repo (with vignettes)"
           Rscript -e "rcmdcheck::rcmdcheck(
