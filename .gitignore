@@ -180,3 +180,5 @@ tests/testthat/data/*.db
 zenodo-upload/
 zenodo-upload-nationwide/
 data/zenodo-upload-nationwide/
+/doc/
+/Meta/
