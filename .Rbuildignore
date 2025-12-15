@@ -198,3 +198,5 @@
 ^.*_region_poster_map\.svg$
 ^CRAN-SUBMISSION$
 ^LICENSE$
+^doc$
+^Meta$

@@ -1,26 +1,8 @@
 ---
-documentclass: jss
-author:
-  - name: Eric Scheier
-    affiliation: Independent Researcher
-    address: |
-      | Durham, North Carolina
-    email: \email{eric@scheier.org}
-    url: https://github.com/ericscheier
-title:
-  formatted: "\\pkg{emburden}: Temporal Analysis of Household Energy Burden Using Net Energy Return Metrics"
-  plain: "emburden: Temporal Analysis of Household Energy Burden Using Net Energy Return Metrics"
-  short: "\\pkg{emburden}: Temporal Energy Burden Analysis"
-abstract: >
-  Energy burden---the proportion of household income spent on energy---is a critical metric for understanding energy poverty and inequity. However, traditional energy burden ratios present analytical challenges including difficulties with aggregation and visualization of extreme values. The \pkg{emburden} package for \proglang{R} implements Net Energy Return (Nh) methodology to address these limitations while enabling temporal analysis of household energy characteristics. This paper introduces the package's design and demonstrates its application to comparing Low-Income Energy Affordability Data (LEAD) Tool vintages from 2018 and 2022 across geographic and demographic dimensions. The package provides functions for downloading, processing, and analyzing census tract-level energy burden data for all U.S. states, with particular attention to proper weighted aggregation and schema normalization across data vintages. We demonstrate the package's capabilities through examples ranging from state-level summaries to fine-grained census tract comparisons, illustrating how policy-relevant insights can be extracted at multiple scales.
-keywords:
-  formatted: ["energy burden", "energy poverty", "household energy", "net energy return", "temporal analysis", "\\proglang{R}"]
-  plain: ["energy burden", "energy poverty", "household energy", "net energy return", "temporal analysis", "R"]
-preamble: >
-  \usepackage{amsmath}
+title: "emburden: Temporal Analysis of Household Energy Burden Using Net Energy Return Metrics"
+author: "Eric Scheier"
+date: "`r Sys.Date()`"
 output:
-  rticles::jss_article:
-    keep_tex: true
   html_document:
     toc: true
     toc_depth: 3
@@ -32,6 +14,10 @@ vignette: >
   %\VignetteBuilder{knitr}
 ---
 
+# Abstract
+
+Energy burden---the proportion of household income spent on energy---is a critical metric for understanding energy poverty and inequity. However, traditional energy burden ratios present analytical challenges including difficulties with aggregation and visualization of extreme values. The emburden package for R implements Net Energy Return (Nh) methodology to address these limitations while enabling temporal analysis of household energy characteristics. This paper introduces the package's design and demonstrates its application to comparing Low-Income Energy Affordability Data (LEAD) Tool vintages from 2018 and 2022 across geographic and demographic dimensions. The package provides functions for downloading, processing, and analyzing census tract-level energy burden data for all U.S. states, with particular attention to proper weighted aggregation and schema normalization across data vintages. We demonstrate the package's capabilities through examples ranging from state-level summaries to fine-grained census tract comparisons, illustrating how policy-relevant insights can be extracted at multiple scales.
+
 # Introduction
 
 Household energy affordability is a persistent challenge affecting millions of households in the United States. Low-income households face disproportionate energy burdens, often spending more than 6% of their income on energy costs compared to 2-3% for higher-income households [@ross2018high; @drehobl2016lifting]. Understanding these disparities and tracking changes over time is essential for designing effective energy assistance programs and policies.
@@ -40,7 +26,7 @@ The traditional energy burden metric---the ratio of energy expenditures ($S$) to
 
 ## Mathematical foundations
 
-The \pkg{emburden} package for \proglang{R} addresses these challenges by implementing Net Energy Return (NER) methodology, adapted from macro-energy systems analysis [@hall2011eroi; @brandtcalculating2013; @carbajalesdale2014better]. Net energy analysis estimates the net energy return of a process as a relationship between gross resources extracted and embodied energy directed toward extraction:
+The `emburden` package for R addresses these challenges by implementing Net Energy Return (NER) methodology, adapted from macro-energy systems analysis [@hall2011eroi; @brandtcalculating2013; @carbajalesdale2014better]. Net energy analysis estimates the net energy return of a process as a relationship between gross resources extracted and embodied energy directed toward extraction:
 
 $$G = Gross\ Resource\ Extracted$$
 
@@ -99,7 +85,7 @@ These vintages enable temporal analysis of energy burden trends, but require car
 
 ## Package design philosophy
 
-The \pkg{emburden} package is designed around several key principles:
+The `emburden` package is designed around several key principles:
 
 1. **Proper aggregation**: Implements weighted mean aggregation using Net Energy Return, with household counts as weights
 2. **Temporal consistency**: Normalizes schema differences between LEAD Tool vintages to enable valid comparisons
@@ -110,7 +96,7 @@ The \pkg{emburden} package is designed around several key principles:
 
 ## Data sources
 
-The \pkg{emburden} package provides access to three primary datasets for household energy burden analysis:
+The `emburden` package provides access to three primary datasets for household energy burden analysis:
 
 ### LEAD Tool
 
@@ -195,7 +181,7 @@ Though REPLICA relies on a different LEAD vintage (2017) than recent analyses (2
 
 # Package architecture
 
-The \pkg{emburden} package is organized into several functional modules:
+The `emburden` package is organized into several functional modules:
 
 ## Core functions
 
@@ -241,7 +227,7 @@ comparison <- compare_energy_burden(
 
 # Analysis examples
 
-The \pkg{emburden} package's primary contribution is enabling temporal analysis of energy burden through proper schema normalization and aggregation. This section demonstrates the package's capabilities through progressively detailed examples.
+The `emburden` package's primary contribution is enabling temporal analysis of energy burden through proper schema normalization and aggregation. This section demonstrates the package's capabilities through progressively detailed examples.
 
 ## Temporal comparison workflow
 
@@ -457,7 +443,7 @@ Census tract data enables spatial analysis and mapping applications, revealing u
 
 The ability to track energy burden changes over time has important policy implications. Programs like LIHEAP (Low-Income Home Energy Assistance Program) and WAP (Weatherization Assistance Program) target households experiencing energy insecurity, but evaluating their effectiveness requires robust temporal analysis.
 
-The \pkg{emburden} package enables researchers and policymakers to:
+The `emburden` package enables researchers and policymakers to:
 
 1. **Track program impacts**: Compare energy burden before and after policy interventions
 2. **Identify vulnerable populations**: Disaggregate trends by income, tenure, and geography
@@ -572,13 +558,13 @@ Several tools exist for energy burden analysis, each with different strengths:
 - **LEAD Tool web interface**: Interactive but limited temporal comparison
 - **State energy office tools**: Customized but not standardized across states
 - **Academic datasets**: Rich but often one-time snapshots
-- **\pkg{emburden}**: Focused on temporal analysis with proper aggregation methodology
+- **`emburden`**: Focused on temporal analysis with proper aggregation methodology
 
-The \pkg{emburden} package fills a gap by providing programmatic access to multiple vintages with automated schema normalization, enabling reproducible temporal analyses at scale.
+The `emburden` package fills a gap by providing programmatic access to multiple vintages with automated schema normalization, enabling reproducible temporal analyses at scale.
 
 # Conclusion
 
-The \pkg{emburden} package provides a robust framework for temporal analysis of household energy burden using proper Net Energy Return methodology. By automating data access, normalizing schema differences, and implementing correct aggregation methods, the package enables researchers and policymakers to track energy affordability trends across multiple scales.
+The `emburden` package provides a robust framework for temporal analysis of household energy burden using proper Net Energy Return methodology. By automating data access, normalizing schema differences, and implementing correct aggregation methods, the package enables researchers and policymakers to track energy affordability trends across multiple scales.
 
 Key contributions include:
 
