@@ -42,24 +42,26 @@ utils::globalVariables(c(
 #' }
 #'
 #' \donttest{
-#' # Multi-state regional comparison (requires census data download)
-#' southeast <- compare_energy_burden(
-#'   dataset = "fpl",
-#'   states = c("NC", "SC", "GA", "FL"),
-#'   group_by = "state"
-#' )
+#' if (interactive()) {
+#'   # Multi-state regional comparison (requires census data download)
+#'   southeast <- compare_energy_burden(
+#'     dataset = "fpl",
+#'     states = c("NC", "SC", "GA", "FL"),
+#'     group_by = "state"
+#'   )
 #'
-#' # Nationwide comparison by income bracket (all 51 states)
-#' us_comparison <- compare_energy_burden(
-#'   dataset = "ami",
-#'   group_by = "income_bracket"
-#' )
+#'   # Nationwide comparison by income bracket (all 51 states)
+#'   us_comparison <- compare_energy_burden(
+#'     dataset = "ami",
+#'     group_by = "income_bracket"
+#'   )
 #'
-#' # Compare specific counties within a state (requires census data)
-#' compare_energy_burden("fpl", "NC", counties = c("Orange", "Durham", "Wake"))
+#'   # Compare specific counties within a state (requires census data)
+#'   compare_energy_burden("fpl", "NC", counties = c("Orange", "Durham", "Wake"))
 #'
-#' # Custom grouping by tract-level geoid (requires census data)
-#' compare_energy_burden("ami", "NC", group_by = "geoid")
+#'   # Custom grouping by tract-level geoid (requires census data)
+#'   compare_energy_burden("ami", "NC", group_by = "geoid")
+#' }
 #' }
 compare_energy_burden <- function(dataset = c("ami", "fpl"),
                                   states = NULL,

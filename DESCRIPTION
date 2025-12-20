@@ -1,6 +1,6 @@
 Package: emburden
 Title: Energy Burden Analysis Using Net Energy Return Methodology
-Version: 0.6.0
+Version: 0.6.1
 Authors@R:
     person("Eric", "Scheier", , "eric@scheier.org", role = c("aut", "cre", "cph"))
 Description: Calculate and analyze household energy burden using the Net Energy

@@ -56,12 +56,13 @@ utils::globalVariables(c(
 #' nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
 #' }
 #'
-#' \dontrun{
-#' # Multiple states (regional analysis - requires data download)
-#' southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
+#' \donttest{
+#' if (interactive()) {
+#'   # Multiple states (regional analysis - requires data download)
+#'   southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
 #'
-#' # Nationwide (all 51 states - no filter)
-#' us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
+#'   # Nationwide (all 51 states - no filter)
+#'   us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
 #'
 #' # Filter to specific income brackets
 #' low_income <- load_cohort_data(
@@ -110,6 +111,7 @@ utils::globalVariables(c(
 #'     ),
 #'     .groups = "drop"
 #'   )
+#' }
 #' }
 load_cohort_data <- function(dataset = c("ami", "fpl"),
                               states = NULL,
@@ -296,15 +298,17 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Single state (requires census data download)
-#' nc_tracts <- load_census_tract_data(states = "NC")
+#' \donttest{
+#' if (interactive()) {
+#'   # Single state (requires census data download)
+#'   nc_tracts <- load_census_tract_data(states = "NC")
 #'
-#' # Multiple states (regional)
-#' southeast <- load_census_tract_data(states = c("NC", "SC", "GA", "FL"))
+#'   # Multiple states (regional)
+#'   southeast <- load_census_tract_data(states = c("NC", "SC", "GA", "FL"))
 #'
-#' # Nationwide (all ~73,000 census tracts)
-#' us_tracts <- load_census_tract_data()  # No filter = all states
+#'   # Nationwide (all ~73,000 census tracts)
+#'   us_tracts <- load_census_tract_data()  # No filter = all states
+#' }
 #' }
 load_census_tract_data <- function(states = NULL, verbose = TRUE) {
 
