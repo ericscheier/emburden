@@ -498,8 +498,10 @@ jobs:
 
           echo "Creating update branch: ${UPDATE_BRANCH}"
 
-          # Push to a temporary branch on public repo
-          git push public HEAD:${UPDATE_BRANCH}
+          # Push to a temporary branch on public repo. Use a fully-qualified
+          # refname so the push works from a detached HEAD (workflow_dispatch
+          # on a tag checks out a SHA, not a branch).
+          git push public HEAD:refs/heads/${UPDATE_BRANCH}
 
           echo ""
           echo "================================================================"
