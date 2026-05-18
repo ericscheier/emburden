@@ -67,18 +67,21 @@ Load household energy burden cohort data with automatic fallback:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Single state (fast, good for learning)
 nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 
-# Multiple states (regional analysis)
-southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
-
-# Nationwide (all 51 states - no filter)
-us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
-
 # Load specific vintage
 nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
+}
+
+\donttest{
+if (interactive()) {
+  # Multiple states (regional analysis - requires data download)
+  southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
+
+  # Nationwide (all 51 states - no filter)
+  us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
 
 # Filter to specific income brackets
 low_income <- load_cohort_data(
@@ -127,5 +130,6 @@ housing_analysis <- nc_housing \%>\%
     ),
     .groups = "drop"
   )
+}
 }
 }

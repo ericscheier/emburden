@@ -27,14 +27,16 @@ Load census tract demographics and utility service territory information
 with automatic fallback to CSV or OpenEI download.
 }
 \examples{
-\dontrun{
-# Single state
-nc_tracts <- load_census_tract_data(states = "NC")
+\donttest{
+if (interactive()) {
+  # Single state (requires census data download)
+  nc_tracts <- load_census_tract_data(states = "NC")
 
-# Multiple states (regional)
-southeast <- load_census_tract_data(states = c("NC", "SC", "GA", "FL"))
+  # Multiple states (regional)
+  southeast <- load_census_tract_data(states = c("NC", "SC", "GA", "FL"))
 
-# Nationwide (all ~73,000 census tracts)
-us_tracts <- load_census_tract_data()  # No filter = all states
+  # Nationwide (all ~73,000 census tracts)
+  us_tracts <- load_census_tract_data()  # No filter = all states
+}
 }
 }

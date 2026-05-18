@@ -170,7 +170,7 @@ to_billion_dollar <- function(x, suffix = " billion", override_to_k = TRUE) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # In an R Markdown document:
 #' colorize("Important text", "red")
 #' }

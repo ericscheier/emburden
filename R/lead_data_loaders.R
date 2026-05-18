@@ -48,18 +48,21 @@ utils::globalVariables(c(
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Single state (fast, good for learning)
 #' nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 #'
-#' # Multiple states (regional analysis)
-#' southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
-#'
-#' # Nationwide (all 51 states - no filter)
-#' us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
-#'
 #' # Load specific vintage
 #' nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
+#' }
+#'
+#' \donttest{
+#' if (interactive()) {
+#'   # Multiple states (regional analysis - requires data download)
+#'   southeast <- load_cohort_data(dataset = "fpl", states = c("NC", "SC", "GA", "FL"))
+#'
+#'   # Nationwide (all 51 states - no filter)
+#'   us_data <- load_cohort_data(dataset = "ami", vintage = "2022")
 #'
 #' # Filter to specific income brackets
 #' low_income <- load_cohort_data(
@@ -108,6 +111,7 @@ utils::globalVariables(c(
 #'     ),
 #'     .groups = "drop"
 #'   )
+#' }
 #' }
 load_cohort_data <- function(dataset = c("ami", "fpl"),
                               states = NULL,
@@ -294,15 +298,17 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Single state
-#' nc_tracts <- load_census_tract_data(states = "NC")
+#' \donttest{
+#' if (interactive()) {
+#'   # Single state (requires census data download)
+#'   nc_tracts <- load_census_tract_data(states = "NC")
 #'
-#' # Multiple states (regional)
-#' southeast <- load_census_tract_data(states = c("NC", "SC", "GA", "FL"))
+#'   # Multiple states (regional)
+#'   southeast <- load_census_tract_data(states = c("NC", "SC", "GA", "FL"))
 #'
-#' # Nationwide (all ~73,000 census tracts)
-#' us_tracts <- load_census_tract_data()  # No filter = all states
+#'   # Nationwide (all ~73,000 census tracts)
+#'   us_tracts <- load_census_tract_data()  # No filter = all states
+#' }
 #' }
 load_census_tract_data <- function(states = NULL, verbose = TRUE) {
 
@@ -375,7 +381,7 @@ load_census_tract_data <- function(states = NULL, verbose = TRUE) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Check what data is available
 #' check_data_sources()
 #' }
@@ -1247,9 +1253,19 @@ find_emburden_db <- function() {
 #' @keywords internal
 get_cache_dir <- function() {
 
-  if (requireNamespace("rappdirs", quietly = TRUE)) {
+  # During R CMD check, tests, or CRAN checks, use tempdir()
+  # This satisfies CRAN policy: no writes to user's home directory during check
+  is_checking <- !identical(Sys.getenv("NOT_CRAN"), "true") ||
+                 nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+
+  if (is_checking) {
+    # Use tempdir() during R CMD check, CRAN checks, and automated testing
+    cache_dir <- file.path(tempdir(), "emburden_cache")
+  } else if (requireNamespace("rappdirs", quietly = TRUE)) {
+    # Use persistent cache directory during interactive use
     cache_dir <- rappdirs::user_cache_dir("emburden")
   } else {
+    # Fallback if rappdirs not available
     cache_dir <- file.path(tempdir(), "emburden_cache")
   }
 

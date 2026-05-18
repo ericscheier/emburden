@@ -75,13 +75,23 @@ cat("INCORRECT Methods (DO NOT USE):\n")
 cat("  Simple mean of Eb:          ", scales::percent(eb_simple_mean, accuracy = 0.01), "\n")
 cat("  Weighted mean of Eb:        ", scales::percent(eb_weighted_mean, accuracy = 0.01), "\n\n")
 
-# METHOD 2: CORRECT - NEB via Nh aggregation
+# METHOD 2: CORRECT - NEB via Nh aggregation (Manual)
 nh_weighted_mean <- weighted.mean(nc_clean$nh, nc_clean$households, na.rm = TRUE)
-neb_correct <- 1 / (1 + nh_weighted_mean)
+neb_correct_manual <- 1 / (1 + nh_weighted_mean)
 
-cat("CORRECT Method (USE THIS):\n")
+# METHOD 2b: CORRECT - Using neb_func() with weights (Simpler!)
+neb_correct_auto <- neb_func(nc_clean$mean_income,
+                             nc_clean$mean_energy_spending,
+                             weights = nc_clean$households)
+
+cat("CORRECT Methods (USE THESE):\n")
 cat("  Weighted mean of Nh:        ", round(nh_weighted_mean, 2), "\n")
-cat("  NEB = 1/(1 + Nh_mean):      ", scales::percent(neb_correct, accuracy = 0.01), "\n\n")
+cat("  NEB (manual Nh method):     ", scales::percent(neb_correct_manual, accuracy = 0.01), "\n")
+cat("  NEB (neb_func w/weights):   ", scales::percent(neb_correct_auto, accuracy = 0.01), "\n")
+cat("  Methods match:              ", isTRUE(all.equal(neb_correct_manual, neb_correct_auto)), "\n\n")
+
+# Use the manual one for backwards compatibility in error calculations
+neb_correct <- neb_correct_manual
 
 # METHOD 3: Verification - Harmonic mean of Eb
 eb_harmonic <- 1 / weighted.mean(1/nc_clean$eb, nc_clean$households, na.rm = TRUE)
@@ -109,12 +119,15 @@ income_analysis <- nc_clean %>%
   summarise(
     households = sum(households, na.rm = TRUE),
 
-    # INCORRECT: Weighted mean of Eb
+    # INCORRECT: Weighted mean of Eb (showing for comparison)
     eb_wrong = weighted.mean(eb, households, na.rm = TRUE),
 
-    # CORRECT: NEB via Nh
+    # CORRECT: NEB via Nh (manual)
     nh_mean = weighted.mean(nh, households, na.rm = TRUE),
     neb_correct = 1 / (1 + nh_mean),
+
+    # Alternative: neb_func() with weights (simpler!)
+    # neb_auto = neb_func(mean_income, mean_energy_spending, weights = households),
 
     # Error
     absolute_error = eb_wrong - neb_correct,

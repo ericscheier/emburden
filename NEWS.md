@@ -1,9 +1,29 @@
+# emburden 0.6.2
+
+## CRAN Compliance
+
+* Skip the two timing-sensitive benchmark tests in
+  `test-neb-equivalence.R` (Tests 13 and 14) on CRAN. The wall-clock
+  speedup ratio was unreliable on heavily-loaded CRAN check machines
+  and failed on `r-devel-linux-x86_64-fedora-clang` (2026-05-18). The
+  underlying correctness assertions (1e-10 agreement between methods,
+  measurable error from the wrong method) remain in the test and run
+  on local / CI / non-CRAN environments.
+
 # emburden 0.6.0
 
 ## New Features
 
+* **Net Energy Burden (NEB) Aggregation**: Enhanced `neb_func()` with proper weighted aggregation using Net Energy Return (Nh) methodology. Added `weights` and `aggregate` parameters for correct cross-household aggregation, avoiding 1-5% errors from naive averaging. Maintains backward compatibility for individual household calculations.
 * **Housing Characteristics Analysis**: Preserve granular housing dimension columns (TEN, TEN-YBL6, TEN-BLD, TEN-HFL) through cohort data aggregation, enabling detailed analysis of energy burden by tenure, building age, building type, and heating fuel
 * Implement comprehensive dev/staging/main branching strategy
+
+## CRAN Compliance
+
+* **Documentation**: Added \value tags to all exported functions with complete return value descriptions
+* **Examples**: Replaced \dontrun{} with \donttest{} following CRAN policy, removed commented example code
+* **File System**: Modified cache/database functions to use tempdir() during R CMD check, satisfying CRAN policy against writing to user home directory during package checks
+* **DESCRIPTION**: Removed redundant "Tools for" prefix, improved package description clarity
 
 ## Bug Fixes
 
