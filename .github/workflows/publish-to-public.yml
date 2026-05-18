@@ -342,15 +342,22 @@ jobs:
             echo "Source: branch (no tag)"
           fi
 
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "is_tag=$( [ -n \"$TAG_NAME\" ] && echo \"true\" || echo \"false\" )" >> $GITHUB_OUTPUT
-          echo "is_version_tag=$( [[ \"$TAG_NAME\" == v* ]] && echo \"true\" || echo \"false\" )" >> $GITHUB_OUTPUT
-
+          IS_TAG=false
+          IS_VERSION_TAG=false
           if [ -n "$TAG_NAME" ]; then
-            echo "Detected tag: $TAG_NAME"
-          else
-            echo "No tag detected - will publish current branch"
+            IS_TAG=true
+            case "$TAG_NAME" in
+              v*) IS_VERSION_TAG=true ;;
+            esac
           fi
+
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "is_tag=$IS_TAG" >> "$GITHUB_OUTPUT"
+          echo "is_version_tag=$IS_VERSION_TAG" >> "$GITHUB_OUTPUT"
+
+          echo "tag_name=$TAG_NAME"
+          echo "is_tag=$IS_TAG"
+          echo "is_version_tag=$IS_VERSION_TAG"
 
       - name: Checkout private repository
         uses: actions/checkout@v4
@@ -481,83 +488,32 @@ jobs:
           git commit -F /tmp/commit_msg.txt
           echo "✓ Changes committed"
 
-      - name: Push to public repository branch
+      - name: Push to public repository (force-mirror)
         id: push_branch
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
+          # The cleanup step rewrites history via git-filter-repo, so the
+          # rewritten HEAD shares no common ancestor with the public main.
+          # The PR-based flow used previously produced permanently CONFLICTING
+          # PRs (divergent histories). Force-mirror is the correct strategy
+          # for a private→public publish pipeline: the public branch is
+          # always exactly the cleaned private branch.
+
           # Add public remote with token embedded
           git remote add public https://x-access-token:${GITHUB_TOKEN}@github.com/${PUBLIC_REPO}.git
 
-          # Fetch public repo to check if branch exists
-          git fetch public
-
-          # Create a unique branch name for the update
-          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-          UPDATE_BRANCH="publish/update-from-private-${TIMESTAMP}"
-
-          echo "Creating update branch: ${UPDATE_BRANCH}"
-
-          # Push to a temporary branch on public repo. Use a fully-qualified
-          # refname so the push works from a detached HEAD (workflow_dispatch
-          # on a tag checks out a SHA, not a branch).
-          git push public HEAD:refs/heads/${UPDATE_BRANCH}
+          # Force-push the cleaned content directly to the public branch.
+          # Use a fully-qualified refname so the push works from a detached
+          # HEAD (workflow_dispatch on a tag checks out a SHA, not a branch).
+          echo "Force-pushing cleaned content to ${PUBLIC_REPO}:${PUBLIC_BRANCH}"
+          git push --force public HEAD:refs/heads/${PUBLIC_BRANCH}
 
           echo ""
           echo "================================================================"
-          echo "  Pushed to ${PUBLIC_REPO} branch ${UPDATE_BRANCH}"
+          echo "  Force-mirrored to ${PUBLIC_REPO}:${PUBLIC_BRANCH}"
           echo "================================================================"
-          echo ""
           echo "Public repository: https://github.com/${PUBLIC_REPO}"
-          echo "Update branch: ${UPDATE_BRANCH}"
-          echo "update_branch=${UPDATE_BRANCH}" >> $GITHUB_OUTPUT
-
-      - name: Create pull request on public repo
-        id: create_pr
-        env:
-          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
-          GH_REPO: ${{ env.PUBLIC_REPO }}
-        run: |
-          UPDATE_BRANCH="${{ steps.push_branch.outputs.update_branch }}"
-          TAG_NAME="${{ steps.detect_tag.outputs.tag_name }}"
-
-          # Build PR title and body
-          if [ -n "$TAG_NAME" ]; then
-            PR_TITLE="Release ${TAG_NAME} from private repository"
-          else
-            PR_TITLE="Update from private repository ($(date -u +"%Y-%m-%d"))"
-          fi
-
-          # Create PR body with release notes if available
-          cat > pr_body.md <<'EOF'
-          ## 🔄 Update from Private Repository
-
-          This PR syncs the latest changes from the private development repository.
-
-          EOF
-
-          # Add release notes if we have a version tag
-          if [ -n "$TAG_NAME" ] && [ -f "NEWS.md" ]; then
-            VERSION=${TAG_NAME#v}
-            echo "### Release Notes for ${TAG_NAME}" >> pr_body.md
-            echo "" >> pr_body.md
-            awk "/^# emburden $VERSION/,/^# emburden [0-9]/" NEWS.md | head -n -1 >> pr_body.md || echo "See NEWS.md for details." >> pr_body.md
-          fi
-
-          # Create the PR
-          PR_URL=$(gh pr create \
-            --repo "${PUBLIC_REPO}" \
-            --base "${PUBLIC_BRANCH}" \
-            --head "${UPDATE_BRANCH}" \
-            --title "${PR_TITLE}" \
-            --body-file pr_body.md)
-
-          echo "Created PR: ${PR_URL}"
-          echo "pr_url=${PR_URL}" >> $GITHUB_OUTPUT
-
-          # Extract PR number
-          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
-          echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
 
       - name: Push tag to public repository
         if: steps.detect_tag.outputs.is_version_tag == 'true'
@@ -567,8 +523,12 @@ jobs:
           TAG_NAME="${{ steps.detect_tag.outputs.tag_name }}"
           echo "Pushing tag: ${TAG_NAME}"
 
-          # Push tag to public repo
-          git push public ${TAG_NAME} || echo "Note: Tag may already exist on public repo"
+          # After git-filter-repo, the local tag points to the rewritten
+          # SHA — which is now the HEAD we just pushed to public main. So
+          # the tag will land on a commit reachable from public/main.
+          # Force-update in case the tag already existed on public (e.g.
+          # from a prior failed run).
+          git push --force public ${TAG_NAME}
 
       - name: Create GitHub release on public repo
         if: steps.detect_tag.outputs.is_version_tag == 'true'
