@@ -1,3 +1,15 @@
+# emburden 0.6.2
+
+## CRAN Compliance
+
+* Skip the two timing-sensitive benchmark tests in
+  `test-neb-equivalence.R` (Tests 13 and 14) on CRAN. The wall-clock
+  speedup ratio was unreliable on heavily-loaded CRAN check machines
+  and failed on `r-devel-linux-x86_64-fedora-clang` (2026-05-18). The
+  underlying correctness assertions (1e-10 agreement between methods,
+  measurable error from the wrong method) remain in the test and run
+  on local / CI / non-CRAN environments.
+
 # emburden 0.6.0
 
 ## New Features
