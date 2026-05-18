@@ -138,41 +138,41 @@ jobs:
 
           # Create PR body (without single quotes to allow variable expansion)
           cat > pr_body.md << EOF
-## 🚀 Dev → Staging Promotion
-
-+ **Promotion timestamp:** $TIMESTAMP
-+ **Dev branch SHA:** \`$DEV_SHORT_SHA\` (\`$DEV_SHA\`)
-+ **Commits included:** $COMMIT_COUNT
-
-### Changes in this promotion
-
-\`\`\`
-$COMMITS
-\`\`\`
-
-### Pre-promotion validation
-
-- ✅ Dev branch R CMD check: **PASSED**
-- ✅ All dev CI checks: **PASSED**
-
-### Required approvals
-
-This promotion requires:
-1. ✅ Manual approval via \`staging-promotion\` environment
-2. ✅ All staging CI checks must pass
-3. ✅ Code review approval
-
-### What happens after approval?
-
-1. PR will auto-merge to staging
-2. Staging CI will run (multi-platform)
-3. Promotion tag \`staging/YYYYMMDD-HHMMSS\` will be created
-4. Staging is then ready for production release
-
----
-
-**⚠️ IMPORTANT:** Review all changes carefully before approving. Once merged, staging becomes the source of truth for the next production release.
-EOF
+          ## 🚀 Dev → Staging Promotion
+          
+          + **Promotion timestamp:** $TIMESTAMP
+          + **Dev branch SHA:** \`$DEV_SHORT_SHA\` (\`$DEV_SHA\`)
+          + **Commits included:** $COMMIT_COUNT
+          
+          ### Changes in this promotion
+          
+          \`\`\`
+          $COMMITS
+          \`\`\`
+          
+          ### Pre-promotion validation
+          
+          - ✅ Dev branch R CMD check: **PASSED**
+          - ✅ All dev CI checks: **PASSED**
+          
+          ### Required approvals
+          
+          This promotion requires:
+          1. ✅ Manual approval via \`staging-promotion\` environment
+          2. ✅ All staging CI checks must pass
+          3. ✅ Code review approval
+          
+          ### What happens after approval?
+          
+          1. PR will auto-merge to staging
+          2. Staging CI will run (multi-platform)
+          3. Promotion tag \`staging/YYYYMMDD-HHMMSS\` will be created
+          4. Staging is then ready for production release
+          
+          ---
+          
+          **⚠️ IMPORTANT:** Review all changes carefully before approving. Once merged, staging becomes the source of truth for the next production release.
+          EOF
 
           # Substitute variables
           sed -i "s/\$TIMESTAMP/$TIMESTAMP/g" pr_body.md
@@ -205,26 +205,26 @@ EOF
           PR_NUMBER="${{ steps.create_pr.outputs.pr_number }}"
 
           gh pr comment "$PR_NUMBER" --body "$(cat <<'EOF'
-### 📋 Promotion Checklist
-
-Before approving this promotion, verify:
-
-- [ ] All changes in dev have been reviewed and tested
-- [ ] No breaking changes unless documented
-- [ ] All CI checks pass (ubuntu, windows, macos)
-- [ ] Code coverage is maintained or improved
-- [ ] Documentation is up to date
-- [ ] CHANGELOG/NEWS is updated (if applicable)
-
-**Approval process:**
-1. Review all changes in this PR
-2. Verify CI status checks are green
-3. Approve via GitHub PR review
-4. Approve via \`staging-promotion\` environment gate
-5. PR will auto-merge after approval
-
-**Questions or issues?** Leave a comment and mark the checklist items that need attention.
-EOF
+          ### 📋 Promotion Checklist
+          
+          Before approving this promotion, verify:
+          
+          - [ ] All changes in dev have been reviewed and tested
+          - [ ] No breaking changes unless documented
+          - [ ] All CI checks pass (ubuntu, windows, macos)
+          - [ ] Code coverage is maintained or improved
+          - [ ] Documentation is up to date
+          - [ ] CHANGELOG/NEWS is updated (if applicable)
+          
+          **Approval process:**
+          1. Review all changes in this PR
+          2. Verify CI status checks are green
+          3. Approve via GitHub PR review
+          4. Approve via \`staging-promotion\` environment gate
+          5. PR will auto-merge after approval
+          
+          **Questions or issues?** Leave a comment and mark the checklist items that need attention.
+          EOF
           )"
 
   # Wait for approval and auto-merge
@@ -283,23 +283,23 @@ EOF
           PR_NUMBER="${{ needs.create-promotion-pr.outputs.pr_number }}"
 
           cat >> $GITHUB_STEP_SUMMARY << 'EOF'
-## ✅ Dev → Staging Promotion Complete
-
-**PR Number:** #$PR_NUMBER
-**Status:** Merged and tagged
-**Next steps:**
-- Staging CI is running
-- Review staging deployment
-- When ready, promote staging → main for production release
-
----
-
-**Branching flow:**
-```
-Feature branches → dev → [staging] → main → public repo → CRAN
-                          ^^^^^^^^
-                         YOU ARE HERE
-```
-EOF
+          ## ✅ Dev → Staging Promotion Complete
+          
+          **PR Number:** #$PR_NUMBER
+          **Status:** Merged and tagged
+          **Next steps:**
+          - Staging CI is running
+          - Review staging deployment
+          - When ready, promote staging → main for production release
+          
+          ---
+          
+          **Branching flow:**
+          ```
+          Feature branches → dev → [staging] → main → public repo → CRAN
+                                    ^^^^^^^^
+                                   YOU ARE HERE
+          ```
+          EOF
 
           sed -i "s/\$PR_NUMBER/$PR_NUMBER/g" $GITHUB_STEP_SUMMARY

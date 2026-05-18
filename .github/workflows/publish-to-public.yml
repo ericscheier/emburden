@@ -528,11 +528,11 @@ jobs:
 
           # Create PR body with release notes if available
           cat > pr_body.md <<'EOF'
-## 🔄 Update from Private Repository
+          ## 🔄 Update from Private Repository
 
-This PR syncs the latest changes from the private development repository.
+          This PR syncs the latest changes from the private development repository.
 
-EOF
+          EOF
 
           # Add release notes if we have a version tag
           if [ -n "$TAG_NAME" ] && [ -f "NEWS.md" ]; then

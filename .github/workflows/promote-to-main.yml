@@ -296,71 +296,71 @@ jobs:
 
           # Create PR body (without single quotes to allow variable expansion)
           cat > pr_body.md << EOFBODY
-## 🚀 Production Release v$NEW_VERSION
-
-+ **Release timestamp:** $TIMESTAMP
-+ **Version bump:** $CURRENT_VERSION → **$NEW_VERSION**
-+ **Staging SHA:** \`$STAGING_SHORT_SHA\` (\`$STAGING_SHA\`)
-+ **Commits included:** $COMMIT_COUNT
-
----
-
-### 📋 Release Notes
-
-$NEWS_CONTENT
-
----
-
-### 📦 Changes in this release
-
-\`\`\`
-$COMMITS
-\`\`\`
-
----
-
-### ✅ Pre-release validation
-
-- ✅ Staging R CMD check: **PASSED**
-- ✅ Multi-platform checks (ubuntu, windows, macos): **PASSED**
-- ✅ All staging CI checks: **PASSED**
-- ✅ Version bumped: DESCRIPTION, CITATION, .zenodo.json, NEWS.md
-
----
-
-### 🔐 Required approvals
-
-This production release requires:
-1. ✅ Manual code review approval
-2. ✅ Manual approval via \`production-release\` environment
-3. ✅ All main branch CI checks must pass
-
----
-
-### 🎯 What happens after approval and merge?
-
-1. **Version tag created:** \`v$NEW_VERSION\` on main branch
-2. **GitHub release:** Auto-created with changelog from NEWS.md
-3. **Publish to public repo:** Workflow syncs main branch to \`ericscheier/emburden\`
-4. **CRAN release:** Workflow triggers on public repo (requires final manual approval)
-
----
-
-### ⚠️ IMPORTANT
-
-**This is a production release.** Review all changes carefully before approving.
-
-Once merged to main:
-- Public repository will be updated
-- CRAN submission workflow will be triggered
-- Version tag will be permanent
-
-**Do not approve unless:**
-- All changes have been thoroughly tested in staging
-- Documentation is complete and accurate
-- Breaking changes are clearly documented
-- You are ready for public release and CRAN submission
-EOFBODY
+          ## 🚀 Production Release v$NEW_VERSION
+          
+          + **Release timestamp:** $TIMESTAMP
+          + **Version bump:** $CURRENT_VERSION → **$NEW_VERSION**
+          + **Staging SHA:** \`$STAGING_SHORT_SHA\` (\`$STAGING_SHA\`)
+          + **Commits included:** $COMMIT_COUNT
+          
+          ---
+          
+          ### 📋 Release Notes
+          
+          $NEWS_CONTENT
+          
+          ---
+          
+          ### 📦 Changes in this release
+          
+          \`\`\`
+          $COMMITS
+          \`\`\`
+          
+          ---
+          
+          ### ✅ Pre-release validation
+          
+          - ✅ Staging R CMD check: **PASSED**
+          - ✅ Multi-platform checks (ubuntu, windows, macos): **PASSED**
+          - ✅ All staging CI checks: **PASSED**
+          - ✅ Version bumped: DESCRIPTION, CITATION, .zenodo.json, NEWS.md
+          
+          ---
+          
+          ### 🔐 Required approvals
+          
+          This production release requires:
+          1. ✅ Manual code review approval
+          2. ✅ Manual approval via \`production-release\` environment
+          3. ✅ All main branch CI checks must pass
+          
+          ---
+          
+          ### 🎯 What happens after approval and merge?
+          
+          1. **Version tag created:** \`v$NEW_VERSION\` on main branch
+          2. **GitHub release:** Auto-created with changelog from NEWS.md
+          3. **Publish to public repo:** Workflow syncs main branch to \`ericscheier/emburden\`
+          4. **CRAN release:** Workflow triggers on public repo (requires final manual approval)
+          
+          ---
+          
+          ### ⚠️ IMPORTANT
+          
+          **This is a production release.** Review all changes carefully before approving.
+          
+          Once merged to main:
+          - Public repository will be updated
+          - CRAN submission workflow will be triggered
+          - Version tag will be permanent
+          
+          **Do not approve unless:**
+          - All changes have been thoroughly tested in staging
+          - Documentation is complete and accurate
+          - Breaking changes are clearly documented
+          - You are ready for public release and CRAN submission
+          EOFBODY
 
           # Substitute variables
           sed -i "s/\$TIMESTAMP/$TIMESTAMP/g" pr_body.md
@@ -397,58 +397,58 @@ EOFBODY
           NEW_VERSION="${{ steps.create_branch.outputs.new_version }}"
 
           gh pr comment "$PR_NUMBER" --body "$(cat <<'EOF'
-### 📋 Production Release Checklist
-
-Before approving this release, verify:
-
-#### Code Quality
-- [ ] All changes have been reviewed and tested in staging
-- [ ] All CI checks pass (ubuntu, windows, macos)
-- [ ] Code coverage is maintained or improved
-- [ ] No security vulnerabilities introduced
-
-#### Documentation
-- [ ] NEWS.md accurately describes all changes
-- [ ] README.md is up to date
-- [ ] Vignettes reflect current functionality
-- [ ] Function documentation is complete and accurate
-
-#### Version Management
-- [ ] Version number follows semantic versioning
-- [ ] DESCRIPTION, CITATION, and .zenodo.json are synchronized
-- [ ] Version bump is appropriate (patch/minor/major)
-
-#### Release Readiness
-- [ ] Breaking changes are clearly documented (if any)
-- [ ] Deprecation warnings are in place (if applicable)
-- [ ] All known bugs are resolved or documented
-- [ ] CRAN submission is desired at this time
-
----
-
-### 🎯 Approval Process
-
-1. **Review:** Check all changes in this PR
-2. **Verify:** All CI status checks are green
-3. **Approve:** GitHub PR review approval
-4. **Environment:** Approve via \`production-release\` environment gate
-5. **Auto-merge:** PR merges automatically after approval
-
----
-
-### 📦 Post-Merge Automation
-
-After merge, the following will happen automatically:
-
-1. ✅ Version tag \`v$NEW_VERSION\` created on main
-2. ✅ GitHub release created with NEWS.md content
-3. ✅ Publish-to-public workflow syncs to public repo
-4. ⏳ CRAN release workflow runs (requires your final approval)
-
----
-
-**Questions or concerns?** Leave a comment before approving.
-EOF
+          ### 📋 Production Release Checklist
+          
+          Before approving this release, verify:
+          
+          #### Code Quality
+          - [ ] All changes have been reviewed and tested in staging
+          - [ ] All CI checks pass (ubuntu, windows, macos)
+          - [ ] Code coverage is maintained or improved
+          - [ ] No security vulnerabilities introduced
+          
+          #### Documentation
+          - [ ] NEWS.md accurately describes all changes
+          - [ ] README.md is up to date
+          - [ ] Vignettes reflect current functionality
+          - [ ] Function documentation is complete and accurate
+          
+          #### Version Management
+          - [ ] Version number follows semantic versioning
+          - [ ] DESCRIPTION, CITATION, and .zenodo.json are synchronized
+          - [ ] Version bump is appropriate (patch/minor/major)
+          
+          #### Release Readiness
+          - [ ] Breaking changes are clearly documented (if any)
+          - [ ] Deprecation warnings are in place (if applicable)
+          - [ ] All known bugs are resolved or documented
+          - [ ] CRAN submission is desired at this time
+          
+          ---
+          
+          ### 🎯 Approval Process
+          
+          1. **Review:** Check all changes in this PR
+          2. **Verify:** All CI status checks are green
+          3. **Approve:** GitHub PR review approval
+          4. **Environment:** Approve via \`production-release\` environment gate
+          5. **Auto-merge:** PR merges automatically after approval
+          
+          ---
+          
+          ### 📦 Post-Merge Automation
+          
+          After merge, the following will happen automatically:
+          
+          1. ✅ Version tag \`v$NEW_VERSION\` created on main
+          2. ✅ GitHub release created with NEWS.md content
+          3. ✅ Publish-to-public workflow syncs to public repo
+          4. ⏳ CRAN release workflow runs (requires your final approval)
+          
+          ---
+          
+          **Questions or concerns?** Leave a comment before approving.
+          EOF
           )" | sed "s/\$NEW_VERSION/$NEW_VERSION/g"
 
   # Wait for approval and auto-merge
@@ -536,45 +536,45 @@ EOF
           PR_NUMBER="${{ needs.create-release-pr.outputs.pr_number }}"
 
           cat >> $GITHUB_STEP_SUMMARY << 'EOF'
-## ✅ Production Release Complete
-
-**Version:** v$NEW_VERSION
-**PR Number:** #$PR_NUMBER
-**Status:** Merged and tagged
-
----
-
-### 🎯 Next Steps (Automated)
-
-The following workflows will now run automatically:
-
-1. ✅ **publish-to-public.yml** - Syncing to public repo (ericscheier/emburden)
-2. ⏳ **cran-release.yml** - CRAN submission (requires your final approval)
-
----
-
-### 📊 Release Pipeline Status
-
-\`\`\`
-Feature → Dev → Staging → [Main] → Public Repo → CRAN
-                          ^^^^^^^^
-                        YOU ARE HERE
-                             ↓
-                      Tag: v$NEW_VERSION
-                             ↓
-                       GitHub Release
-                             ↓
-                      Public Repo Sync
-                             ↓
-                      CRAN Submission
-\`\`\`
-
----
-
-**Monitor:**
-- Public repo: https://github.com/ericscheier/emburden
-- CRAN workflow: Approve when ready for CRAN submission
-EOF
+          ## ✅ Production Release Complete
+          
+          **Version:** v$NEW_VERSION
+          **PR Number:** #$PR_NUMBER
+          **Status:** Merged and tagged
+          
+          ---
+          
+          ### 🎯 Next Steps (Automated)
+          
+          The following workflows will now run automatically:
+          
+          1. ✅ **publish-to-public.yml** - Syncing to public repo (ericscheier/emburden)
+          2. ⏳ **cran-release.yml** - CRAN submission (requires your final approval)
+          
+          ---
+          
+          ### 📊 Release Pipeline Status
+          
+          \`\`\`
+          Feature → Dev → Staging → [Main] → Public Repo → CRAN
+                                    ^^^^^^^^
+                                  YOU ARE HERE
+                                       ↓
+                                Tag: v$NEW_VERSION
+                                       ↓
+                                 GitHub Release
+                                       ↓
+                                Public Repo Sync
+                                       ↓
+                                CRAN Submission
+          \`\`\`
+          
+          ---
+          
+          **Monitor:**
+          - Public repo: https://github.com/ericscheier/emburden
+          - CRAN workflow: Approve when ready for CRAN submission
+          EOF
 
           sed -i "s/\$NEW_VERSION/$NEW_VERSION/g" $GITHUB_STEP_SUMMARY
           sed -i "s/\$PR_NUMBER/$PR_NUMBER/g" $GITHUB_STEP_SUMMARY
