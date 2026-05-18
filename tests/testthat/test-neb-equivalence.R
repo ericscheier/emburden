@@ -387,6 +387,11 @@ test_that("Real-world scenario demonstrates proper aggregation", {
 # Test 13: Performance Benchmark - Computational Efficiency
 # ==========================================================
 test_that("Nh method (arithmetic mean) is faster than harmonic mean", {
+  # Timing-sensitive benchmark; skip on CRAN where check-machine load
+  # makes wall-clock ratios unreliable (failed on r-devel-fedora-clang,
+  # 2026-05-18).
+  skip_on_cran()
+
   # Create realistic large dataset
   set.seed(123)
   n <- 10000  # 10,000 households
@@ -462,6 +467,9 @@ test_that("Nh method (arithmetic mean) is faster than harmonic mean", {
 # Test 14: Scalability - Performance with Different Dataset Sizes
 # ================================================================
 test_that("Nh method scales well with dataset size", {
+  # Timing-sensitive benchmark; skip on CRAN (see Test 13 note).
+  skip_on_cran()
+
   set.seed(456)
 
   dataset_sizes <- c(100, 1000, 10000)
