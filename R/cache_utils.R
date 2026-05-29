@@ -99,7 +99,7 @@ detect_database_corruption <- function(data, dataset, vintage, states = NULL, ve
 
   # Check 3: State coverage (if geoid available)
   if ("geoid" %in% names(data)) {
-    state_fips <- unique(substr(as.character(data$geoid), 1, 2))
+    state_fips <- unique(.extract_state_fips(data$geoid))
     actual_states <- length(state_fips)
 
     # For nationwide, expect at least 80% of states (40+ out of 51)
@@ -203,7 +203,7 @@ validate_before_caching <- function(data, dataset, vintage, expected_states = 51
 
     # Check 4: State coverage (for nationwide datasets)
     if (expected_states > 10 && "geoid" %in% names(data)) {
-      state_fips <- unique(substr(as.character(data$geoid), 1, 2))
+      state_fips <- unique(.extract_state_fips(data$geoid))
       actual_states <- length(state_fips)
 
       if (actual_states < expected_states * 0.9) {  # Require 90%+ coverage
