@@ -219,7 +219,7 @@ load_cohort_data <- function(dataset = c("ami", "fpl"),
     # Extract state FIPS from geoid (first 2 digits)
     state_fips <- get_state_fips(states)
     data <- data |>
-      dplyr::filter(substr(as.character(geoid), 1, 2) %in% state_fips)
+      dplyr::filter(.extract_state_fips(geoid) %in% state_fips)
 
     if (verbose) {
       message("Filtered to state(s): ", paste(states, collapse = ", "))
