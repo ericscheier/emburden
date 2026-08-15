@@ -1,0 +1,76 @@
+digraph pipeline {
+  rankdir=LR; splines=spline; nodesep=0.34; ranksep=0.7; ratio=0.42; bgcolor="white";
+  node [shape=box style="rounded,filled" fontname="Helvetica" fontsize=16 margin="0.18,0.14" color="#13294B" penwidth=1.4];
+  edge [color="#6b7480" arrowsize=0.7 penwidth=1.0];
+
+  subgraph cluster_src {
+    label="Public data sources"; fontname="Helvetica-Bold"; fontsize=16; color="#c8ccd2"; style="rounded";
+    node [fillcolor="#eef1f5" fontcolor="#13294B"];
+    acs   [label="ACS PUMS +
+tract margins
+(Census)"];
+    recs  [label="RECS
+(EIA)"];
+    rstk  [label="ResStock / EULP
+(NREL physics)"];
+    eia   [label="EIA-861 rates +
+URDB tariffs"];
+    geo0  [label="TIGER +
+PUMA-tract crosswalk"];
+    egrid [label="eGRID
+(EPA carbon)"];
+  }
+
+  subgraph cluster_data { label="emburdendata 0.2.0"; fontname="Helvetica-Bold"; fontsize=16; color="#4B9CD3"; style="rounded";
+    node [fillcolor="#dbe8f4" fontcolor="#13294B"]; dl [label="download +
+harmonize sources"]; }
+  subgraph cluster_geo { label="emburdengeo 0.1.0"; fontname="Helvetica-Bold"; fontsize=16; color="#4B9CD3"; style="rounded";
+    node [fillcolor="#dbe8f4" fontcolor="#13294B"]; gx [label="FIPS / GEOID /
+tract crosswalks"]; }
+
+  subgraph cluster_synth {
+    label="emburdensynth 0.1.0  -  5-phase pipeline (matches spatial PUMA->tract & temporal per-vintage resolution)";
+    fontname="Helvetica-Bold"; fontsize=16; color="#13294B"; style="rounded";
+    node [fillcolor="#e4ecf6" fontcolor="#13294B"];
+    p1 [label="1. Physical imputation
+(ResStock building)"];
+    p2 [label="2. Bill calibration
+(RECS quantile map)"];
+    p3 [label="3. Spatial allocation
+(sim. annealing -> tracts)"];
+    p4 [label="4. Grid recovery
+(EIA-861 rate -> kWh)"];
+    p5 [label="5. Load profiles + EAR
+(EnergyPlus baseline)"];
+    p1 -> p2 -> p3 -> p4 -> p5;
+  }
+
+  subgraph cluster_an { label="emburden 0.7.0  -  analysis"; fontname="Helvetica-Bold"; fontsize=16; color="#4B9CD3"; style="rounded";
+    node [fillcolor="#dbe8f4" fontcolor="#13294B"]; an [label="nEb - EAR -
+FGT - Gini"]; }
+
+  ens [label="Ensemble
+tract-level synthetic microdata
+(uncertainty-quantified, M=20)"
+       shape=box style="rounded,filled" fillcolor="#13294B" fontcolor="white" fontname="Helvetica-Bold" fontsize=16 penwidth=1.5];
+
+  subgraph cluster_app {
+    label="Potential applications"; fontname="Helvetica-Bold"; fontsize=16; color="#e8c9b3"; style="rounded";
+    node [fillcolor="#fbe6d5" fontcolor="#d95f02"];
+    a1 [label="Capacity
+expansion"]; a2 [label="Technology
+adoption"];
+    a3 [label="Health under
+climate shocks"]; a4 [label="Life-cycle
+assessment"];
+    a5 [label="Affordability under
+data-center growth"];
+  }
+
+  acs -> dl; recs -> dl; rstk -> dl; eia -> dl; egrid -> dl; geo0 -> gx;
+  dl -> gx -> p1;
+  rstk -> p1 [style=dashed]; recs -> p2 [style=dashed]; eia -> p4 [style=dashed];
+  p5 -> an -> ens;
+  ens -> a1; ens -> a2; ens -> a3; ens -> a4; ens -> a5;
+}
+

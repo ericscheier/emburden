@@ -1,0 +1,286 @@
+Using cached ArcGIS GeoJSON: /home/ess/Documents/apps/net_energy_equity/data-raw/arcgis_utility_territories.geojson
+Reading ArcGIS utility service territory polygons...
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+ArcGIS: 2931 utility service territory polygons loaded and cleaned
+  ✓ All geometries valid after st_make_valid() + st_buffer(0)
+  Metadata: ArcGIS file dated 2026-02-22 09:36:57.372344 (305.83 MB)
+Using cached EIA 861 rates: /home/ess/Documents/apps/net_energy_equity/data-raw/eia861_rates.rds
+Using cached EIA 861 service:  /home/ess/Documents/apps/net_energy_equity/data-raw/eia861_service_territory.rds
+Using cached eGRID data: /home/ess/Documents/apps/net_energy_equity/data-raw/egrid_utility_subregion.rds
+Using cached RUCA data: /home/ess/Documents/apps/net_energy_equity/data-raw/ruca_2020_tracts.rds
+Using cached HDD/CDD data: /home/ess/Documents/apps/net_energy_equity/data-raw/county_hdd_cdd.rds
+Population data helper function loaded for off-grid detection
+Skip (current): AL
+Skip (current): AK
+Skip (current): AZ
+Skip (current): AR
+Skip (current): CA
+Skip (current): CO
+Skip (current): CT
+Skip (current): DE
+Skip (current): DC
+Skip (current): FL
+Skip (current): GA
+Skip (current): HI
+Skip (current): ID
+Skip (current): IL
+Skip (current): IN
+Skip (current): IA
+Skip (current): KS
+Skip (current): KY
+Skip (current): LA
+Skip (current): ME
+Skip (current): MD
+Skip (current): MA
+Skip (current): MI
+Skip (current): MN
+Skip (current): MS
+Skip (current): MO
+Skip (current): MT
+Skip (current): NE
+Skip (current): NV
+Skip (current): NH
+Skip (current): NJ
+Skip (current): NM
+Skip (current): NY
+Skip (current): NC
+Skip (current): ND
+Skip (current): OH
+Skip (current): OK
+Skip (current): OR
+Rebuilding PA (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing PA (FIPS 42)...
+  80 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 3445 tracts
+  3445 census tracts
+  Population data joined: 3445 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 3438/3445 tracts matched
+  7 unmatched tracts → nearest-neighbor fill
+  EIA 861 fallback: 35 utilities missing from ORNL
+  Applied EIA 861 fallback to 1 tracts in 1 counties
+    - BOROUGH OF QUAKERTOWN - (PA) (EIA 15541): 1 tracts
+  EIA 861 validation: 3438 verified, 7 no data, 0 not applicable
+  Confidence: Very High=2430, Medium=957, High=58
+  Saved: 3445 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 3445 | NA hdd: 0
+Rebuilding RI (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing RI (FIPS 44)...
+  12 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 247 tracts
+  247 census tracts
+  Population data joined: 247 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 247/247 tracts matched
+  EIA 861 fallback: 1 utilities missing from ORNL
+  EIA 861 validation: 247 verified, 0 no data, 0 not applicable
+  Confidence: Very High=217, Medium=30
+  Saved: 247 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 231 | NA hdd: 0
+Rebuilding SC (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing SC (FIPS 45)...
+  60 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 1317 tracts
+  1317 census tracts
+  Population data joined: 1317 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 1317/1317 tracts matched
+  EIA 861 fallback: 23 utilities missing from ORNL
+  EIA 861 validation: 1317 verified, 0 no data, 0 not applicable
+  Confidence: Medium=810, Very High=463, High=44
+  Saved: 1317 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 316 | NA hdd: 0
+Rebuilding SD (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing SD (FIPS 46)...
+  96 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 242 tracts
+  242 census tracts
+  Population data joined: 242 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 242/242 tracts matched
+  EIA 861 fallback: 58 utilities missing from ORNL
+  EIA 861 validation: 158 verified, 84 no data, 0 not applicable
+  Confidence: Medium=239, Very High=3
+  Saved: 242 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 75 | NA egrid_subregion: 107 | NA hdd: 0
+Rebuilding TN (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing TN (FIPS 47)...
+  123 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 1701 tracts
+  1701 census tracts
+  Population data joined: 1701 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 1701/1701 tracts matched
+  EIA 861 fallback: 20 utilities missing from ORNL
+  EIA 861 validation: 1701 verified, 0 no data, 0 not applicable
+  Confidence: Very High=1160, Medium=476, High=65
+  Saved: 1701 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 1485 | NA hdd: 0
+Rebuilding TX (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing TX (FIPS 48)...
+  167 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 6884 tracts
+  6884 census tracts
+  Population data joined: 6884 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 6884/6884 tracts matched
+  EIA 861 fallback: 85 utilities missing from ORNL
+  EIA 861 validation: 5890 verified, 994 no data, 0 not applicable
+  Confidence: Medium=6636, Very High=245, High=3
+  Saved: 6884 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 994 | NA egrid_subregion: 6171 | NA hdd: 0
+Rebuilding UT (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing UT (FIPS 49)...
+  57 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 716 tracts
+  716 census tracts
+  Population data joined: 716 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 716/716 tracts matched
+  EIA 861 fallback: 36 utilities missing from ORNL
+  EIA 861 validation: 708 verified, 8 no data, 0 not applicable
+  Confidence: Medium=390, Very High=305, High=21
+  Saved: 716 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 7 | NA egrid_subregion: 20 | NA hdd: 0
+Rebuilding VT (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing VT (FIPS 50)...
+  25 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 193 tracts
+  193 census tracts
+  Population data joined: 193 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 193/193 tracts matched
+  EIA 861 fallback: 12 utilities missing from ORNL
+  EIA 861 validation: 193 verified, 0 no data, 0 not applicable
+  Confidence: Very High=135, Medium=53, High=5
+  Saved: 193 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 50 | NA hdd: 0
+Rebuilding VA (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing VA (FIPS 51)...
+  53 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 2186 tracts
+  2186 census tracts
+  Population data joined: 2186 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 2185/2186 tracts matched
+  1 unmatched tracts → nearest-neighbor fill
+  EIA 861 fallback: 14 utilities missing from ORNL
+  EIA 861 validation: 2186 verified, 0 no data, 0 not applicable
+  Confidence: Very High=1590, Medium=534, High=62
+  Saved: 2186 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 317 | NA hdd: 0
+Rebuilding WA (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing WA (FIPS 53)...
+  71 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 1772 tracts
+  1772 census tracts
+  Population data joined: 1772 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 1772/1772 tracts matched
+  EIA 861 fallback: 33 utilities missing from ORNL
+  EIA 861 validation: 846 verified, 926 no data, 0 not applicable
+  Confidence: Medium=1248, Very High=516, High=8
+  Saved: 1772 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 926 | NA egrid_subregion: 1152 | NA hdd: 0
+Rebuilding WV (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing WV (FIPS 54)...
+  25 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 546 tracts
+  546 census tracts
+  Population data joined: 546 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 546/546 tracts matched
+  EIA 861 fallback: 3 utilities missing from ORNL
+  EIA 861 validation: 546 verified, 0 no data, 0 not applicable
+  Confidence: Very High=323, Medium=216, High=7
+  Saved: 546 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 163 | NA hdd: 0
+Rebuilding WI (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing WI (FIPS 55)...
+  140 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 1528 tracts
+  1528 census tracts
+  Population data joined: 1528 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 1528/1528 tracts matched
+  EIA 861 fallback: 93 utilities missing from ORNL
+  EIA 861 validation: 1359 verified, 169 no data, 0 not applicable
+  Confidence: Medium=983, Very High=523, High=22
+  Saved: 1528 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 166 | NA egrid_subregion: 454 | NA hdd: 0
+Rebuilding WY (schema 2026-02-v4-confidence-scoring → 2026-02-v5-tier2-complete)
+Processing WY (FIPS 56)...
+  44 utility service territory polygons intersect state
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 160 tracts
+  160 census tracts
+  Population data joined: 160 tracts with data
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+  Dominant-area: 160/160 tracts matched
+  EIA 861 fallback: 29 utilities missing from ORNL
+  EIA 861 validation: 97 verified, 63 no data, 0 not applicable
+  Confidence: Medium=137, Very High=20, High=3
+  Saved: 160 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 63 | NA egrid_subregion: 75 | NA hdd: 0
+
+All 50 states + DC processed.
+
+Processing US territories (EIA 861 Service Territory fallback)...
+Processing territory PR (FIPS 72)...
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 939 tracts
+  939 census tracts
+  PR: Single utility in ORNL - using direct assignment (PUERTO RICO ELECTRIC PWR AUTHORITY)
+  Assigned: 939/939 tracts to single utility
+  Saved: 939 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 939
+Processing territory VI (FIPS 78)...
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 29 tracts
+  29 census tracts
+  VI: Single utility in ORNL - using direct assignment (VIRGIN ISLANDS WATER & POWER AUTHORITY)
+  Assigned: 29/29 tracts to single utility
+  Saved: 29 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 29
+Processing territory AS (FIPS 60)...
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 18 tracts
+  18 census tracts
+  AS: Single utility in ORNL - using direct assignment (AMERICAN SAMOA POWER AUTHORITY)
+  Assigned: 18/18 tracts to single utility
+  Saved: 18 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 18
+Processing territory GU (FIPS 66)...
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 56 tracts
+  56 census tracts
+  GU: Single utility in ORNL - using direct assignment (GUAM POWER AUTHORITY)
+  Assigned: 56/56 tracts to single utility
+  Saved: 56 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 56
+Processing territory MP (FIPS 69)...
+  Downloading tracts (year=2022)...
+  ✓ Success with year 2022: 23 tracts
+  23 census tracts
+  MP: Single utility in ORNL - using direct assignment (COMMONWEALTH UTILITY CORPORATION)
+  Assigned: 23/23 tracts to single utility
+  Saved: 23 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 23
+
+All processing complete. Output: /home/ess/Documents/apps/net_energy_equity/data-raw/state_utility_maps_spatial
+✔ Setting active project to "/home/ess/Documents/apps/net_energy_equity".
+✔ Saving "sc_utility_map" to "data/sc_utility_map.rda".
+☐ Document your data (see <https://r-pkgs.org/data.html>).
+sc_utility_map: 1317 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 316 | NA hdd: 0
+✔ Saving "nc_utility_map" to "data/nc_utility_map.rda".
+☐ Document your data (see <https://r-pkgs.org/data.html>).
+nc_utility_map: 2660 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 189 | NA egrid_subregion: 781 | NA hdd: 0
+There were 25 warnings (use warnings() to see them)

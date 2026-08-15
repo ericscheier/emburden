@@ -1,0 +1,8 @@
+# Census API Key
+# For use with tidycensus and other Census Bureau data access
+CENSUS_API_KEY=9a6d33180b671aa86868c3c0f861d53fcca7daa6
+
+# To use in R:
+# Sys.setenv(CENSUS_API_KEY = "9a6d33180b671aa86868c3c0f861d53fcca7daa6")
+# OR
+# census_api_key("9a6d33180b671aa86868c3c0f861d53fcca7daa6", install = TRUE)

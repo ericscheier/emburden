@@ -1,0 +1,19 @@
+flowchart LR
+  subgraph SRC["Public data sources"]
+    acs["ACS PUMS + tract margins"]; recs["RECS"]; rstk["ResStock / EULP"]
+    eia["EIA-861 + URDB"]; geo0["TIGER + crosswalk"]; egrid["eGRID"]
+  end
+  dl["emburdendata 0.2.0<br/>download + harmonize"]
+  gx["emburdengeo 0.1.0<br/>tract crosswalks"]
+  subgraph SYN["emburdensynth 0.1.0 - 5 phases (match spatial & temporal resolution)"]
+    p1["1 Physical imputation"]-->p2["2 Bill calibration"]-->p3["3 Spatial allocation"]-->p4["4 Grid recovery"]-->p5["5 Load profiles + EAR"]
+  end
+  an["emburden 0.7.0<br/>nEb / EAR / FGT / Gini"]
+  ens(["Ensemble<br/>tract-level synthetic microdata"])
+  subgraph APP["Potential applications"]
+    a1["Capacity expansion"]; a2["Adoption"]; a3["Health under shocks"]; a4["LCA"]; a5["Affordability under data-center growth"]
+  end
+  acs-->dl; recs-->dl; rstk-->dl; eia-->dl; egrid-->dl; geo0-->gx
+  dl-->gx-->p1; p5-->an-->ens
+  ens-->a1; ens-->a2; ens-->a3; ens-->a4; ens-->a5
+

@@ -1,0 +1,210 @@
+Warning: program compiled against libxml 213 using older 209
+sc_utility_map not found in package namespace. Running build script...
+Using cached ArcGIS GeoJSON: /home/ess/Documents/apps/net_energy_equity/data-raw/arcgis_utility_territories.geojson
+Reading ArcGIS utility service territory polygons...
+Spherical geometry (s2) switched off
+Spherical geometry (s2) switched on
+ArcGIS: 2931 utility service territory polygons loaded and cleaned
+  ✓ All geometries valid after st_make_valid() + st_buffer(0)
+  Metadata: ArcGIS file dated 2026-02-22 09:36:57.372344 (305.83 MB)
+Using cached EIA 861 rates: /home/ess/Documents/apps/net_energy_equity/data-raw/eia861_rates.rds
+Using cached EIA 861 service:  /home/ess/Documents/apps/net_energy_equity/data-raw/eia861_service_territory.rds
+Using cached eGRID data: /home/ess/Documents/apps/net_energy_equity/data-raw/egrid_utility_subregion.rds
+Using cached RUCA data: /home/ess/Documents/apps/net_energy_equity/data-raw/ruca_2020_tracts.rds
+Using cached HDD/CDD data: /home/ess/Documents/apps/net_energy_equity/data-raw/county_hdd_cdd.rds
+Population data helper function loaded for off-grid detection
+Skip (current): AL
+Skip (current): AK
+Skip (current): AZ
+Skip (current): AR
+Skip (current): CA
+Skip (current): CO
+Skip (current): CT
+Skip (current): DE
+Skip (current): DC
+Skip (current): FL
+Skip (current): GA
+Skip (current): HI
+Skip (current): ID
+Skip (current): IL
+Skip (current): IN
+Skip (current): IA
+Skip (current): KS
+Skip (current): KY
+Skip (current): LA
+Skip (current): ME
+Skip (current): MD
+Skip (current): MA
+Skip (current): MI
+Skip (current): MN
+Skip (current): MS
+Skip (current): MO
+Skip (current): MT
+Skip (current): NE
+Skip (current): NV
+Skip (current): NH
+Skip (current): NJ
+Skip (current): NM
+Skip (current): NY
+Skip (current): NC
+Skip (current): ND
+Skip (current): OH
+Skip (current): OK
+Skip (current): OR
+Skip (current): PA
+Skip (current): RI
+Skip (current): SC
+Skip (current): SD
+Skip (current): TN
+Skip (current): TX
+Skip (current): UT
+Skip (current): VT
+Skip (current): VA
+Skip (current): WA
+Skip (current): WV
+Skip (current): WI
+Skip (current): WY
+
+All 50 states + DC processed.
+
+Processing US territories (EIA 861 Service Territory fallback)...
+Skip (current): PR
+Skip (current): VI
+Skip (current): AS
+Skip (current): GU
+Skip (current): MP
+
+All processing complete. Output: /home/ess/Documents/apps/net_energy_equity/data-raw/state_utility_maps_spatial
+✔ Setting active project to "/home/ess/Documents/apps/net_energy_equity".
+✔ Saving "sc_utility_map" to "data/sc_utility_map.rda".
+☐ Document your data (see <https://r-pkgs.org/data.html>).
+sc_utility_map: 1317 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 0 | NA egrid_subregion: 742 | NA hdd: 0
+✔ Saving "nc_utility_map" to "data/nc_utility_map.rda".
+☐ Document your data (see <https://r-pkgs.org/data.html>).
+nc_utility_map: 2660 tracts | NA company_na: 0 | NA dlrs_kwh_2022: 259 | NA egrid_subregion: 1892 | NA hdd: 0
+Pre-computing SC housing fuel panel (will cache)...
+Loading housing panel (fuel): vintage 2018...
+Loading 2018 AMI cohort data...
+  Database not found, trying CSV...
+  Reading CSV: lead_2018_ami.csv
+  ✓ Loaded from CSV
+Filtered to state(s): SC
+Loaded 5420 cohort records
+No columns found matching 'ten_hfl' for vintage 2018; skipping.
+Loading housing panel (fuel): vintage 2022...
+Loading 2022 AMI cohort data...
+  Database not found, trying CSV...
+  Reading CSV: lead_2022_ami.csv
+  ✓ Loaded from CSV
+Filtered to state(s): SC
+Loaded 7825 cohort records
+No columns found matching 'ten_hfl' for vintage 2022; skipping.
+load_housing_panel: no data returned — check that attribute columns exist in LEAD data.
+Pre-computing SC housing tenure panel (will cache)...
+Loading housing panel (tenure): vintage 2018...
+Loading 2018 AMI cohort data...
+  Database not found, trying CSV...
+  Reading CSV: lead_2018_ami.csv
+  ✓ Loaded from CSV
+Filtered to state(s): SC
+Loaded 5420 cohort records
+No columns found matching 'ten' for vintage 2018; skipping.
+Loading housing panel (tenure): vintage 2022...
+Loading 2022 AMI cohort data...
+  Database not found, trying CSV...
+  Reading CSV: lead_2022_ami.csv
+  ✓ Loaded from CSV
+Filtered to state(s): SC
+Loaded 7825 cohort records
+No columns found matching 'ten' for vintage 2022; skipping.
+load_housing_panel: no data returned — check that attribute columns exist in LEAD data.
+County financials cache found: sc_county_financials_cache.rds
+
+===== SC TOP BURDEN CHANGE PREVIEW =====
+# A tibble: 6 × 8
+  county_fips mean_2018 mean_2022 absolute_change percent_change direction  rank
+  <chr>           <dbl>     <dbl>           <dbl>          <dbl> <chr>     <int>
+1 45059          0.0661    0.0917         0.0256            38.7 increase      1
+2 45079          0.0611    0.0703         0.00919           15.0 increase      2
+3 45053          0.0688    0.0779         0.00903           13.1 increase      3
+4 45021          0.116     0.0760        -0.0401           -34.5 decrease      1
+5 45051          0.0625    0.0445        -0.0180           -28.8 decrease      2
+6 45055          0.0968    0.0706        -0.0261           -27.0 decrease      3
+# ℹ 1 more variable: rank_type <chr>
+SC 2022: mean income $36,685,410, mean energy spend $807,330, mean burden 7.65%
+=========================================
+
+Starting SC chartbook render...
+Output: /home/ess/Documents/apps/net_energy_equity/analysis/energy_burden_chartbooks/states/SC_comprehensive_2026.pdf
+
+
+processing file: state_chartbook_comprehensive.Rmd
+1/61                            
+2/61 [setup]                    
+3/61                            
+4/61 [executive-callout]        
+5/61                            
+6/61 [state-scorecard]          
+7/61                            
+8/61 [state-summary-text]       
+9/61                            
+10/61 [exec-top10-tables]        
+11/61                            
+12/61 [exec-top10-dec]           
+13/61                            
+14/61 [us-context-burden-map]    
+15/61                            
+16/61 [us-context-map]           
+17/61                            
+18/61 [national-state-bar]       
+19/61                            
+20/61 [national-state-bar-change]
+21/61                            
+22/61 [map-burden-2022]          
+23/61                            
+24/61 [map-pct-change]           
+25/61                            
+26/61 [utility-territory-map]    
+27/61                            
+28/61 [state-tract-map]          
+29/61                            
+30/61 [all-counties-table]       
+31/61                            
+32/61 [scatter-plot]             
+33/61                            
+34/61 [urban-rural-violin]       
+35/61                            
+36/61 [energy-poverty-rate]      
+37/61                            
+38/61 [climate-context]          
+39/61                            
+40/61 [demo-income-bar]          
+41/61                            
+42/61 [housing-fuel-bar]         
+43/61                            
+44/61 [housing-tenure-bar]       
+45/61                            
+46/61 [utility-state-table]      
+47/61                            
+48/61 [utility-rate-bar]         
+49/61                            
+50/61 [utility-vintage-rates]    
+51/61                            
+52/61 [utility-monthly-bill]     
+53/61                            
+54/61 [egrid-table]              
+55/61                            
+56/61 [egrid-co2e-bar]           
+57/61                            
+58/61 [egrid-renewable-bar]      
+59/61                            
+60/61 [county-profiles]          
+61/61                            
+output file: state_chartbook_comprehensive.knit.md
+
+/home/ess/miniforge3/bin/pandoc +RTS -K512m -RTS state_chartbook_comprehensive.knit.md --to latex --from markdown+autolink_bare_uris+tex_math_single_backslash --output /home/ess/Documents/apps/net_energy_equity/analysis/energy_burden_chartbooks/states/SC_comprehensive_2026.tex --lua-filter /home/ess/R/x86_64-pc-linux-gnu-library/4.3/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /home/ess/R/x86_64-pc-linux-gnu-library/4.3/rmarkdown/rmarkdown/lua/latex-div.lua --embed-resources --standalone --table-of-contents --toc-depth 3 --number-sections --highlight-style tango --pdf-engine xelatex --variable graphics --include-in-header /tmp/RtmpiHhnlQ/rmarkdown-str54ef5d315c88.html 
+
+Output created: analysis/energy_burden_chartbooks/states/SC_comprehensive_2026.pdf
+Render complete in 3.2 minutes.
+PDF: /home/ess/Documents/apps/net_energy_equity/analysis/energy_burden_chartbooks/states/SC_comprehensive_2026.pdf
+There were 50 or more warnings (use warnings() to see the first 50)

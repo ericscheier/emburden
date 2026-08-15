@@ -1,0 +1,54 @@
+digraph pipeline {
+  rankdir=LR; splines=spline; nodesep=0.34; ranksep=0.7; ratio=0.42; bgcolor="white";
+  node [shape=box style="rounded,filled" fontname="Helvetica" fontsize=16 margin="0.18,0.14" color="#13294B" penwidth=1.4 fixedsize=true width=1.5 height=0.55];
+  edge [color="#6b7480" arrowsize=0.7 penwidth=1.0];
+
+  subgraph cluster_src {
+    label=""; fontname="Helvetica-Bold"; fontsize=16; color="#c8ccd2"; style="rounded";
+    node [fillcolor="#eef1f5" fontcolor="#13294B"];
+    acs   [label=""];
+    recs  [label=""];
+    rstk  [label=""];
+    eia   [label=""];
+    geo0  [label=""];
+    egrid [label=""];
+  }
+
+  subgraph cluster_data { label=""; fontname="Helvetica-Bold"; fontsize=16; color="#4B9CD3"; style="rounded";
+    node [fillcolor="#dbe8f4" fontcolor="#13294B"]; dl [label=""]; }
+  subgraph cluster_geo { label=""; fontname="Helvetica-Bold"; fontsize=16; color="#4B9CD3"; style="rounded";
+    node [fillcolor="#dbe8f4" fontcolor="#13294B"]; gx [label=""]; }
+
+  subgraph cluster_synth {
+    label="";
+    fontname="Helvetica-Bold"; fontsize=16; color="#13294B"; style="rounded";
+    node [fillcolor="#e4ecf6" fontcolor="#13294B"];
+    p1 [label=""];
+    p2 [label=""];
+    p3 [label=""];
+    p4 [label=""];
+    p5 [label=""];
+    p1 -> p2 -> p3 -> p4 -> p5;
+  }
+
+  subgraph cluster_an { label=""; fontname="Helvetica-Bold"; fontsize=16; color="#4B9CD3"; style="rounded";
+    node [fillcolor="#dbe8f4" fontcolor="#13294B"]; an [label=""]; }
+
+  ens [label=""
+       shape=box style="rounded,filled" fillcolor="#13294B" fontcolor="white" fontname="Helvetica-Bold" fontsize=16 penwidth=1.5];
+
+  subgraph cluster_app {
+    label=""; fontname="Helvetica-Bold"; fontsize=16; color="#e8c9b3"; style="rounded";
+    node [fillcolor="#fbe6d5" fontcolor="#d95f02"];
+    a1 [label=""]; a2 [label=""];
+    a3 [label=""]; a4 [label=""];
+    a5 [label=""];
+  }
+
+  acs -> dl; recs -> dl; rstk -> dl; eia -> dl; egrid -> dl; geo0 -> gx;
+  dl -> gx -> p1;
+  rstk -> p1 [style=dashed]; recs -> p2 [style=dashed]; eia -> p4 [style=dashed];
+  p5 -> an -> ens;
+  ens -> a1; ens -> a2; ens -> a3; ens -> a4; ens -> a5;
+}
+
