@@ -438,6 +438,14 @@ CAUSES = {
         "label": "Assault / homicide (X85-Y09, Y87.1)",
         "icd_codes": "X85-Y09\nY87.1",     # U01-U02 dropped: WONDER form rejects
     },
+    "homicide_firearm": {                  # SUB — assault by firearm (X93,X94,X95)
+        "label": "Assault by firearm (X93, X94, X95)",
+        "icd_codes": "X93\nX94\nX95",      # ranges rejected by WONDER; enumerate
+    },
+    "homicide_nonfirearm": {               # COMPLEMENT
+        "label": "Assault non-firearm (X85-X92, X96-Y09, Y87.1)",
+        "icd_codes": "X85-X92\nX96-Y09\nY87.1",
+    },
 
     # ── Unintentional injuries ──
     "falls": {                             # EXACT — NCHS 358 #310
