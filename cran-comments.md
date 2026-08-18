@@ -1,3 +1,29 @@
+## Maintainer transfer (0.6.3)
+
+This release transfers maintainership from Eric Scheier
+(`eric@scheier.org`) to The Emergi Foundation (`info@emburden.org`).
+Eric Scheier remains as package author (`aut`) and copyright holder
+(`cph`); only the `cre` role moves to The Emergi Foundation.
+
+The transfer is explicitly authorized by Eric Scheier, the prior
+maintainer. CRAN may expect to receive a confirmation email from the
+prior maintainer address (`eric@scheier.org`) before processing the
+maintainer change; that confirmation will be sent after this
+submission is uploaded.
+
+No source-code changes in this release relative to 0.6.2 beyond the
+DESCRIPTION `Authors@R` update and corresponding CITATION /
+.zenodo.json version bumps.
+
+We expect the only new NOTE on this submission to be:
+
+> checking CRAN incoming feasibility ... NOTE
+> Maintainer: 'The Emergi Foundation <info@emburden.org>'
+> New maintainer:
+>   The Emergi Foundation <info@emburden.org>
+> Old maintainer(s):
+>   Eric Scheier <eric@scheier.org>
+
 ## Resubmission (0.6.2)
 
 This release addresses the check failure reported by CRAN on 2026-05-18

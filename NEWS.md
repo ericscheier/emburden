@@ -1,3 +1,13 @@
+# emburden 0.6.3
+
+## Maintainer
+
+* Maintainership transferred from Eric Scheier
+  (`eric@scheier.org`) to The Emergi Foundation
+  (`info@emburden.org`). Eric Scheier remains as package author
+  (`aut`) and copyright holder (`cph`); future CRAN correspondence
+  should go to the new maintainer address.
+
 # emburden 0.6.2
 
 ## CRAN Compliance

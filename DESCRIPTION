@@ -1,8 +1,11 @@
 Package: emburden
 Title: Energy Burden Analysis Using Net Energy Return Methodology
-Version: 0.6.2
-Authors@R:
-    person("Eric", "Scheier", , "eric@scheier.org", role = c("aut", "cre", "cph"))
+Version: 0.6.3
+Authors@R: c(
+    person("Eric", "Scheier", role = c("aut", "cph"),
+           comment = c(ORCID = "0000-0001-9849-9089")),
+    person("The Emergi Foundation", role = "cre",
+           email = "info@emburden.org"))
 Description: Calculate and analyze household energy burden using the Net Energy
     Return aggregation methodology. Functions support weighted statistical
     calculations across geographic and demographic cohorts, with utilities for
