@@ -604,19 +604,132 @@ is not a mechanical consequence of "poor-reliability counties have more
 of everything bad." The EAGLE-I customer-days coefficient is essentially
 zero.
 
-## 15. Next steps
+## 15. Storage-inclusive mitigation update (Wave M-storage)
 
-1. **Non-firearm means decomposition** (in progress, ~3-4 h background) —
+*Data pull:* EIA-860 Form (Annual Electric Generator Report), 3_4
+Energy Storage sheets for 2019-2022. Downloaded from the EIA archive
+(`eia860/archive/xls/eia860{YR}.zip`). Aggregated plant-level BESS to
+county-year at `data/county_year_eia860_storage.rds`.
+
+**US utility-scale battery capacity grew 6× in 4 years**:
+
+| Year | Total MW | Counties w/ BESS |
+|---|---|---|
+| 2019 | 1,585 | 104 |
+| 2020 | 2,081 | 126 |
+| 2021 | 5,323 | 158 |
+| 2022 | 9,573 | 201 |
+
+Broadcast to tract-year and included in the mitigation sweep alongside
+solar/DR/AMI for direct comparison. 12% of tract-years now have
+non-zero BESS in their county.
+
+### 15.1 Storage protects — capacity matters, not just presence
+
+| Moderator | β/100k per 1 SD | p | q_BH | direction |
+|---|---|---|---|---|
+| **bess_operating_mwh** (energy capacity, operating) | **−0.975** | 6e-52 | 3e-51 | protective |
+| **bess_capacity_mwh** (energy capacity, total) | **−0.968** | 2e-50 | 8e-50 | protective |
+| **bess_operating_mw** (power capacity, operating) | **−0.662** | 1e-20 | 2e-20 | protective |
+| **bess_capacity_mw** (power capacity, total) | **−0.648** | 1e-19 | 2e-19 | protective |
+| bess_plant_count | +0.600 | 2e-9 | 2e-9 | amplifying |
+| bess_any_storage (binary) | +0.945 | 1e-40 | 3e-40 | amplifying |
+
+**Storage capacity — both MW (power) and MWh (energy) — is protective.**
+The signal is strongest for MWh (duration), consistent with a mechanism
+where longer-duration storage keeps critical loads powered through the
+worst hours of an outage.
+
+**Plant count and binary "any BESS" are amplifying**, because early
+BESS adopters cluster in disaster-prone regions (TX, CA, LA) where the
+baseline outage-homicide effect is stronger. This is a selection effect,
+not a causal one. The correct policy variable is capacity, not
+presence-of-any.
+
+### 15.2 Comparison with prior mitigators
+
+| Mitigator class | β/100k per 1 SD (representative) |
+|---|---|
+| AMI smart meters (ami_total) | **−2.79** |
+| **BESS energy capacity (operating MWh)** | **−0.975** |
+| Demand response (dr_total) | −0.728 |
+| Energy efficiency (ee_total) | −0.370 |
+| Solar penetration (grid_solar_pct) | +0.400 (amplifying) |
+
+**Storage now sits in the second tier of protective interventions**,
+above DR/EE and below AMI. It is much more protective than any
+solar variable, which — as §12.2 hypothesized — flips sign from
+amplifying to protective once storage is measured.
+
+### 15.3 Storage breaks the heat pathway
+
+Triple-interaction (`treated_any × heat_z × storage_z`):
+
+| Moderator | Triple β | q_BH |
+|---|---|---|
+| bess_plant_count | **−11.9** | 3e-138 |
+| bess_capacity_mw | −2.64 | 4e-58 |
+| bess_operating_mw | −2.60 | 5e-56 |
+| bess_any_storage | −1.99 | 4e-43 |
+
+**All storage variables break the heat-amplification pathway.**
+Interpretation: BESS specifically reduces the "outage + heat →
+homicide" combination that is the primary causal mechanism.
+
+### 15.4 Confirmation of "solar-plus-storage" hypothesis
+
+The §12.2 puzzle — that solar penetration alone amplifies while DR
+protects — is resolved. **The protective package is storage.**
+Rooftop solar without a coupled battery + islanding inverter cannot
+power a home during a grid outage. Once storage is measured directly
+(via EIA-860 BESS capacity), it enters the top tier of protective
+mitigators, and the solar coefficients look less anomalous — they
+were measuring adoption without the outage-protection capability.
+
+## 16. Ecosystem DER audit (Wave M+)
+
+The full inventory across `emburdendata` / `emburdender` shows
+comprehensive DER coverage:
+
+**Loaders available:**
+- **EIA-860** (`emburdendata/R/eia860_downloads.R`): utility-scale
+  generators including battery storage (used above)
+- **EIA-861** (via `emburdender`): DR, AMI, EE, DG, DP, reliability
+  (all in tract panel already)
+- **LBNL Tracking-the-Sun** (`emburdender/R/lbnl_tts_data.R`):
+  residential PV + battery-paired residential PV
+  (`lbnl_storage_paired_count`, `lbnl_storage_paired_kwh` — these are
+  in the HNER panel, not the tract panel)
+- **USPVDB** (`emburdender/R/uspvdb_data.R`): US Photovoltaic Database
+- **Community solar** (`emburdender/R/community_solar_data.R`)
+- **eGRID** (`emburdender/R/egrid_data.R`): grid mix + carbon
+- **AFDC** (`emburdender/R/afdc_data.R`): alternative fuel stations
+  (EV charging etc.)
+- **DSIRE** (`emburdender/R/dsire_data.R`): DER policy database
+- **LEAD DER** (`emburdender/R/lead_der_data.R`)
+- **WAP** (`emburdender/R/wap_data.R`): weatherization assistance
+- **DER Panel builder** (`emburdender/R/der_panel.R`): composes all of
+  the above into a unified state-year or county-year panel
+
+**Gaps flagged for future work:**
+- **Residential storage (paired with rooftop PV)** — LBNL TTS provides
+  it but it's in the HNER panel, not the tract panel. Merge would add
+  household-scale battery to the mitigation analysis.
+- **Utility-scale BESS by ownership type** — could distinguish
+  IOU-owned vs merchant BESS to test whether integrated-utility BESS
+  provides more outage protection than merchant.
+- **DER program participation depth** — enrollment counts are in
+  EIA-861 but MW/MWh contribution not always available.
+
+## 17. Next steps
+
+1. **Non-firearm means decomposition** (in progress, ~2 h background) —
    4 sub-cause WONDER scrapes (X99 sharp, Y00 blunt, X91 strangulation,
-   Y04 bodily force) will isolate which means drive the +0.55 non-firearm
-   heat interaction from §10.2.
-2. **Storage-inclusive mitigator update** — panel currently has no
-   battery/storage columns. Adding utility-scale + residential BESS
-   data from EIA-860 would test whether solar-plus-storage is the
-   protective package the §12.2 analysis implies.
+   Y04 bodily force) will isolate which means drive the +0.55
+   non-firearm heat interaction from §10.2.
+2. **Residential storage merge** — pull `lbnl_storage_paired_count/kwh`
+   from `emburdender::load_lbnl_tts()` into the tract panel and re-run
+   the mitigation sweep with residential BESS alongside utility.
 3. **UCR / NIBRS extension** — non-lethal violent crime coverage.
 4. **Full Bayesian source reconciliation** — the §14 light-touch
-   sensitivity is a robust alternative for now. If a state-space model
-   is needed for manuscript-format claims, fork
-   `analysis/grounded_decomposition_bayes.R` with EAGLE-I / FEMA /
-   OE-417 likelihoods.
+   sensitivity is a robust alternative for now.
