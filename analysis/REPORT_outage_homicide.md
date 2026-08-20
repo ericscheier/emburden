@@ -721,15 +721,70 @@ comprehensive DER coverage:
 - **DER program participation depth** — enrollment counts are in
   EIA-861 but MW/MWh contribution not always available.
 
-## 17. Next steps
+## 17. Non-firearm means decomposition (Wave B4)
 
-1. **Non-firearm means decomposition** (in progress, ~2 h background) —
-   4 sub-cause WONDER scrapes (X99 sharp, Y00 blunt, X91 strangulation,
-   Y04 bodily force) will isolate which means drive the +0.55
-   non-firearm heat interaction from §10.2.
-2. **Residential storage merge** — pull `lbnl_storage_paired_count/kwh`
+*Data pull:* WONDER for four non-firearm ICD-10 codes (all enumerated
+individually; range form not accepted):
+
+- X99 cutting / sharp object
+- Y00 blunt object
+- X91 strangulation / hanging
+- Y04 bodily force
+
+51-state × 4 causes = 204 scrapes at 60 s rate limit (~3 h). Raw TSVs
+at `sources/cdc_wonder_downloads_causes/mortality_XX_*_homicide_{means}.txt`.
+
+### 17.1 Suppression severely limits the decomposition
+
+The non-firearm sub-causes are individually rare. Even at the county-
+year level, all 4 causes together produced only **195 unsuppressed
+county-year rows across 26 states**. WONDER's n<10 rule dominates for:
+
+- bodily_force (Y04): fully suppressed nationally (no wide-panel rows)
+- strangulation (X91): some but sparse
+- blunt (Y00): some but sparse
+- cutting_sharp (X99): the only means with enough data to fit an FE-DiD
+
+Wide-form panel: 180 county-years, only 3 means with any values.
+
+### 17.2 Cutting/sharp assault × burden interaction (only fittable finding)
+
+For X99 (cutting/sharp) as outcome:
+
+| Term | β | p |
+|---|---|---|
+| **treated_any × burden_z** | **+0.115** | **5e-53** |
+
+**Cutting/sharp homicide is elevated in energy-burdened populations
+after outage exposure.** This is a small per-tract effect (+0.115/100k
+per 1 SD burden) but hugely significant (n=25,432 tract-years).
+
+Interpretation: consistent with the §10.2 finding that burden
+amplification is present in the non-firearm segment too, but at a much
+smaller magnitude than for firearm (β=+1.12). The larger +0.55 heat
+interaction from §10.2 could not be decomposed further because the
+individual means outcomes have too much CDC suppression for a heat
+interaction fit.
+
+### 17.3 Interpretation
+
+The non-firearm heat interaction (§10.2 β=+0.55) is not concentrated
+in any single means — WONDER suppression at the individual sub-cause
+level makes it impossible to say from mortality data alone which
+specific weapon/force type drives it. A finer decomposition would
+require:
+
+- FBI NIBRS incident-level data (has weapon type on non-lethal
+  assaults too — much larger N)
+- OR mortality data at state-year aggregation (larger cells; less
+  suppression) — but loses within-tract identification
+
+## 18. Next steps
+
+1. **Residential storage merge** — pull `lbnl_storage_paired_count/kwh`
    from `emburdender::load_lbnl_tts()` into the tract panel and re-run
    the mitigation sweep with residential BESS alongside utility.
-3. **UCR / NIBRS extension** — non-lethal violent crime coverage.
-4. **Full Bayesian source reconciliation** — the §14 light-touch
+2. **FBI UCR / NIBRS extension** — non-lethal violent crime coverage;
+   also solves the means-decomposition suppression problem.
+3. **Full Bayesian source reconciliation** — the §14 light-touch
    sensitivity is a robust alternative for now.

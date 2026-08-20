@@ -1,0 +1,5 @@
+means,outcome_col,spec,term,estimate,se,p_value,n_obs
+cutting_sharp,cutting_sharp_rate_w,headline,treated_any,NA,NA,NA,25432
+cutting_sharp,cutting_sharp_rate_w,heat_interaction,heat_z,0.0025340283103039776,0.001359554810948827,0.06236483141410785,25432
+cutting_sharp,cutting_sharp_rate_w,burden_interaction,burden_z,-0.10816607154297565,0.0065120377059562995,2.825410835992033e-61,25432
+cutting_sharp,cutting_sharp_rate_w,burden_interaction,treated_any:burden_z,0.11468287784078245,0.007446371932985308,5.145950626719334e-53,25432
