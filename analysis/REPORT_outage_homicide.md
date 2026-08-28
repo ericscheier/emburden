@@ -779,12 +779,106 @@ require:
 - OR mortality data at state-year aggregation (larger cells; less
   suppression) — but loses within-tract identification
 
-## 18. Next steps
+## 18. Residential storage + full-DER mitigation (Wave M-full)
 
-1. **Residential storage merge** — pull `lbnl_storage_paired_count/kwh`
-   from `emburdender::load_lbnl_tts()` into the tract panel and re-run
-   the mitigation sweep with residential BESS alongside utility.
-2. **FBI UCR / NIBRS extension** — non-lethal violent crime coverage;
+Merged the tract-year DER panel from `emburdender` (2009–2024,
+`der_panel_tract_2009_2024.rds`) into the outage-homicide panel to
+add three families that were previously missing: (i) **residential
+storage** (LBNL TTS `storage_paired_*`), (ii) **utility net-metering
+storage** and virtual net-metering (EIA-861 NEM), and (iii) **dynamic
+pricing enrollment** (TOU/RTP/VPP/CPP), plus community solar +
+USPVDB utility PV as full-ecosystem comparators. Broadcasted county-
+year EIA-860 utility BESS alongside for a like-for-like comparison.
+
+Analysis frame: 123,839 tract-years, 31 moderators, FE-DiD with tract
++ year fixed effects, cluster-robust SE at tract, BH-FDR joint.
+
+### 18.1 Residential + utility BESS side-by-side (2-way)
+
+| Family | Moderator | β/100k per SD | q (BH) | Direction |
+|---|---|---|---|---|
+| **NEM storage** | nem_storage_installations | **−2.01** | 4e-35 | protective |
+| **NEM storage** | nem_storage_capacity_mw | **−1.29** | 0.03 | protective |
+| **DG storage** | dg_storage_capacity_kw | **−0.165** | 8e-35 | protective |
+| **Utility BESS** | bess_operating_mwh | **−0.975** | 2e-51 | protective |
+| **Utility BESS** | bess_operating_mw | **−0.662** | 2e-20 | protective |
+| **Utility BESS** | bess_capacity_mw | **−0.648** | 2e-19 | protective |
+| **Residential (LBNL)** | res_storage_kwh | −0.001 | 0.91 | null (flat) |
+| **Residential (LBNL)** | res_storage_count | +0.122 | 3e-17 | small amplifier |
+| **Utility BESS** | bess_plant_count | +0.600 | 2e-9 | small amplifier |
+
+Interpretation: **capacity-weighted storage protects; presence-only
+proxies don't** — the moderators that measure MW or MWh of dispatchable
+storage (utility BESS operating MWh, DG storage kW, NEM storage
+capacity/installations) are the largest protective effects in the
+entire ecosystem. Presence-only measures (plant count, LBNL system
+count) show a small amplifier sign — consistent with the "solar
+without islanding is useless during outages" finding from §15.4: a
+tract has more count in denser urban areas with more disturbance-
+prone grid infrastructure, so count alone confounds with exposure.
+
+Residential storage from LBNL flips protective under the burden
+pathway (see 18.3): the flat 2-way average is null/small-amplifier,
+but under high energy-burden conditions res_storage_kwh is β=**−0.36**
+(q=0.02) and res_storage_count is β=**−0.29** (q=5e-4). This matches
+the intuition that residential BESS is a burden-tier intervention:
+the households that benefit most are the ones with the least buffer.
+
+### 18.2 Other new DER moderators
+
+| Moderator | β/100k per SD | q (BH) | Direction |
+|---|---|---|---|
+| **cs_total_projects** | **−20.7** | 1e-65 | community solar — strongest ecosystem protector |
+| **uspvdb_cumulative_plants** | **−2.28** | 8e-110 | utility PV count |
+| **dp_rtp_res** | **−1.33** | 9e-173 | residential real-time pricing |
+| **dp_tou_res** | **−1.31** | 2e-25 | residential time-of-use |
+| **cs_total_capacity_mw** | −0.355 | 1e-3 | community solar MW |
+| **cs_lmi_projects** | −0.327 | 1e-12 | LMI-serving community solar |
+| **uspvdb_cumulative_mw_dc** | +0.165 | 5e-7 | utility PV MW — small amplifier |
+| **ami_penetration_pct** | +0.832 | 2e-25 | AMI share — amplifier |
+
+Community solar (**−20.7/100k per SD**) is the largest single
+protective coefficient in the whole DER inventory — the sign
+survives at MW-level and holds specifically for LMI-serving projects.
+Dynamic-pricing enrollment (TOU/RTP) is a load-shifting intervention
+that also protects, likely by reducing the peak-hour outage risk that
+drives the heat-pathway effect.
+
+### 18.3 Burden-pathway breakers (new — residential storage matters here)
+
+Triple interaction `treated_any × burden_z × moderator`:
+
+| Moderator | β | q (BH) |
+|---|---|---|
+| bess_capacity_mwh | −1.31 | 2e-4 |
+| bess_operating_mwh | −1.24 | 3e-4 |
+| dg_storage_capacity_kw | −0.454 | 3e-19 |
+| **res_storage_kwh** | **−0.364** | **0.02** |
+| **res_storage_count** | **−0.292** | **5e-4** |
+
+**Residential storage protects the burden-amplified population** — the
+tracts where the outage effect on homicide is worst (energy-burdened,
+under §10.2 β=+1.12 firearm interaction) are exactly the tracts where
+adding LBNL-recorded residential batteries flattens the effect. This
+is the strongest justification yet for LMI-targeted residential
+storage deployment as an outage-mortality intervention.
+
+### 18.4 Deliverables
+
+- `analysis/build_tract_year_residential_storage.R` — LBNL TTS → tract-year
+- `analysis/wave_outage_homicide_mitigation_full_ders.R` — full-DER FE-DiD
+- `data/tract_year_residential_storage.rds`
+- `data/wave_outage_homicide_mitigation_full_ders.rds`
+- `manuscript/tables/SI_outage_homicide_mitigation_full_ders_{2way,heat,burden}.csv`
+
+## 19. Next steps
+
+1. **FBI UCR / NIBRS extension** — non-lethal violent crime coverage;
    also solves the means-decomposition suppression problem.
-3. **Full Bayesian source reconciliation** — the §14 light-touch
+2. **Full Bayesian source reconciliation** — the §14 light-touch
    sensitivity is a robust alternative for now.
+3. **Ownership-typed utility BESS** — split EIA-860 storage by IOU vs
+   merchant to test whether integrated-utility BESS is more protective.
+4. **Residential storage temporal expansion** — LBNL TTS covers
+   2014/2018/2022 in this panel; adding pre-2020 SGIP/California
+   micro-data would sharpen the burden-pathway estimate.
