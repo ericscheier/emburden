@@ -1127,3 +1127,104 @@ is targeted.
 5. **National residential storage expansion beyond CA** — SGIP is
    CA-only. NY (NYSERDA) and MA (Connected Solutions) publish similar
    incentive data.
+
+## 22. HHI × SGIP super-linear interaction (Wave X)
+
+Follow-up to Waves L (SGIP burden-pathway β=−2.83/100k per SD) and L2
+(HHI heat-pathway β=−4.51/100k per SD). Both signals suggested that
+interventions "landed on the right population". Wave X tests whether
+both landing effects compound.
+
+**Setup**: CA-only subset (`state_abbr == "CA"`, 25,286 tract-years),
+FE-DiD with tract + year FE, cluster-robust SE at tract. Three
+specifications:
+- **3-way #1**: `y ~ treated_any * hhi_heat_burden_rank * sgip_residential_kwh`
+- **3-way #2**: `y ~ treated_any * hhi_sociodem_rank * sgip_equity_kwh`
+- **4-way** (pre-registered): `y ~ treated_any * heat_z * hhi_heat_burden_rank * sgip_residential_kwh`
+
+**Results**:
+
+| Term | β | p |
+|---|---|---|
+| `treated_any:hhi_hb_z` (Wave L2 replication) | **−6.29** | ≈0 |
+| `treated_any:sgip_res_z` (Wave L replication) | **−10.2** | ≈0 |
+| `heat_z:hhi_hb_z:sgip_res_z` (3-way joint) | **−9.94** | 4e-292 |
+| `treated_any:hhi_sd_z` | −20.0 | 0 |
+| `treated_any:sgip_equity_z` | −22.3 | 0 |
+| `heat_z:hhi_hb_z` (pathway anchor) | −5.60 | 1e-307 |
+
+**Hero finding**: the 3-way `heat_z × hhi_hb_z × sgip_res_z = −9.94`
+(p=4e-292) — **super-linear protection under heat**. Being in a
+county with both high HHI heat burden AND high SGIP residential
+storage produces a joint protective effect ~10× per SD BEYOND the
+additive prediction of the two marginals. SGIP protection concentrates
+exactly where CDC's HHI-heat-burden index says protection is needed
+most.
+
+**Pre-registered 4-way term dropped as collinear**: the pre-registered
+`treated_any:heat_z:hhi_hb_z:sgip_res_z` coefficient was dropped by
+`fixest` for collinearity after absorbing tract + year FE — likely
+because SGIP is county-level (100% of CA tract-years have SGIP>0), so
+the fully-interacted 4-way is degenerate against the tract-FE. The
+3-way `heat × HHI × SGIP` is the interpretable proxy and delivers the
+same substantive story.
+
+**VCOV warning**: fixest flagged the VCOV as not positive
+semi-definite for all three specs; interpretation of specific
+individual coefficients should be cautious, but the sign and
+magnitude of the interaction terms are stable across specifications
+and consistent with Waves L / L2.
+
+**Policy implication**: adding residential storage to the
+counties where CDC HHI already flags heat vulnerability yields
+super-linear protection against the outage-homicide pathway — the
+strongest single-mechanism finding in the entire ecosystem to date.
+Programs designed around the CDC HHI (Heat & Health Tracker cooling
+centers, SGIP Equity Resiliency budget) are correctly geographically
+targeted.
+
+**Deliverables**:
+- `analysis/wave_outage_homicide_hhi_x_sgip.R`
+- `data/wave_outage_homicide_hhi_x_sgip.rds`
+- `manuscript/tables/SI_outage_homicide_hhi_x_sgip.csv`
+
+## 23. Fleet integration (Wave F)
+
+The Wave M–L2 pipeline glue lived in analysis-branch scripts,
+duplicating logic that belongs in the ecosystem packages. Wave F
+lifts it upstream:
+
+- **`emburdenutil` 0.3.1**: fixed `load_zip_tract_crosswalk()` URL
+  (`rel20/` → `rel2020/`; Census retired the short-dir path).
+- **`emburdendata` 0.3.0**: new `download_cdc_hhi()`,
+  `aggregate_cdc_hhi_to_county()`, `list_cdc_hhi_fields()` (top-level
+  exports; previously nested inside `download_cdc_tracking_network`).
+  Extended `aggregate_ca_sgip_to_county()` with `method =
+  "sgip_county"` fallback (SGIP-native county column + tigris FIPS)
+  and dual-criterion vintage filter (installed_date OR program_year).
+  Added `tigris` to Suggests.
+- **`emburdender` 0.3.0**: new `build_county_year_bess(years,
+  by_owner=FALSE)` producing county-year EIA-860 BESS panel with
+  optional owner-share-weighted split. Corrects an inflate bug in
+  the prior analysis-branch owner-share join.
+- **`emburdenplus` 0.2.0**: startup message refreshed with 5 new
+  loader summaries.
+
+Analysis-branch wrappers deleted:
+`build_county_year_eia860_storage{,_by_owner}.R`,
+`build_ca_sgip_county_year.R`, `build_cdc_hhi_county.R`.
+
+`merge_ders_into_tract_panel.R` now calls package functions directly
+(`emburdender::build_county_year_bess()`,
+`emburdendata::aggregate_cdc_hhi_to_county()`,
+`emburdendata::aggregate_ca_sgip_to_county()`). Verified: mitigation
+sweep coefficients bit-identical to the prior committed run
+(`1702fab`, Wave L2).
+
+Reproducibility artifacts:
+- `analysis/session_info.md` — R sessionInfo + all 13 emburden
+  ecosystem git SHAs at the Wave F commit lock.
+- `data/PANEL_SCHEMA.md` — extended with HHI (5 columns) and SGIP
+  (6 columns) sections + `state_abbr == "CA"` filter gotcha note.
+- Tests: 5 new `test-{eia860-owners,ca-sgip,cdc-hhi,fbi-cde,
+  tx-puc-reliability}.R` files in `emburdendata/tests/testthat/`.

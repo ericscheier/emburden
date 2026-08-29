@@ -119,6 +119,56 @@ high-confidence but limited to the multi-owner subset.
 | `dp_has_tou`, `dp_has_rtp`, `dp_has_vpp`, `dp_has_cpp`, `dp_has_cpr` | 0/1 | 2013-2024 |
 | `dp_tou_res`, `dp_rtp_res`, `dp_vpp_res`, `dp_cpp_res`, `dp_cpr_res` | count | 2013-2024 |
 
+### CDC HEAT & HEALTH INDEX (Wave L2) — Harvard Dataverse mirror (`emburdendata::aggregate_cdc_hhi_to_county`)
+
+Source: Harvard Dataverse DOI `10.7910/DVN/IIGITP` (file: HHI_Data.zip →
+HHI Data 2024 United States.xlsx). ZCTA5-level; aggregated to county via
+`tigris::zctas(2020)` ∩ `tigris::counties(2020)` area × POP weighting.
+
+| Column | Unit | Coverage | Caveats |
+|---|---|---|---|
+| `hhi_overall_rank` | percentile [0,1] | static 2024 | Composite of the 4 sub-indices |
+| `hhi_heat_burden_rank` | percentile [0,1] | static 2024 | Historical Heat & Health Burden (prior heat mortality) |
+| `hhi_sensitivity_rank` | percentile [0,1] | static 2024 | Chronic-condition share (CHD/obesity/diabetes/COPD/asthma/mental) |
+| `hhi_nbe_rank` | percentile [0,1] | static 2024 | Natural & Built Environment (imperviousness, tree cover, PM2.5) |
+| `hhi_sociodem_rank` | percentile [0,1] | static 2024 | Sociodemographic (poverty, uninsured, no-HS, isolation, ELP) |
+
+**Time-invariance**: HHI is single-vintage (2024). Broadcast across
+2014/2018/2022 waves on `county_fips` only — reasonable for structural
+heat vulnerability, but not for time-varying interventions.
+
+**Coverage**: 3,108 counties across 49 states (excludes some
+territories). CDC EPHT REST API `getCoreHolder` returns 400 for HHI
+measure IDs 1504–1508; the Harvard Dataverse mirror is functionally
+identical to the CDC-published bulk workbook and is the only
+programmatically-accessible source (CDC's `apihelp` page 404s and the
+`downloadhhi` endpoint requires a token no longer distributed).
+
+### CALIFORNIA SGIP (Wave L) — `emburdendata::aggregate_ca_sgip_to_county`
+
+Source: SGIP Weekly Statewide Report (selfgenca.com), 106,432 records
+2001–present. Filtered to storage tech (Electrochemical + Mechanical
+Storage), rolled up cumulative through wave year via SGIP-native
+`county` column + `tigris::fips_codes` FIPS lookup (97% match rate).
+
+| Column | Unit | Coverage | Caveats |
+|---|---|---|---|
+| `sgip_battery_all_count` | count | CA-only | All-sector cumulative through wave year |
+| `sgip_battery_all_kwh` | kWh | CA-only | All-sector cumulative energy capacity |
+| `sgip_residential_count` | count | CA-only | Sector = Residential / Single Family / Multifamily |
+| `sgip_residential_kwh` | kWh | CA-only | Same, energy capacity |
+| `sgip_equity_count` | count | CA-only | Budget cat = Equity / ERI / Small Residential / San Joaquin |
+| `sgip_equity_kwh` | kWh | CA-only | Same, energy capacity |
+
+**CA-only note**: non-CA counties have all `sgip_*` columns
+zero-filled (0 = "no SGIP program in this state", not missing). The
+FE-DiD moderator uses within-CA variation only.
+
+**Filter gotcha**: to subset the panel to CA rows, filter on
+`state_abbr == "CA"` — NOT `state_fips == "06"`. The panel writes
+`state_fips` as `"6"` (leading zero stripped by CSV coerce), so the
+string-literal `"06"` filter returns zero rows.
+
 ### AUDIT COLUMNS — `lbnl_audit_*`
 
 Direct LBNL TTS tract rollup (not routed through ZCTA→tract crosswalk),

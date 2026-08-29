@@ -1,0 +1,19 @@
+spec,label,term,estimate,se,p_value,n_obs
+3way_HHI_SGIP_outage,SGIP residential kWh x HHI heat-burden x outage (CA),treated_any,-4.841084035521194,0.023289146509439033,0,14510
+3way_HHI_SGIP_outage,SGIP residential kWh x HHI heat-burden x outage (CA),sgip_res_z,-0.2399362675300945,0.013355998571660152,1.253483399011636e-70,14510
+3way_HHI_SGIP_outage,SGIP residential kWh x HHI heat-burden x outage (CA),treated_any:hhi_hb_z,-6.287261355104259,0.00990092901298179,0,14510
+3way_HHI_SGIP_outage,SGIP residential kWh x HHI heat-burden x outage (CA),treated_any:sgip_res_z,-10.16598621986839,0.016285517460632098,0,14510
+3way_HHI_SGIP_outage,SGIP residential kWh x HHI heat-burden x outage (CA),hhi_hb_z:sgip_res_z,0.5009042820341603,0.009806751994117869,0,14510
+3way_HHIsd_SGIPeq_outage,SGIP equity kWh x HHI sociodem x outage (CA),treated_any,19.21941830290565,0.018547792000783745,0,14510
+3way_HHIsd_SGIPeq_outage,SGIP equity kWh x HHI sociodem x outage (CA),sgip_equity_z,-0.02687484731413963,0.012034006348529348,0.025563541934909617,14510
+3way_HHIsd_SGIPeq_outage,SGIP equity kWh x HHI sociodem x outage (CA),treated_any:hhi_sd_z,20.0460081680568,0.0065324812893187015,0,14510
+3way_HHIsd_SGIPeq_outage,SGIP equity kWh x HHI sociodem x outage (CA),treated_any:sgip_equity_z,22.344480141512225,0.039827626936693165,0,14510
+3way_HHIsd_SGIPeq_outage,SGIP equity kWh x HHI sociodem x outage (CA),hhi_sd_z:sgip_equity_z,0.3100011178223797,0.0164569419431429,2.626693074767938e-77,14510
+4way_full,SGIP residential kWh x HHI heat-burden x heat x outage (CA),treated_any,-5.498710218361461,0.026468391330334785,0,14510
+4way_full,SGIP residential kWh x HHI heat-burden x heat x outage (CA),sgip_res_z,-5.076083628141589,0.4272499831058812,2.9720807785343744e-32,14510
+4way_full,SGIP residential kWh x HHI heat-burden x heat x outage (CA),treated_any:hhi_hb_z,-7.124702788512822,0.01811908066135608,0,14510
+4way_full,SGIP residential kWh x HHI heat-burden x heat x outage (CA),heat_z:hhi_hb_z,-5.599018033379608,0.1421404615542028,1.4826507892177146e-307,14510
+4way_full,SGIP residential kWh x HHI heat-burden x heat x outage (CA),treated_any:sgip_res_z,-10.682854222296617,0.014213204269414493,0,14510
+4way_full,SGIP residential kWh x HHI heat-burden x heat x outage (CA),heat_z:sgip_res_z,3.588875282556465,0.317709568160306,2.4172988086961848e-29,14510
+4way_full,SGIP residential kWh x HHI heat-burden x heat x outage (CA),hhi_hb_z:sgip_res_z,13.747474188840044,0.34103104975467724,1.267e-320,14510
+4way_full,SGIP residential kWh x HHI heat-burden x heat x outage (CA),heat_z:hhi_hb_z:sgip_res_z,-9.939487576670956,0.2596196183378103,4.062436677034596e-292,14510

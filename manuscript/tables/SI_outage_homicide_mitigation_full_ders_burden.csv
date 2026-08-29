@@ -1,10 +1,10 @@
 spec,moderator,term,estimate,se,p_value,n_obs,q_bh,sig_fdr_10
 burden_break,res_storage_count,treated_any:burden_z:res_storage_count_z,-0.29242348782431765,0.07953820520682443,2.367198144772791e-4,118679,5.152137138623133e-4,TRUE
 burden_break,res_storage_kwh,treated_any:burden_z:res_storage_kwh_z,-0.36440551202350857,0.14381436860616972,0.011284783563326753,118679,0.017397374660128744,TRUE
-burden_break,bess_plant_count,treated_any:burden_z:bess_plant_count_z,4.728545586371728,1.3039656088359903,2.8785459250910475e-4,118679,5.917011068242708e-4,TRUE
-burden_break,bess_capacity_mw,treated_any:burden_z:bess_capacity_mw_z,-0.038628594715304665,0.24204834606989808,0.8732044608536123,118679,0.897460140321768,FALSE
+burden_break,bess_plant_count,treated_any:burden_z:bess_plant_count_z,4.5246037272530195,1.33605407156697,7.084076207018589e-4,118679,0.0014561712203315987,TRUE
+burden_break,bess_capacity_mw,treated_any:burden_z:bess_capacity_mw_z,-0.03483672772984825,0.23293165533447321,0.8811142460171941,118679,0.9020109886117439,FALSE
 burden_break,bess_capacity_mwh,treated_any:burden_z:bess_capacity_mwh_z,-1.3125142644998906,0.32575017133254863,5.60590018480304e-5,118679,1.4815593345550893e-4,TRUE
-burden_break,bess_operating_mw,treated_any:burden_z:bess_operating_mw_z,0.04311791200874926,0.24153250011584418,0.858316958923045,118679,0.897460140321768,FALSE
+burden_break,bess_operating_mw,treated_any:burden_z:bess_operating_mw_z,0.04406240486585755,0.23242475290039832,0.8496414203002838,118679,0.8981923586031572,FALSE
 burden_break,bess_operating_mwh,treated_any:burden_z:bess_operating_mwh_z,-1.2433211616947677,0.3249204872357073,1.301353016107216e-4,118679,3.009378849747937e-4,TRUE
 burden_break,bess_any_storage,treated_any:burden_z:bess_any_storage_z,2.1695098497702405,0.3932499383824321,3.470085129408424e-8,118679,1.1672104526191971e-7,TRUE
 burden_break,nem_storage_installations,treated_any:burden_z:nem_storage_installations_z,2.9435333228134923,0.5783871879212789,3.6102551643148815e-7,118679,1.1131620089970885e-6,TRUE
