@@ -1,10 +1,11 @@
 #!/usr/bin/env Rscript
-# Full-DER mitigation sweep: merges the missing DER columns from
-# emburdender's tract-year DER panel (2009-2024) into the tract panel and
-# reruns the outage x moderator FE-DiD. Adds residential storage (LBNL),
-# net-metering storage, community solar, USPVDB utility PV, and dynamic-
-# pricing enrollment (TOU/RTP/VPP/CPP), on top of the utility-scale BESS
-# already merged in wave_outage_homicide_mitigation_with_storage.R.
+# Full-DER mitigation sweep — consumes the formalized pre-merged panel.
+#
+# Reads: data/tract_panel_enhanced_with_ders.csv
+#        (from analysis/merge_ders_into_tract_panel.R)
+#
+# Formerly did its own inline merges (moved to the merge script). This
+# script now only does the FE-DiD sweep and reporting.
 
 suppressPackageStartupMessages({
   library(dplyr); library(readr); library(fixest); library(tidyr); library(data.table)
@@ -20,88 +21,29 @@ zscore <- function(x) {
 med_imp <- function(x) ifelse(is.na(x) | !is.finite(x),
                               median(x[is.finite(x)], na.rm=TRUE), x)
 
-# ---- Load panel + DER supplement ----
-panel <- fread(file.path(DATA, "tract_panel_enhanced_with_homicide.csv"),
-               showProgress=FALSE)
-panel[, county_fips := formatC(as.integer(county_fips), width=5, flag="0")]
-panel[, year := as.integer(year)]
-panel[, geoid := as.character(geoid)]
+# ---- Load formalized panel ----
+enriched_path <- file.path(DATA, "tract_panel_enhanced_with_ders.csv")
+if (!file.exists(enriched_path)) {
+  stop("Enriched panel missing: ", enriched_path,
+       "\nRun: Rscript analysis/merge_ders_into_tract_panel.R")
+}
+merged <- fread(enriched_path, showProgress = FALSE)
 
-der  <- as.data.table(readRDS("~/.cache/emburdender/der_panel_tract_2009_2024.rds"))
-der[, geoid := as.character(geoid)]
-der[, year  := as.integer(year)]
-
-# LBNL storage — clip sentinel negatives to 0
-der[, lbnl_storage_paired_kwh := pmax(lbnl_storage_paired_kwh, 0, na.rm=TRUE)]
-der[is.na(lbnl_storage_paired_kwh), lbnl_storage_paired_kwh := 0]
-der[is.na(lbnl_storage_paired_count), lbnl_storage_paired_count := 0L]
-
-# Pull just the columns not already in panel
-new_der_cols <- c(
-  # residential storage
-  "lbnl_storage_paired_count", "lbnl_storage_paired_kwh",
-  # utility net-metering storage (distinct from EIA-860 utility BESS)
-  "nem_number_of_systems", "nem_capacity_kw", "nem_storage_installations",
-  "nem_storage_capacity_mw", "nem_virtual_capacity_mw", "nem_virtual_customers",
-  # distributed generation w/ storage subcomponent
-  "dg_system_count", "dg_capacity_kw", "dg_storage_capacity_kw", "dg_pv_capacity_kw",
-  # community solar
-  "cs_total_projects", "cs_total_capacity_mw", "cs_lmi_projects",
-  # utility-scale PV (USPVDB) — non-BESS but a solar peer
-  "uspvdb_cumulative_plants", "uspvdb_cumulative_mw_dc",
-  # dynamic pricing (peak-shifting programs)
-  "dp_has_tou", "dp_has_rtp", "dp_has_vpp", "dp_has_cpp", "dp_has_cpr",
-  "dp_tou_res", "dp_rtp_res", "dp_vpp_res", "dp_cpp_res", "dp_cpr_res",
-  # AMI penetration ratio
-  "ami_penetration_pct"
-)
-new_der_cols <- intersect(new_der_cols, names(der))
-der_slim <- der[, c("geoid", "year", new_der_cols), with=FALSE]
-
-# Rename to avoid clashes with panel cols (esp. those we already have)
-setnames(der_slim,
-         old = c("lbnl_storage_paired_count", "lbnl_storage_paired_kwh"),
-         new = c("res_storage_count", "res_storage_kwh"))
-
-# Merge on (geoid, year)
-merged <- der_slim[panel, on = c("geoid", "year")]
-
-# Also merge utility BESS (from prior wave)
-bess <- as.data.table(readRDS(file.path(DATA, "county_year_eia860_storage.rds")))
-bess[, year := as.integer(year)]
-bess[, county_fips := as.character(county_fips)]
-bess_broadcast <- bess[, .(county_fips, year, bess_plant_count, bess_capacity_mw,
-                           bess_capacity_mwh, bess_operating_mw, bess_operating_mwh,
-                           bess_any_storage)]
-bess_broadcast[, panel_year := fifelse(year == 2019, 2018L,
-                                fifelse(year == 2022, 2022L, NA_integer_))]
-bess_broadcast <- bess_broadcast[!is.na(panel_year)][, year := NULL]
-setnames(bess_broadcast, "panel_year", "year")
-merged <- bess_broadcast[merged, on = c("county_fips", "year")]
-
-# Zero-fill: residential storage / utility BESS = "0 = none, not missing"
-zero_fill_cols <- c("res_storage_count", "res_storage_kwh",
-                    "nem_storage_installations", "nem_storage_capacity_mw",
-                    "dg_storage_capacity_kw",
-                    "cs_total_projects", "cs_total_capacity_mw", "cs_lmi_projects",
-                    "uspvdb_cumulative_plants", "uspvdb_cumulative_mw_dc",
-                    grep("^dp_", names(merged), value=TRUE),
-                    grep("^bess_", names(merged), value=TRUE))
-zero_fill_cols <- intersect(zero_fill_cols, names(merged))
-for (cc in zero_fill_cols) set(merged, which(is.na(merged[[cc]])), cc, 0)
-
-# ---- Analysis frame ----
 STORAGE_MODS <- c(
-  # RESIDENTIAL STORAGE (new)
+  # RESIDENTIAL STORAGE
   "res_storage_count", "res_storage_kwh",
-  # UTILITY BESS (from prior wave)
+  # UTILITY BESS
   "bess_plant_count", "bess_capacity_mw", "bess_capacity_mwh",
   "bess_operating_mw", "bess_operating_mwh", "bess_any_storage",
   # NEM STORAGE / VIRTUAL NM
   "nem_storage_installations", "nem_storage_capacity_mw",
   "nem_virtual_capacity_mw", "nem_virtual_customers",
   # DISTRIBUTED GENERATION STORAGE
-  "dg_storage_capacity_kw"
+  "dg_storage_capacity_kw",
+  # OWNERSHIP-TYPED BESS (new — from Wave B1)
+  "bess_iou_pct", "bess_merchant_pct",
+  "bess_mw_IOU", "bess_mw_IPP-non-CHP", "bess_mw_muni",
+  "bess_mw_coop", "bess_mw_unknown"
 )
 OTHER_DER_MODS <- c(
   "cs_total_projects", "cs_total_capacity_mw", "cs_lmi_projects",
@@ -115,6 +57,9 @@ COMPARE_MODS <- intersect(c("solar_penetration_pct", "grid_solar_pct",
                           names(merged))
 ALL_MODS <- unique(c(STORAGE_MODS, OTHER_DER_MODS, COMPARE_MODS))
 ALL_MODS <- intersect(ALL_MODS, names(merged))
+
+# Backtick-safe column selection for names with hyphens (bess_mw_IPP-non-CHP)
+safe_col <- function(name) if (grepl("[^A-Za-z0-9_.]", name)) paste0("`", name, "`") else name
 
 dat <- merged[, c("geoid","county_fips","year","wonder_homicide_rate",
                   "extreme_heat_days","avg_energy_burden.x",
@@ -139,12 +84,6 @@ for (m in ALL_MODS) {
 
 cat(sprintf("Analysis frame: %s rows | %d moderators\n",
             format(nrow(dat), big.mark=","), length(ALL_MODS)))
-cat(sprintf("  Residential storage tract-years with any BESS: %s (%.2f%%)\n",
-            format(sum(dat$res_storage_count > 0, na.rm=TRUE), big.mark=","),
-            100 * mean(dat$res_storage_count > 0, na.rm=TRUE)))
-cat(sprintf("  Utility BESS tract-years: %s (%.2f%%)\n",
-            format(sum(dat$bess_any_storage > 0, na.rm=TRUE), big.mark=","),
-            100 * mean(dat$bess_any_storage > 0, na.rm=TRUE)))
 
 # ---- Fitting ----
 fit_one <- function(rhs, spec, mod) {
@@ -160,8 +99,9 @@ fit_one <- function(rhs, spec, mod) {
 
 results <- list()
 for (mod in ALL_MODS) {
-  mz <- paste0(mod, "_z")
-  if (!is.finite(sd(dat[[mz]], na.rm=TRUE)) || sd(dat[[mz]], na.rm=TRUE) == 0) next
+  mz  <- safe_col(paste0(mod, "_z"))
+  raw <- dat[[paste0(mod, "_z")]]
+  if (!is.finite(sd(raw, na.rm=TRUE)) || sd(raw, na.rm=TRUE) == 0) next
   # 2-way
   rhs <- sprintf("treated_any + treated_any:%s + %s", mz, mz)
   results[[paste0("2w_", mod)]] <- fit_one(rhs, "2way", mod)
@@ -185,33 +125,27 @@ int_hb <- all_res %>% filter(spec == "heat_break", grepl("treated_any:heat_z:", 
 int_bb <- all_res %>% filter(spec == "burden_break", grepl("treated_any:burden_z:", term)) %>%
   mutate(q_bh = p.adjust(p_value, method = "BH"), sig_fdr_10 = q_bh < 0.10)
 
-cat("\n=== RESIDENTIAL STORAGE mitigation (2-way) ===\n\n")
-print(int_2w %>% filter(moderator %in% c("res_storage_count","res_storage_kwh",
-                                          "nem_storage_installations","nem_storage_capacity_mw",
-                                          "dg_storage_capacity_kw")) %>%
-      arrange(estimate) %>%
-      select(moderator, estimate, se, p_value, q_bh, sig_fdr_10))
-
-cat("\n=== UTILITY BESS mitigation (2-way, for context) ===\n\n")
-print(int_2w %>% filter(moderator %in% c("bess_plant_count","bess_capacity_mw",
-                                          "bess_operating_mw","bess_operating_mwh")) %>%
-      arrange(estimate) %>%
-      select(moderator, estimate, se, p_value, q_bh, sig_fdr_10))
-
-cat("\n=== OTHER NEW DERs (community solar, USPVDB, dynamic pricing) ===\n\n")
-print(int_2w %>% filter(moderator %in% OTHER_DER_MODS) %>%
-      arrange(estimate) %>%
-      select(moderator, estimate, se, p_value, q_bh, sig_fdr_10))
-
-cat("\n=== ALL storage — HEAT-PATHWAY BREAKERS (triple interaction) ===\n\n")
-print(int_hb %>% filter(moderator %in% STORAGE_MODS) %>%
-      arrange(estimate) %>%
-      select(moderator, estimate, se, p_value, q_bh, sig_fdr_10))
-
-cat("\n=== ALL storage — BURDEN-PATHWAY BREAKERS (triple interaction) ===\n\n")
-print(int_bb %>% filter(moderator %in% STORAGE_MODS) %>%
-      arrange(estimate) %>%
-      select(moderator, estimate, se, p_value, q_bh, sig_fdr_10))
+# ---- Print groups ----
+print_group <- function(int_df, label, mods) {
+  cat(sprintf("\n=== %s ===\n\n", label))
+  print(int_df %>% filter(moderator %in% mods) %>%
+        arrange(estimate) %>%
+        select(moderator, estimate, se, p_value, q_bh, sig_fdr_10))
+}
+print_group(int_2w, "RESIDENTIAL STORAGE mitigation (2-way)",
+            c("res_storage_count","res_storage_kwh",
+              "nem_storage_installations","nem_storage_capacity_mw",
+              "dg_storage_capacity_kw"))
+print_group(int_2w, "UTILITY BESS mitigation (2-way)",
+            c("bess_plant_count","bess_capacity_mw","bess_operating_mw",
+              "bess_operating_mwh"))
+print_group(int_2w, "BESS BY OWNER (2-way — new from Wave B1)",
+            c("bess_iou_pct","bess_merchant_pct",
+              "bess_mw_IOU","bess_mw_IPP-non-CHP","bess_mw_muni",
+              "bess_mw_coop","bess_mw_unknown"))
+print_group(int_2w, "OTHER NEW DERs",  OTHER_DER_MODS)
+print_group(int_hb, "ALL storage — HEAT-PATHWAY BREAKERS", STORAGE_MODS)
+print_group(int_bb, "ALL storage — BURDEN-PATHWAY BREAKERS", STORAGE_MODS)
 
 saveRDS(list(
   storage_moderators = STORAGE_MODS,

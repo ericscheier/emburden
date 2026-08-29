@@ -871,14 +871,122 @@ storage deployment as an outage-mortality intervention.
 - `data/wave_outage_homicide_mitigation_full_ders.rds`
 - `manuscript/tables/SI_outage_homicide_mitigation_full_ders_{2way,heat,burden}.csv`
 
-## 19. Next steps
+## 19. Pipeline formalization + 5 new ecosystem loaders (Wave P)
 
-1. **FBI UCR / NIBRS extension** — non-lethal violent crime coverage;
-   also solves the means-decomposition suppression problem.
-2. **Full Bayesian source reconciliation** — the §14 light-touch
-   sensitivity is a robust alternative for now.
-3. **Ownership-typed utility BESS** — split EIA-860 storage by IOU vs
-   merchant to test whether integrated-utility BESS is more protective.
-4. **Residential storage temporal expansion** — LBNL TTS covers
-   2014/2018/2022 in this panel; adding pre-2020 SGIP/California
-   micro-data would sharpen the burden-pathway estimate.
+### 19.1 Pipeline formalization
+
+The DER merges that Wave M-full performed inline are now lifted into a
+standalone step at `analysis/merge_ders_into_tract_panel.R`, producing
+`data/tract_panel_enhanced_with_ders.csv` (295,134 tract-years × 220
+cols). Downstream wave scripts (starting with the rewritten
+`wave_outage_homicide_mitigation_full_ders.R`) `fread()` this file and
+drop their inline join logic. Coefficient tables are byte-identical to
+the prior committed run (only difference: q-values shift slightly due
+to a larger FDR denominator with the added ownership-split moderators).
+Column-family documentation is at `data/PANEL_SCHEMA.md`.
+
+**Upstream bug fixed at source**: `emburdender/R/lbnl_tts_data.R`
+`.aggregate_tts_to_tract()` was summing LBNL's `-1` sentinels for
+"missing kWh" together with real kWh values, producing large negative
+aggregate `storage_paired_kwh` for 2014 (−504k) and 2018 (−743k). Fix
+clips to `pmax(., 0)` before summing and emits a
+`storage_paired_kwh_missing_count` companion column so missingness
+stays visible. All tract caches regenerated. 2022 aggregate storage
+kWh corrected from 2,750,920 → 5,407,559 kWh — the fix roughly doubled
+the real-storage total because negative sentinels were dragging it
+down. The DER-panel builder path (`emburdender::build_der_panel()`)
+was independently correct (line 191-192 already clipped) so DER-panel
+consumers were unaffected.
+
+### 19.2 EIA-860 ownership-typed BESS (Wave B1)
+
+`emburdendata::load_eia860_owners()` and `classify_owner_type()` now
+parse Schedule 4 (owner records) plus Schedule 1 (utility entity_type)
+and classify owners into IOU / muni / coop / federal / state / IPP-
+non-CHP / IPP-CHP / political_subdivision / other, with a fallback
+pattern-matcher on owner_name for corporate LLCs not in Schedule 1.
+
+`analysis/build_county_year_eia860_storage_by_owner.R` broadcasts
+owner-share-weighted MW/MWh to `data/county_year_eia860_storage_by_owner.rds`
+and the merger picks it up automatically.
+
+**Data-quality caveat**: EIA-860 Schedule 4 only records multi-owner
+arrangements. ~85% of 2022 US BESS MW appear in `bess_mw_unknown`
+(storage-only plants with single-owner structures don't file
+Schedule 4). The mitigation sweep confirms `bess_mw_unknown` is
+protective (β=−0.499/100k per SD, q=2e-16) but IOU/merchant subsets
+individually are too sparse to fit meaningfully in the current panel.
+Confidence in the ownership split is limited to the multi-owner
+subset until we join operator-side utility_id from the Generator
+sheet (deferred).
+
+### 19.3 Four new loader stubs (compiles-clean; live pulls deferred)
+
+Four new `emburdendata` loaders are wired but not yet pulled against
+network (kept compile-clean this session to avoid slow multi-hour
+data pulls):
+
+- **`fbi_cde.R`** — FBI Crime Data Explorer agency-year API loader
+  (aggravated assault, simple assault, robbery, rape, murder,
+  burglary, larceny, MVT, arson) with LEAIC agency→county
+  aggregation. TODO: verify live API endpoint against
+  `api.usa.gov/crime/fbi/cde` before large pulls; ICPSR 38580 LEAIC
+  crosswalk fetch may need manual drop-in.
+- **`ca_sgip.R`** — California SGIP project-level battery loader
+  (`selfgenca.com` weekly workbook) with county-level rollup via
+  `emburdenutil::load_zip_tract_crosswalk()`. Fills the pre-2020
+  residential-storage gap left by LBNL TTS.
+- **`tx_puc_reliability.R`** — Texas PUC annual reliability PDF/xlsx
+  parser (`puc.texas.gov` aggregate report). Accepts manual `file=`
+  fallback since PDF URLs shift by year.
+- **CDC EPHT Heat & Health Index (HVI)** — extended
+  `download_cdc_tracking_network.R` with the 5 HVI measure IDs
+  (1504-1508). Bulk-export loader stubbed with `hvi_bulk_export`
+  flag — CDC serves HHI via a static tract-level file at
+  `data.cdc.gov`, not the standard REST route.
+
+### 19.4 Deliverables
+
+Fixed source (emburdender):
+- `emburdender/R/lbnl_tts_data.R` — sentinel clip + `storage_paired_kwh_missing_count`
+
+New emburdendata loaders:
+- `emburdendata/R/eia860_downloads.R` — `.parse_eia860_owners`,
+  `.parse_eia860_utility`, `.standardize_eia860_owners`,
+  `load_eia860_owners`, `classify_owner_type`; also fixes lowercase-
+  before-nonalnum-replace bug in `.standardize_eia860_generators` and
+  `.standardize_eia860_plants` (latent — the cached RDS files were
+  93-byte error placeholders)
+- `emburdendata/R/fbi_cde.R` — 4 exports
+- `emburdendata/R/ca_sgip.R` — 3 exports
+- `emburdendata/R/tx_puc_reliability.R` — 2 exports
+- `emburdendata/R/download_cdc_tracking_network.R` — 5 HVI measures + `hvi_bulk_export` flag
+
+New pipeline scripts (net_energy_equity):
+- `analysis/build_county_year_eia860_storage_by_owner.R`
+- `analysis/merge_ders_into_tract_panel.R`
+
+New/updated docs:
+- `data/PANEL_SCHEMA.md`
+- Rewritten `analysis/wave_outage_homicide_mitigation_full_ders.R`
+  now consumes `tract_panel_enhanced_with_ders.csv`
+
+## 20. Next steps
+
+1. **Live FBI CDE pull** — run `download_fbi_cde_agency_year()` for
+   aggravated_assault + robbery 2018-2023, aggregate to county-year,
+   merge into panel as `ucr_*_rate` outcomes, rerun FE-DiD.
+2. **CA SGIP pull** — pull `download_ca_sgip("project_level")` and
+   `aggregate_ca_sgip_to_county(2022)`, then rerun burden-pathway
+   mitigation with residential BESS enriched for California.
+3. **CDC HVI bulk-export loader** — wire the tract-level HVI static
+   file into the existing `hvi_bulk_export = TRUE` flag path.
+4. **TX PUC filings** — download the 2022 aggregate reliability
+   report manually and pass via `load_tx_puc_reliability(file=)`.
+5. **NIBRS incident-level master file** — solves §17.2
+   means-decomposition suppression; multi-GB parquet cache required.
+6. **Operator-side ownership** — join Generator sheet's `operator_id`
+   → Schedule 1 entity_type to classify the 85% of BESS currently
+   labeled `bess_mw_unknown`.
+7. **Residential storage temporal expansion** — LBNL TTS covers
+   2014/2018/2022 in this panel; SGIP fills pre-2020 CA specifically.
