@@ -136,6 +136,23 @@ if (file.exists(bess_own_path)) {
   bess_own_bc <- NULL
 }
 
+# ---- 4b. CA SGIP county-year residential storage (P2, CA only) ---------
+sgip_path <- file.path(DATA, "county_year_ca_sgip.rds")
+if (file.exists(sgip_path)) {
+  message("Loading CA SGIP county-year (CA only)...")
+  sgip <- as.data.table(readRDS(sgip_path))
+  sgip[, year := as.integer(year)]
+  sgip[, county_fips := as.character(county_fips)]
+  # SGIP waves already match panel years 2014/2018/2022; no broadcast needed
+  sgip_bc <- sgip[, .(county_fips, year, sgip_battery_all_count,
+                       sgip_battery_all_kwh, sgip_residential_count,
+                       sgip_residential_kwh, sgip_equity_count,
+                       sgip_equity_kwh)]
+} else {
+  message("(Optional) CA SGIP file not found — skipping.")
+  sgip_bc <- NULL
+}
+
 # ---- 5. LBNL-only tract-year residential storage view (audit) -----------
 res_only_path <- file.path(DATA, "tract_year_residential_storage.rds")
 if (file.exists(res_only_path)) {
@@ -160,6 +177,9 @@ merged <- bess_bc[merged,      on = c("county_fips", "year")]
 if (!is.null(bess_own_bc)) {
   merged <- bess_own_bc[merged, on = c("county_fips", "year")]
 }
+if (!is.null(sgip_bc)) {
+  merged <- sgip_bc[merged, on = c("county_fips", "year")]
+}
 if (!is.null(audit_slim)) {
   merged <- audit_slim[merged, on = c("geoid", "year")]
 }
@@ -172,7 +192,8 @@ zero_fill_cols <- c(
   "cs_total_projects", "cs_total_capacity_mw", "cs_lmi_projects",
   "uspvdb_cumulative_plants", "uspvdb_cumulative_mw_dc",
   grep("^dp_",   names(merged), value = TRUE),
-  grep("^bess_", names(merged), value = TRUE)
+  grep("^bess_", names(merged), value = TRUE),
+  grep("^sgip_", names(merged), value = TRUE)  # CA-only; NA elsewhere OK
 )
 zero_fill_cols <- intersect(zero_fill_cols, names(merged))
 for (cc in zero_fill_cols) set(merged, which(is.na(merged[[cc]])), cc, 0)

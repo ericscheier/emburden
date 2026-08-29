@@ -49,7 +49,10 @@ OTHER_DER_MODS <- c(
   "cs_total_projects", "cs_total_capacity_mw", "cs_lmi_projects",
   "uspvdb_cumulative_plants", "uspvdb_cumulative_mw_dc",
   "dp_tou_res", "dp_rtp_res", "dp_vpp_res", "dp_cpp_res", "dp_cpr_res",
-  "ami_penetration_pct"
+  "ami_penetration_pct",
+  # CA SGIP residential storage (P2, CA-only variation)
+  "sgip_residential_count", "sgip_residential_kwh",
+  "sgip_equity_count", "sgip_equity_kwh"
 )
 COMPARE_MODS <- intersect(c("solar_penetration_pct", "grid_solar_pct",
                             "pv_capacity_mw_total", "dr_total", "ami_total",
@@ -144,6 +147,12 @@ print_group(int_2w, "BESS BY OWNER (2-way — new from Wave B1)",
               "bess_mw_IOU","bess_mw_IPP-non-CHP","bess_mw_muni",
               "bess_mw_coop","bess_mw_unknown"))
 print_group(int_2w, "OTHER NEW DERs",  OTHER_DER_MODS)
+print_group(int_2w, "CA SGIP residential storage (2-way, CA-only variation)",
+            c("sgip_residential_count","sgip_residential_kwh",
+              "sgip_equity_count","sgip_equity_kwh"))
+print_group(int_bb, "CA SGIP — burden-pathway breakers",
+            c("sgip_residential_count","sgip_residential_kwh",
+              "sgip_equity_count","sgip_equity_kwh"))
 print_group(int_hb, "ALL storage — HEAT-PATHWAY BREAKERS", STORAGE_MODS)
 print_group(int_bb, "ALL storage — BURDEN-PATHWAY BREAKERS", STORAGE_MODS)
 

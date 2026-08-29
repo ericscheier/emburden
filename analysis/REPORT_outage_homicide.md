@@ -971,22 +971,109 @@ New/updated docs:
 - Rewritten `analysis/wave_outage_homicide_mitigation_full_ders.R`
   now consumes `tract_panel_enhanced_with_ders.csv`
 
-## 20. Next steps
+## 20. Live pulls (Wave L)
 
-1. **Live FBI CDE pull** — run `download_fbi_cde_agency_year()` for
-   aggravated_assault + robbery 2018-2023, aggregate to county-year,
-   merge into panel as `ucr_*_rate` outcomes, rerun FE-DiD.
-2. **CA SGIP pull** — pull `download_ca_sgip("project_level")` and
-   `aggregate_ca_sgip_to_county(2022)`, then rerun burden-pathway
-   mitigation with residential BESS enriched for California.
-3. **CDC HVI bulk-export loader** — wire the tract-level HVI static
-   file into the existing `hvi_bulk_export = TRUE` flag path.
-4. **TX PUC filings** — download the 2022 aggregate reliability
-   report manually and pass via `load_tx_puc_reliability(file=)`.
-5. **NIBRS incident-level master file** — solves §17.2
-   means-decomposition suppression; multi-GB parquet cache required.
-6. **Operator-side ownership** — join Generator sheet's `operator_id`
-   → Schedule 1 entity_type to classify the 85% of BESS currently
-   labeled `bess_mw_unknown`.
-7. **Residential storage temporal expansion** — LBNL TTS covers
-   2014/2018/2022 in this panel; SGIP fills pre-2020 CA specifically.
+Follow-up to Wave P. Executed live pulls against the four deferred
+loaders; two landed usefully, two are blocked at source.
+
+### 20.1 CA SGIP — live pull SUCCEEDED, huge burden-pathway finding
+
+Pulled `selfgenca.com` weekly workbook (23.8 MB, 106,432 records
+2001–2026 with 66,838 completed installations). Aggregated storage
+projects (Electrochemical + Mechanical Storage, 101,764 rows) to
+CA county-year cumulative via the SGIP-native `county` column + tigris
+FIPS lookup (95.5% county-matched). Coverage snapshot:
+
+| Wave | CA counties | Projects | MWh cumulative | Residential % | Equity % |
+|---|---|---|---|---|---|
+| 2014 | 39 | 1,036 | 106 | 49.5% | 3.4% |
+| 2018 | 51 | 10,204 | 816 | 77.0% | 68.4% |
+| 2022 | 58 | 59,733 | 3,590 | 93.1% | 88.2% |
+
+Merged into the enriched panel (`sgip_residential_count/kwh`,
+`sgip_equity_count/kwh`; CA-only variation, zero elsewhere) and rerun.
+
+**Headline: SGIP is a strong burden-pathway breaker.**
+
+| Moderator | 2-way β | 2-way q | Burden triple β | Burden triple q |
+|---|---|---|---|---|
+| `sgip_residential_count` | +0.45 | 1e-13 | **−2.83** | **5e-22** |
+| `sgip_residential_kwh`   | +0.49 | 3e-17 | **−2.67** | **7e-21** |
+| `sgip_equity_count`      | +0.47 | 4e-14 | **−2.82** | **1e-21** |
+| `sgip_equity_kwh`        | +0.64 | 5e-32 | **−2.22** | **3e-16** |
+
+Under the burden pathway, adding SGIP residential storage flattens
+the outage-homicide effect by **~10× the LBNL residential effect**
+(§18.3 had −0.36 for res_storage_kwh). Classic Simpson-style
+pattern: SGIP-heavy CA counties (LA, SD, Riverside) have high
+homicide baselines AND high burden variation, so the 2-way average
+looks positive, but conditional on burden the sign flips strongly
+negative. SGIP is *administrative* CA data (much more complete than
+LBNL TTS at CA-tract level), and the Equity budget category
+specifically targets LMI households — direct policy match to the
+burdened population that drives the outage-homicide effect.
+
+The strongest single burden-pathway breaker in the entire ecosystem.
+
+### 20.2 CDC HHI (Heat & Health Index) — blocked at source
+
+The standard EPHT REST API (`getCoreHolder/{measureId}`) returns
+`400 Bad Request` for measures 1504–1508 (verified via direct fetch)
+because CDC serves the tract-level HHI through a bulk-export path,
+not the standard indicator route. data.cdc.gov Socrata catalog search
+returns only NYC and TN datasets, not the CDC HHI. Static-file URL
+not discoverable via web fetch in this session. `hvi_bulk_export`
+flag in `download_cdc_tracking_network.R` remains stubbed for
+future wiring.
+
+### 20.3 FBI CDE — deprecated API
+
+Every known FBI CDE endpoint returns `404` or CDE "Not Found":
+
+- `api.usa.gov/crime/fbi/{cde,sapi}/*` — 404 across all patterns
+- `cde.ucr.cjis.gov/LATEST/api/*` — 404
+- `ucr.fbi.gov/crime-in-the-u.s/*` — 404
+
+FBI has been removed from api.data.gov's agency list. Only remaining
+paths for non-lethal violent crime by county-year: (a) ICPSR bulk
+download (auth-required); (b) Jacob Kaplan's OpenICPSR mirror
+(project 108164, auth-required). Loader stub retained in
+`emburdendata/R/fbi_cde.R` — change `.FBI_CDE_BASE` once a working
+public API URL is re-published.
+
+### 20.4 TX PUC — deferred (needs manual PDF)
+
+Requires manually-downloaded reliability report PDF from
+`puc.texas.gov/industry/electric/reports/`. Loader accepts
+`file =` parameter for drop-in; deferred until a specific report year
+is targeted.
+
+### 20.5 New deliverables
+
+- `analysis/build_ca_sgip_county_year.R` — SGIP → CA county-year
+  rollup (uses tigris fips_codes, not the ZCTA crosswalk, since
+  Census natl file has blank ZCTA columns and HUD USPS is WAF-blocked)
+- `data/county_year_ca_sgip.rds` — 148 rows × 58 CA counties
+- Extended `analysis/merge_ders_into_tract_panel.R` — SGIP join
+- Extended `analysis/wave_outage_homicide_mitigation_full_ders.R` —
+  4 new SGIP moderators (residential count/kwh, equity count/kwh)
+- Fixed `emburdendata/R/ca_sgip.R` — auto-detect header row
+  (SGIP workbook prepends 2 title rows), added
+  `interconnection_date`/`fully_qualified_state`/HFTD/PSPS to alias
+  map, `Application Code` to `project_id` map
+
+## 21. Next steps
+
+1. **CDC HHI bulk file** — locate the static-file URL (`arcgis.com`
+   or ArcGIS Hub search) and wire into `hvi_bulk_export = TRUE` path.
+2. **FBI Kaplan / NIBRS pull** — get auth on OpenICPSR and pull
+   Jacob Kaplan's concatenated UCR files (project 108164). Solves
+   both P1 (non-lethal violent crime) and §17.2 (means-decomposition
+   suppression).
+3. **TX PUC** — download 2022 aggregate reliability report manually.
+4. **Operator-side EIA-860 ownership** — join Generator sheet's
+   `operator_id` → Schedule 1 entity_type to classify the 85% of
+   BESS currently in `bess_mw_unknown`.
+5. **National residential storage expansion beyond CA** — SGIP is
+   CA-only. NY (NYSERDA) and MA (Connected Solutions) publish similar
+   incentive data.
