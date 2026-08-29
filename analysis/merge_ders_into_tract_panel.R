@@ -136,6 +136,23 @@ if (file.exists(bess_own_path)) {
   bess_own_bc <- NULL
 }
 
+# ---- 4a. CDC HHI county-level Heat & Health Index (P3, national) --------
+hhi_path <- file.path(DATA, "county_cdc_hhi_2024.rds")
+if (file.exists(hhi_path)) {
+  message("Loading CDC HHI county rollup (Wave L2, static 2024)...")
+  hhi <- as.data.table(readRDS(hhi_path))
+  hhi[, county_fips := as.character(county_fips)]
+  # HHI is single-vintage (2024); broadcast to all panel years so each
+  # panel row picks up its county's static HHI. HHI ranks are structural
+  # (heat vulnerability), so time-invariance across 2014/2018/2022 is a
+  # reasonable simplification.
+  hhi_slim <- hhi[, .(county_fips, hhi_overall_rank, hhi_heat_burden_rank,
+                       hhi_sensitivity_rank, hhi_nbe_rank, hhi_sociodem_rank)]
+} else {
+  message("(Optional) CDC HHI file not found — skipping.")
+  hhi_slim <- NULL
+}
+
 # ---- 4b. CA SGIP county-year residential storage (P2, CA only) ---------
 sgip_path <- file.path(DATA, "county_year_ca_sgip.rds")
 if (file.exists(sgip_path)) {
@@ -179,6 +196,10 @@ if (!is.null(bess_own_bc)) {
 }
 if (!is.null(sgip_bc)) {
   merged <- sgip_bc[merged, on = c("county_fips", "year")]
+}
+if (!is.null(hhi_slim)) {
+  # HHI is time-invariant; join on county_fips only, broadcast to all years
+  merged <- hhi_slim[merged, on = "county_fips"]
 }
 if (!is.null(audit_slim)) {
   merged <- audit_slim[merged, on = c("geoid", "year")]

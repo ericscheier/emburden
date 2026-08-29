@@ -1015,16 +1015,68 @@ burdened population that drives the outage-homicide effect.
 
 The strongest single burden-pathway breaker in the entire ecosystem.
 
-### 20.2 CDC HHI (Heat & Health Index) — blocked at source
+### 20.2 CDC HHI (Heat & Health Index) — LOCATED + LOADED (Wave L2)
 
-The standard EPHT REST API (`getCoreHolder/{measureId}`) returns
-`400 Bad Request` for measures 1504–1508 (verified via direct fetch)
-because CDC serves the tract-level HHI through a bulk-export path,
-not the standard indicator route. data.cdc.gov Socrata catalog search
-returns only NYC and TN datasets, not the CDC HHI. Static-file URL
-not discoverable via web fetch in this session. `hvi_bulk_export`
-flag in `download_cdc_tracking_network.R` remains stubbed for
-future wiring.
+**Static-file URL located**: Harvard Dataverse hosts a mirror
+extracted from the CDC Heat & Health Tracker application:
+- **DOI**: `10.7910/DVN/IIGITP` (Extracted Data From: CDC Heat & Health Index)
+- **File**: `HHI_Data.zip` (18 MB) → `HHI Data 2024 United States.xlsx`
+  (32,195 ZCTAs × 75 fields; single vintage 2024; ZCTA5 geography)
+- **Direct URL**: `https://dataverse.harvard.edu/api/access/datafile/10991664`
+
+Why the CDC EPHT REST endpoint returned 400: CDC serves HHI via a
+bulk-export workbook, not the standard `getCoreHolder` indicator
+route. All 6 discoverable EPHT endpoints (`getHHI`, `downloadhhi`,
+`HHIVariableData/{zcta}`, `heatandhealthdata`, etc.) require an API
+token, and CDC's own apihelp page 404s. The Harvard Dataverse mirror
+bypasses this entirely.
+
+**Wiring**:
+- `emburdendata/R/download_cdc_tracking_network.R` — replaced the
+  `hvi_bulk_export = TRUE` no-op stub with `.download_hhi_bulk()`
+  which downloads from Dataverse + reads the workbook + returns
+  aggregated county-level ranks.
+- `analysis/build_cdc_hhi_county.R` (standalone runner) — pulls
+  the workbook, builds ZCTA→county area × population-weighted
+  crosswalk via tigris (56,808 rows), aggregates 5 HHI rank fields
+  to 3,108 US counties across 49 states.
+- Sentinel `-999` values (CDC's missing indicator) converted to NA
+  before weighted-mean aggregation.
+- HHI is time-invariant in this vintage; joined onto the panel on
+  `county_fips` only, broadcast across 2014/2018/2022.
+
+**Panel columns added**:
+`hhi_overall_rank`, `hhi_heat_burden_rank`, `hhi_sensitivity_rank`,
+`hhi_nbe_rank`, `hhi_sociodem_rank` (all in [0, 1] percentile).
+
+**Mitigation results — CDC HHI × heat interaction is a strong pathway breaker**:
+
+| Moderator | 2-way β | Heat-triple β | Heat q |
+|---|---|---|---|
+| `hhi_heat_burden_rank`  | −0.10 | **−4.51** | 4e-40 |
+| `hhi_sociodem_rank`     | +1.11 | **−4.05** | 1e-31 |
+| `hhi_sensitivity_rank`  | −0.92 (b-triple q=0.04) | — | — |
+| `hhi_nbe_rank`          | −0.35 | — | — |
+| `hhi_overall_rank`      | +0.71 | — | — |
+
+The heat-pathway triple β of **−4.51** for `hhi_heat_burden_rank`
+means: for each +1 SD increase in a county's HHB rank, the joint
+effect of heat × outage on homicide drops by 4.51/100k. Since the
+base heat×outage effect from §10.1 is +2.06/100k, high-HHB counties
+show a net *protective* interaction. Interpretation is consistent with
+"high-HHI counties already have heat-response infrastructure (cooling
+centers, MOU'd outreach) that kicks in specifically during heat
+waves." This is a mitigator finding, not an amplifier — CDC's HHI-
+targeted programs appear to be working exactly where they're targeted.
+
+Sociodemographic vulnerability shows the same pattern (heat-triple
+β=−4.05, q=1e-31) but a *positive* 2-way marginal (+1.11) — i.e.,
+sociodemographically vulnerable counties have baseline-higher
+outage-homicide, but their heat-conditional trajectory is protective
+of the marginal shock. Both signals together indicate: HHI-targeted
+interventions land on the correct populations and dampen the heat
+pathway; sociodemographic disadvantage remains a positive baseline
+predictor of outage-homicide but is not amplified by heat.
 
 ### 20.3 FBI CDE — deprecated API
 
@@ -1064,9 +1116,7 @@ is targeted.
 
 ## 21. Next steps
 
-1. **CDC HHI bulk file** — locate the static-file URL (`arcgis.com`
-   or ArcGIS Hub search) and wire into `hvi_bulk_export = TRUE` path.
-2. **FBI Kaplan / NIBRS pull** — get auth on OpenICPSR and pull
+1. **FBI Kaplan / NIBRS pull** — get auth on OpenICPSR and pull
    Jacob Kaplan's concatenated UCR files (project 108164). Solves
    both P1 (non-lethal violent crime) and §17.2 (means-decomposition
    suppression).

@@ -52,7 +52,10 @@ OTHER_DER_MODS <- c(
   "ami_penetration_pct",
   # CA SGIP residential storage (P2, CA-only variation)
   "sgip_residential_count", "sgip_residential_kwh",
-  "sgip_equity_count", "sgip_equity_kwh"
+  "sgip_equity_count", "sgip_equity_kwh",
+  # CDC HHI (P3, national static — heat vulnerability moderators)
+  "hhi_overall_rank", "hhi_heat_burden_rank", "hhi_sensitivity_rank",
+  "hhi_nbe_rank", "hhi_sociodem_rank"
 )
 COMPARE_MODS <- intersect(c("solar_penetration_pct", "grid_solar_pct",
                             "pv_capacity_mw_total", "dr_total", "ami_total",
@@ -102,9 +105,12 @@ fit_one <- function(rhs, spec, mod) {
 
 results <- list()
 for (mod in ALL_MODS) {
+  cat(sprintf("[%s] fitting...\n", mod))
   mz  <- safe_col(paste0(mod, "_z"))
   raw <- dat[[paste0(mod, "_z")]]
-  if (!is.finite(sd(raw, na.rm=TRUE)) || sd(raw, na.rm=TRUE) == 0) next
+  if (!is.finite(sd(raw, na.rm=TRUE)) || sd(raw, na.rm=TRUE) == 0) {
+    cat("  skip (SD 0)\n"); next
+  }
   # 2-way
   rhs <- sprintf("treated_any + treated_any:%s + %s", mz, mz)
   results[[paste0("2w_", mod)]] <- fit_one(rhs, "2way", mod)
@@ -118,6 +124,8 @@ for (mod in ALL_MODS) {
     "treated_any + treated_any:burden_z + treated_any:%s + treated_any:burden_z:%s + burden_z + %s",
     mz, mz, mz)
   results[[paste0("bb_", mod)]] <- fit_one(rhs4, "burden_break", mod)
+  # Aggressive GC + free memory between mods (fixest holds heavy fit objects)
+  gc(verbose = FALSE)
 }
 all_res <- bind_rows(results) %>% filter(!is.na(term))
 
@@ -153,6 +161,15 @@ print_group(int_2w, "CA SGIP residential storage (2-way, CA-only variation)",
 print_group(int_bb, "CA SGIP — burden-pathway breakers",
             c("sgip_residential_count","sgip_residential_kwh",
               "sgip_equity_count","sgip_equity_kwh"))
+print_group(int_2w, "CDC HHI heat-vulnerability (2-way)",
+            c("hhi_overall_rank","hhi_heat_burden_rank","hhi_sensitivity_rank",
+              "hhi_nbe_rank","hhi_sociodem_rank"))
+print_group(int_hb, "CDC HHI × heat interaction (does high-HHI amplify?)",
+            c("hhi_overall_rank","hhi_heat_burden_rank","hhi_sensitivity_rank",
+              "hhi_nbe_rank","hhi_sociodem_rank"))
+print_group(int_bb, "CDC HHI × burden interaction",
+            c("hhi_overall_rank","hhi_heat_burden_rank","hhi_sensitivity_rank",
+              "hhi_nbe_rank","hhi_sociodem_rank"))
 print_group(int_hb, "ALL storage — HEAT-PATHWAY BREAKERS", STORAGE_MODS)
 print_group(int_bb, "ALL storage — BURDEN-PATHWAY BREAKERS", STORAGE_MODS)
 
