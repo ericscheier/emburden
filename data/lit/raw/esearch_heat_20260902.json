@@ -1,0 +1,2 @@
+{"header":{"type":"esearch","version":"0.3"},"esearchresult":{"count":"3","retmax":"3","retstart":"0","idlist":["42208373","36208788","35189885"],"translationset":[{"from":"asthma[MeSH]","to":"\"asthma\"[MeSH Terms]"}],"querytranslation":"\"asthma\"[MeSH Terms] AND (\"heat wave\"[Title/Abstract] OR \"extreme heat\"[Title/Abstract]) AND (\"vulnerab*\"[Title/Abstract] OR \"sensitiv*\"[Title/Abstract]) AND 2015/01/01:2026/12/31[Date - Publication] AND \"English\"[Language]"}}
+

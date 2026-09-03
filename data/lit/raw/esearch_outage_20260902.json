@@ -1,0 +1,2 @@
+{"header":{"type":"esearch","version":"0.3"},"esearchresult":{"count":"1","retmax":"1","retstart":"0","idlist":["41979329"],"translationset":[{"from":"asthma[MeSH]","to":"\"asthma\"[MeSH Terms]"}],"querytranslation":"\"asthma\"[MeSH Terms] AND (\"power outage\"[Title/Abstract] OR \"blackout*\"[Title/Abstract] OR \"grid failure\"[Title/Abstract]) AND 2015/01/01:2026/12/31[Date - Publication] AND \"English\"[Language]"}}
+

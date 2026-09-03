@@ -1,0 +1,42 @@
+{
+  "outage": {
+    "query_slug": "outage",
+    "query_raw": "(asthma[MeSH]) AND (\"power outage\"[tiab] OR blackout*[tiab] OR \"grid failure\"[tiab]) AND (\"2015\"[PDAT] : \"2026\"[PDAT]) AND English[LA]",
+    "query_translation": "\"asthma\"[MeSH Terms] AND (\"power outage\"[Title/Abstract] OR \"blackout*\"[Title/Abstract] OR \"grid failure\"[Title/Abstract]) AND 2015/01/01:2026/12/31[Date - Publication] AND \"English\"[Language]",
+    "count": 1,
+    "retrieval_date": "2026-09-02",
+    "pmids": "41979329"
+  },
+  "air_quality": {
+    "query_slug": "air_quality",
+    "query_raw": "(asthma[MeSH]) AND (\"PM2.5\"[tiab] OR ozone[tiab] OR \"air quality\"[tiab]) AND (\"census tract\"[tiab] OR \"environmental justice\"[tiab] OR disparit*[tiab]) AND (\"2015\"[PDAT] : \"2026\"[PDAT]) AND English[LA]",
+    "query_translation": "\"asthma\"[MeSH Terms] AND (\"PM2.5\"[Title/Abstract] OR \"ozone\"[Title/Abstract] OR \"air quality\"[Title/Abstract]) AND (\"census tract\"[Title/Abstract] OR \"environmental justice\"[Title/Abstract] OR \"disparit*\"[Title/Abstract]) AND 2015/01/01:2026/12/31[Date - Publication] AND \"English\"[Language]",
+    "count": 40,
+    "retrieval_date": "2026-09-02",
+    "pmids": ["42323982", "42287544", "41958343", "41643534", "41372800", "41214648", "41105486", "40620090", "40387788", "40279132", "39865338", "39406285", "39038774", "38908569", "38560887", "38445892", "38247719", "38106908", "37310769", "37284923", "36462693", "36280330", "35358226", "35196332", "35073244", "34743831", "34047754", "33676951", "33583411", "33112174", "32831855", "32102953", "30711775", "29690596", "29278810", "28219854", "28181157", "27285734", "25659530", "25613912"]
+  },
+  "wildfire_smoke": {
+    "query_slug": "wildfire_smoke",
+    "query_raw": "(asthma[MeSH]) AND (\"wildfire\"[tiab] OR \"smoke event\"[tiab] OR \"wildland fire\"[tiab]) AND (\"2015\"[PDAT] : \"2026\"[PDAT]) AND English[LA]",
+    "query_translation": "\"asthma\"[MeSH Terms] AND (\"wildfire\"[Title/Abstract] OR \"smoke event\"[Title/Abstract] OR \"wildland fire\"[Title/Abstract]) AND 2015/01/01:2026/12/31[Date - Publication] AND \"English\"[Language]",
+    "count": 49,
+    "retrieval_date": "2026-09-02",
+    "pmids": ["42414291", "41958343", "41899691", "41720420", "41664433", "41372919", "41222139", "41167627", "41021275", "40480103", "40397190", "40324806", "40209994", "40167472", "39672379", "39340501", "39323113", "38622704", "38527432", "38452750", "38085772", "38047880", "38038861", "38001501", "37917367", "37816268", "37739070", "37733685", "37722035", "37650580", "37616233", "37582196", "37171670", "37105834", "36767304", "36525469", "35742668", "35300889", "34636066", "33777871", "33437868", "33228874", "32854703", "32791025", "32051501", "31146163", "26346113", "26075727", "25747784"]
+  },
+  "filtration_hepa": {
+    "query_slug": "filtration_hepa",
+    "query_raw": "(asthma[MeSH]) AND (\"air filtration\"[tiab] OR HEPA[tiab] OR \"portable air cleaner\"[tiab]) AND (randomized[tiab] OR trial[tiab] OR intervention[tiab]) AND (\"2015\"[PDAT] : \"2026\"[PDAT]) AND English[LA]",
+    "query_translation": "\"asthma\"[MeSH Terms] AND (\"air filtration\"[Title/Abstract] OR \"HEPA\"[Title/Abstract] OR \"portable air cleaner\"[Title/Abstract]) AND (\"randomized\"[Title/Abstract] OR \"trial\"[Title/Abstract] OR \"intervention\"[Title/Abstract]) AND 2015/01/01:2026/12/31[Date - Publication] AND \"English\"[Language]",
+    "count": 23,
+    "retrieval_date": "2026-09-02",
+    "pmids": ["41979079", "41310837", "40380354", "40288638", "40246248", "38560887", "38504367", "38388489", "38238060", "37917367", "35796019", "35341426", "34980119", "34547084", "34288127", "33625291", "33096665", "32996146", "32721578", "30849253", "29452202", "28935614", "26555475"]
+  },
+  "heat": {
+    "query_slug": "heat",
+    "query_raw": "(asthma[MeSH]) AND (\"heat wave\"[tiab] OR \"extreme heat\"[tiab]) AND (vulnerab*[tiab] OR sensitiv*[tiab]) AND (\"2015\"[PDAT] : \"2026\"[PDAT]) AND English[LA]",
+    "query_translation": "\"asthma\"[MeSH Terms] AND (\"heat wave\"[Title/Abstract] OR \"extreme heat\"[Title/Abstract]) AND (\"vulnerab*\"[Title/Abstract] OR \"sensitiv*\"[Title/Abstract]) AND 2015/01/01:2026/12/31[Date - Publication] AND \"English\"[Language]",
+    "count": 3,
+    "retrieval_date": "2026-09-02",
+    "pmids": ["42208373", "36208788", "35189885"]
+  }
+}
