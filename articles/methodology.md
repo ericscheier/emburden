@@ -242,7 +242,7 @@ system.time({
   eb_nh <- 1 / (1 + nh_mean)
 })
 #>    user  system elapsed 
-#>   0.001   0.000   0.000
+#>       0       0       0
 
 # Method 2: Harmonic mean
 system.time({
@@ -250,7 +250,7 @@ system.time({
   eb_harmonic <- 1 / weighted.mean(1 / eb_direct, weights)
 })
 #>    user  system elapsed 
-#>       0       0       0
+#>   0.000   0.000   0.001
 
 # Verify results are identical
 print(paste("EB via Nh:", scales::percent(eb_nh)))
