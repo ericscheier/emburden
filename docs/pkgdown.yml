@@ -1,11 +1,11 @@
-pandoc: 3.6.1
+pandoc: 3.1.3
 pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
   jss-emburden: jss-emburden.html
   methodology: methodology.html
-last_built: 2025-11-14T04:51Z
+last_built: 2026-09-06T05:03Z
 urls:
-  reference: https://ericscheier.github.io/emburden/reference
-  article: https://ericscheier.github.io/emburden/articles
+  reference: https://emburden.org/reference
+  article: https://emburden.org/articles
