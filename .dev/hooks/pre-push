@@ -109,32 +109,27 @@ fi
 
 # Create temporary directory for CRAN check
 CHECK_DIR=$(mktemp -d -t emburden-check-XXXXXX)
+CHECK_SRC=$(mktemp -d -t emburden-src-XXXXXX)
+
+# Mirror CI: build from a git-clean copy of HEAD, not the working tree.
+# rcmdcheck copies the entire path/ before applying .Rbuildignore, so
+# large untracked artifacts (data/*.csv, sources/**, etc.) blow up the
+# build time and can cause spurious lazydata failures. Extracting the
+# HEAD tree via `git archive` gives us the exact same file set CI sees.
+echo "📦 Exporting HEAD tree to: $CHECK_SRC"
+git archive HEAD | tar -x -C "$CHECK_SRC"
 echo "📦 Building package in temporary directory: $CHECK_DIR"
 echo ""
 
-# Stash .flox aside during the check. .Rbuildignore excludes .flox but
-# R CMD build (via rcmdcheck) copies the whole tree BEFORE applying
-# exclusions, and Nix's read-only run/ subdirectory fails the temp-dir
-# cleanup. Move it to a sibling location for the duration of the check
-# and restore after — even if the check errors out.
-FLOX_STASH=""
-if [ -d .flox ]; then
-    FLOX_STASH="$(mktemp -d -t flox-stash-XXXXXX)/flox"
-    mv .flox "$FLOX_STASH" 2>/dev/null && \
-        echo "🗄️  .flox stashed at $FLOX_STASH for the duration of the check"
-fi
-
-# Ensure cleanup on exit — remove check tempdir AND restore .flox
+# Ensure cleanup on exit — remove both tempdirs
 cleanup() {
     if [ -d "$CHECK_DIR" ]; then
         echo ""
         echo "🧹 Cleaning up temporary directory..."
         rm -rf "$CHECK_DIR"
     fi
-    if [ -n "$FLOX_STASH" ] && [ -d "$FLOX_STASH" ] && [ ! -d .flox ]; then
-        mv "$FLOX_STASH" .flox && \
-            echo "🗄️  .flox restored"
-        rmdir "$(dirname "$FLOX_STASH")" 2>/dev/null
+    if [ -d "$CHECK_SRC" ]; then
+        rm -rf "$CHECK_SRC"
     fi
 }
 trap cleanup EXIT INT TERM
@@ -174,7 +169,7 @@ cat('Build arguments:', paste(build_args, collapse=' '), '\n\n')
 # Run check with rcmdcheck (cleaner output)
 if (requireNamespace('rcmdcheck', quietly = TRUE)) {
   results <- rcmdcheck::rcmdcheck(
-    path = '.',
+    path = '$CHECK_SRC',
     args = check_args,
     build_args = build_args,
     error_on = 'never',  # Don't stop, show results
@@ -243,8 +238,8 @@ if [ "$SKIP_CRAN_DRYRUN" != "true" ]; then
     echo ""
 
     Rscript -e "
-    # Find the tarball from R CMD build
-    tarball <- list.files(pattern = 'emburden_.*\\.tar\\.gz$', full.names = TRUE)
+    # Find the tarball built from HEAD (in CHECK_SRC, not working tree)
+    tarball <- list.files(path = '$CHECK_SRC', pattern = 'emburden_.*\\.tar\\.gz$', full.names = TRUE)
     if (length(tarball) == 0) {
       cat('⚠️  No tarball found - skipping CRAN submission test\n')
       quit(status = 0)
