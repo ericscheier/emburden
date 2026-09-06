@@ -1,10 +1,25 @@
 #!/bin/bash
 #
-# Pre-push hook to catch CI issues before pushing
+# Pre-push hook to catch CI issues before pushing.
 # Runs comprehensive CRAN-style R CMD check in temporary directory
+# — but only for pushes that touch R package code. Docs-only pushes
+# (gh-pages branch) skip the check.
 #
 
 set -e  # Exit on error
+
+# Detect what refs are being pushed. Stdin format: <local ref> <local sha> <remote ref> <remote sha>
+# Read once and inspect. If EVERY ref being pushed is gh-pages (or another
+# docs-only branch), skip the R CMD check — those branches don't contain
+# R package code and CRAN check is meaningless there.
+STDIN_REFS=$(cat)
+if [ -n "$STDIN_REFS" ]; then
+    NON_DOCS=$(echo "$STDIN_REFS" | awk '{print $3}' | grep -vE '^refs/heads/(gh-pages|pkgdown|docs-only)$' | head -1)
+    if [ -z "$NON_DOCS" ]; then
+        echo "📄 Push is docs-only (gh-pages / pkgdown). Skipping R CMD check."
+        exit 0
+    fi
+fi
 
 # First check version consistency across metadata files
 if [ -f ".dev/check-version-consistency.R" ]; then
@@ -80,12 +95,29 @@ CHECK_DIR=$(mktemp -d -t emburden-check-XXXXXX)
 echo "📦 Building package in temporary directory: $CHECK_DIR"
 echo ""
 
-# Ensure cleanup on exit
+# Stash .flox aside during the check. .Rbuildignore excludes .flox but
+# R CMD build (via rcmdcheck) copies the whole tree BEFORE applying
+# exclusions, and Nix's read-only run/ subdirectory fails the temp-dir
+# cleanup. Move it to a sibling location for the duration of the check
+# and restore after — even if the check errors out.
+FLOX_STASH=""
+if [ -d .flox ]; then
+    FLOX_STASH="$(mktemp -d -t flox-stash-XXXXXX)/flox"
+    mv .flox "$FLOX_STASH" 2>/dev/null && \
+        echo "🗄️  .flox stashed at $FLOX_STASH for the duration of the check"
+fi
+
+# Ensure cleanup on exit — remove check tempdir AND restore .flox
 cleanup() {
     if [ -d "$CHECK_DIR" ]; then
         echo ""
         echo "🧹 Cleaning up temporary directory..."
         rm -rf "$CHECK_DIR"
+    fi
+    if [ -n "$FLOX_STASH" ] && [ -d "$FLOX_STASH" ] && [ ! -d .flox ]; then
+        mv "$FLOX_STASH" .flox && \
+            echo "🗄️  .flox restored"
+        rmdir "$(dirname "$FLOX_STASH")" 2>/dev/null
     fi
 }
 trap cleanup EXIT INT TERM
@@ -100,7 +132,6 @@ Rscript -e "
 Sys.setenv(
   '_R_CHECK_CRAN_INCOMING_' = 'TRUE',
   '_R_CHECK_CRAN_INCOMING_REMOTE_' = 'FALSE',  # Skip URL checks (slow)
-  '_R_CHECK_DONTTEST_EXAMPLES_' = 'false',  # Skip \donttest{} examples (matches CRAN)
   'NOT_CRAN' = 'false'
 )
 
@@ -115,9 +146,9 @@ if (skip_vignettes) {
   check_args <- c(check_args, '--no-build-vignettes', '--ignore-vignettes')
   build_args <- c(build_args, '--no-build-vignettes')
 } else {
-  # Use 'both' to match GitHub Actions workflow (tries gs+qpdf, falls back to qpdf)
-  build_args <- c(build_args, '--compact-vignettes=both')
-  cat('ℹ️  Using --compact-vignettes=both (matches GitHub Actions workflow)\n\n')
+  # Use gs+qpdf for optimal PDF compression (as recommended by CRAN)
+  build_args <- c(build_args, '--compact-vignettes=gs+qpdf')
+  cat('ℹ️  Using --compact-vignettes=gs+qpdf for optimal PDF compression\n\n')
 }
 
 cat('Check arguments:', paste(check_args, collapse=' '), '\n')
