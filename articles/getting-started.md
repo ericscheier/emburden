@@ -1,0 +1,379 @@
+# Getting Started with emburden
+
+## Introduction
+
+The **emburden** package provides tools for analyzing household energy
+burden using the Net Energy Return (Nh) methodology. This vignette will
+walk you through the basic workflow for calculating and analyzing energy
+burden metrics.
+
+## Installation
+
+You can install emburden from GitHub:
+
+``` r
+
+# install.packages("devtools")
+devtools::install_github("ericscheier/emburden")
+```
+
+``` r
+
+library(emburden)
+library(dplyr)
+#> 
+#> Attaching package: 'dplyr'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     filter, lag
+#> The following objects are masked from 'package:base':
+#> 
+#>     intersect, setdiff, setequal, union
+```
+
+## What is Energy Burden?
+
+Energy burden is the ratio of household energy spending to gross income:
+
+**Energy Burden (EB) = S / G**
+
+Where: - **S** = Energy spending (electricity, gas, other fuels) - **G**
+= Gross household income
+
+A household spending \$3,000 on energy with \$50,000 income has a 6%
+energy burden.
+
+## Quick Example: Single Household
+
+``` r
+
+# Calculate energy burden for a single household
+gross_income <- 50000
+energy_spending <- 3000
+
+# Method 1: Direct energy burden
+eb <- energy_burden_func(gross_income, energy_spending)
+print(paste("Energy Burden:", scales::percent(eb)))
+#> [1] "Energy Burden: 6%"
+
+# Method 2: Via Net Energy Return (mathematically identical)
+nh <- ner_func(gross_income, energy_spending)
+neb <- 1 / (nh + 1)
+print(paste("Net Energy Burden:", scales::percent(neb)))
+#> [1] "Net Energy Burden: 6%"
+print(paste("Net Energy Return:", round(nh, 2)))
+#> [1] "Net Energy Return: 15.67"
+```
+
+For a single household, both methods give the same result: **6% energy
+burden**.
+
+## Loading Data
+
+The package automatically downloads data from OpenEI on first use:
+
+``` r
+
+# Load census tract data for North Carolina
+nc_tracts <- load_census_tract_data(states = "NC")
+
+# Load household cohort data by Area Median Income
+nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
+
+# View structure
+head(nc_ami)
+```
+
+## Calculating Metrics from Cohort Data
+
+When working with pre-aggregated cohort data (total income and
+spending), calculate metrics from the totals:
+
+``` r
+
+# Calculate mean income and spending from totals
+nc_data <- nc_ami %>%
+  mutate(
+    mean_income = total_income / households,
+    mean_energy_spending = (total_electricity_spend +
+                           coalesce(total_gas_spend, 0) +
+                           coalesce(total_other_spend, 0)) / households
+  ) %>%
+  filter(!is.na(mean_income), !is.na(mean_energy_spending), households > 0) %>%
+  mutate(
+    eb = energy_burden_func(mean_income, mean_energy_spending),
+    nh = ner_func(mean_income, mean_energy_spending),
+    neb = neb_func(mean_income, mean_energy_spending)
+  )
+```
+
+## Aggregating Energy Burden (Critical!)
+
+**Important**: Energy burden is a ratio and **cannot be aggregated using
+arithmetic mean**!
+
+### The WRONG Way
+
+``` r
+
+# ❌ WRONG: Direct averaging of energy burden introduces ~1-5% error
+eb_wrong <- weighted.mean(nc_data$eb, nc_data$households)
+```
+
+### The CORRECT Way: Via Net Energy Return
+
+``` r
+
+# ✅ CORRECT Method 1: Aggregate using Nh, then convert to NEB
+nh_mean <- weighted.mean(nc_data$nh, nc_data$households)
+neb_correct <- 1 / (1 + nh_mean)
+
+# ✅ CORRECT Method 2: Use neb_func() with weights (simpler!)
+# neb_func() automatically uses the Nh method internally
+neb_correct2 <- neb_func(nc_data$mean_income,
+                         nc_data$mean_energy_spending,
+                         weights = nc_data$households)
+
+print(paste("Correct NEB (manual Nh):", scales::percent(neb_correct)))
+print(paste("Correct NEB (neb_func): ", scales::percent(neb_correct2)))
+# Both give identical results!
+```
+
+**Why does this work?** The Nh transformation allows us to use simple
+arithmetic weighted mean instead of harmonic mean, making aggregation
+both simpler and more intuitive. The
+[`neb_func()`](https://emburden.org/reference/neb_func.md) with weights
+does this automatically.
+
+## Analysis by Income Bracket
+
+``` r
+
+# Method 1: Manual Nh aggregation
+nc_by_income <- nc_data %>%
+  group_by(income_bracket) %>%
+  summarise(
+    households = sum(households),
+    nh_mean = weighted.mean(nh, households),
+    neb = 1 / (1 + nh_mean),  # Correct aggregation
+    .groups = "drop"
+  )
+
+# Method 2: Using neb_func() with weights (simpler!)
+nc_by_income2 <- nc_data %>%
+  group_by(income_bracket) %>%
+  summarise(
+    neb = neb_func(mean_income, mean_energy_spending, weights = households),
+    households = sum(households),
+    .groups = "drop"
+  )
+
+print(nc_by_income)
+```
+
+## Identifying High Energy Burden Households
+
+The 6% energy burden threshold is commonly used to identify energy
+poverty:
+
+``` r
+
+# 6% energy burden corresponds to Nh = 15.67
+high_burden_threshold <- 15.67
+
+high_burden_households <- sum(nc_data$households[nc_data$nh < high_burden_threshold])
+total_households <- sum(nc_data$households)
+high_burden_pct <- (high_burden_households / total_households) * 100
+
+print(paste("Households with >6% energy burden:",
+            scales::percent(high_burden_pct/100)))
+```
+
+## Using calculate_weighted_metrics()
+
+For more complex grouped analysis, use the built-in function:
+
+``` r
+
+results <- calculate_weighted_metrics(
+  graph_data = nc_ami,
+  group_columns = "income_bracket",
+  metric_name = "ner",
+  metric_cutoff_level = 15.67,  # 6% burden threshold
+  upper_quantile_view = 0.95,
+  lower_quantile_view = 0.05
+)
+
+# Format for publication
+results$formatted_median <- to_percent(results$metric_median)
+print(results)
+```
+
+## Key Takeaways
+
+1.  **For single households**: Both EB and NEB give identical results
+2.  **For aggregation**: Always use the Nh method to avoid errors
+3.  **Never**: Directly average energy burden values
+4.  **Data loading**: Automatic from OpenEI (2018 and 2022 vintages
+    available)
+5.  **Threshold**: 6% energy burden (Nh ≥ 15.67) identifies high burden
+    households
+
+## Temporal Comparison
+
+The package provides a dedicated function for comparing energy burden
+across data vintages (2018 vs 2022):
+
+``` r
+
+# Compare by income bracket
+comparison <- compare_energy_burden(
+  dataset = "ami",
+  states = "NC",
+  group_by = "income_bracket"
+)
+
+# View results
+print(comparison)
+
+# The function automatically:
+# - Loads both 2018 and 2022 data
+# - Normalizes schema differences (4 vs 6 AMI brackets)
+# - Performs proper Nh-based aggregation
+# - Calculates changes in energy burden
+
+# Grouping options:
+# - "income_bracket": Compare by AMI/FPL brackets (default)
+# - "state": Compare multiple states
+# - "none": Overall state-level comparison
+
+# Example: State-level comparison
+state_comparison <- compare_energy_burden(
+  dataset = "ami",
+  states = "NC",
+  group_by = "none"
+)
+
+# Access specific metrics
+state_comparison$neb_2018         # 2018 energy burden
+state_comparison$neb_2022         # 2022 energy burden
+state_comparison$neb_change_pp    # Change in percentage points
+state_comparison$neb_change_pct   # Relative change percentage
+```
+
+This is much simpler than manually loading and aggregating both
+vintages!
+
+## Analyzing Energy Burden by Housing Characteristics
+
+The LEAD Tool data includes detailed housing characteristics that enable
+analysis of how building attributes affect energy burden. Four key
+housing dimension columns are available:
+
+- **TEN**: Housing tenure (1=Owned free/clear, 2=Owned with mortgage,
+  3=Rented, 4=Occupied without rent)
+- **TEN-YBL6**: Tenure crossed with year structure built (6 categories)
+- **TEN-BLD**: Tenure crossed with building type (single-family,
+  multi-unit, etc.)
+- **TEN-HFL**: Tenure crossed with primary heating fuel type (gas,
+  electric, oil, etc.)
+
+These columns preserve granular housing detail through the data
+aggregation process, allowing you to analyze energy burden patterns
+across different housing types.
+
+### Example: Comparing Renters vs Owners by Heating Fuel
+
+``` r
+
+# Load data with housing characteristics
+nc_housing <- load_cohort_data(dataset = "ami", states = "NC")
+
+# Analyze energy burden by tenure and heating fuel
+housing_analysis <- nc_housing %>%
+  filter(!is.na(TEN), !is.na(`TEN-HFL`)) %>%
+  mutate(
+    mean_income = total_income / households,
+    mean_energy_spending = (total_electricity_spend +
+                           coalesce(total_gas_spend, 0) +
+                           coalesce(total_other_spend, 0)) / households,
+    nh = ner_func(mean_income, mean_energy_spending)
+  ) %>%
+  group_by(TEN, `TEN-HFL`) %>%
+  summarise(
+    total_households = sum(households),
+    nh_mean = weighted.mean(nh, households),
+    neb = 1 / (1 + nh_mean),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(neb))
+
+# View the top 10 tenure-heating fuel combinations with highest burden
+head(housing_analysis, 10)
+```
+
+### Example: Energy Burden by Building Age and Type
+
+``` r
+
+# Analyze by building characteristics
+building_analysis <- nc_housing %>%
+  filter(!is.na(`TEN-YBL6`), !is.na(`TEN-BLD`)) %>%
+  mutate(
+    mean_income = total_income / households,
+    mean_energy_spending = (total_electricity_spend +
+                           coalesce(total_gas_spend, 0) +
+                           coalesce(total_other_spend, 0)) / households,
+    nh = ner_func(mean_income, mean_energy_spending)
+  ) %>%
+  group_by(`TEN-YBL6`, `TEN-BLD`) %>%
+  summarise(
+    total_households = sum(households),
+    nh_mean = weighted.mean(nh, households),
+    neb = 1 / (1 + nh_mean),
+    .groups = "drop"
+  )
+
+# Identify building age/type combinations with highest burden
+high_burden_buildings <- building_analysis %>%
+  filter(neb > 0.06) %>%  # Above 6% burden threshold
+  arrange(desc(neb))
+
+print(high_burden_buildings)
+```
+
+### Key Insights from Housing Analysis
+
+Housing characteristic analysis can reveal:
+
+1.  **Tenure effects**: How renters vs owners experience different
+    energy burdens
+2.  **Heating fuel disparities**: Which fuel types create higher burden
+    (often oil/propane)
+3.  **Building age impacts**: Older buildings typically have higher
+    burden due to poor insulation
+4.  **Structure type patterns**: Multi-family vs single-family burden
+    differences
+5.  **Vulnerable populations**: Combinations like “renter + old
+    building + expensive fuel” often show extreme burden
+
+This granular analysis helps target energy efficiency interventions to
+the housing types and populations that need them most.
+
+## Next Steps
+
+- See
+  [`vignette("methodology")`](https://emburden.org/articles/methodology.md)
+  for mathematical details
+- See `NEB_QUICKSTART.md` for quick reference
+- Run example scripts in `analysis/scripts/` directory
+- Read full documentation:
+  [`?energy_burden_func`](https://emburden.org/reference/energy_burden_func.md),
+  [`?ner_func`](https://emburden.org/reference/ner_func.md)
+
+## References
+
+- **Paper**: “Net energy metrics reveal striking disparities across
+  United States household energy burdens”
+- **LEAD Tool Data**: <https://data.openei.org/>
+- **GitHub**: <https://github.com/ericscheier/emburden>
