@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>emburden.org — Access + Affordability + QoS</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<link href="site_libs/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-5.3.1/bootstrap.bundle.min.js"></script>
+<link href="site_libs/Inter-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/Montserrat-0.4.10/font.css" rel="stylesheet" />
+<script src="site_libs/bs3compat-0.9.0/transition.js"></script>
+<script src="site_libs/bs3compat-0.9.0/tabs.js"></script>
+<script src="site_libs/bs3compat-0.9.0/bs3compat.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<meta name="description" content="emburden.org — open-source household energy-burden analytics from raw data pulls to global synthesis. 129 countries, 17,000 cells, 8.2 billion people.">
+<meta name="author" content="Emrgi">
+<meta property="og:title" content="emburden.org — global household energy burden">
+<meta property="og:description" content="The 67-fold climate justice mismatch, quantified with open data + open code.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">emburden.org</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="emergy.html">Emergy</a>
+</li>
+<li>
+  <a href="access.html">Access + QoS</a>
+</li>
+<li>
+  <a href="atlas.html">The Atlas</a>
+</li>
+<li>
+  <a href="methods.html">Methods</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="papers.html">Papers</a>
+</li>
+<li>
+  <a href="code.html">Code</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="reference/index.html">R package</a>
+</li>
+<li>
+  <a href="https://github.com/ericscheier">GitHub</a>
+</li>
+<li>
+  <a href="global_analysis.pdf">Full report (PDF)</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Access, affordability, and quality of
+service</h1>
+
+</div>
+
+
+<div id="access-affordability-and-quality-of-service"
+class="section level1">
+<h1>Access, affordability, and quality of service</h1>
+<p>Being “connected to the grid” is not the same as having reliable,
+clean, affordable energy. Energy insecurity concentrates where three
+axes intersect:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Access</strong> — is a working connection physically
+available?</li>
+<li><strong>Affordability</strong> — can the household pay the tariff
+without forgoing food, medicine, education?</li>
+<li><strong>Quality of service (QoS)</strong> — when the household pays,
+does power actually arrive, at usable voltage, without frequent
+interruption?</li>
+</ol>
+<div class="callout">
+<div class="callout-title">
+Why QoS is the missing axis
+</div>
+<p>
+Most policy dashboards report “% population with electricity access” as
+a binary. But a household in a low-QoS grid — 40 outages a month,
+brown-outs during peak load, chronic voltage sag — is not really served.
+ESMAP’s Multi-Tier Framework tries to correct this with a 0-5 scale on
+capacity / availability / reliability / quality / affordability /
+safety, but coverage is still sparse (~26 countries today).
+</p>
+</div>
+<div id="what-our-data-shows" class="section level2">
+<h2>What our data shows</h2>
+<div id="access-the-easy-half" class="section level3">
+<h3>Access — the easy half</h3>
+<p>WB’s <code>EG.ELC.ACCS.ZS</code> (electricity access %) covers 217
+countries × 2000–2022. The 20 least-electrified countries hold 498
+million people (<strong>6.1% of humanity</strong>). All 20 are in
+Sub-Saharan Africa or on low-income islands (Haiti, PNG).</p>
+</div>
+<div id="clean-fuel-access-the-cooking-half" class="section level3">
+<h3>Clean-fuel access — the cooking half</h3>
+<p>WHO / WB clean-fuel-for-cooking (<code>EG.CFT.ACCS.ZS</code>) is the
+sibling metric for the other half of household energy. Where electricity
+access has climbed from 76% (2000) → 91% (2023) globally, clean-fuel
+access has climbed only 51% → 74%. Roughly <strong>2 billion people
+still cook with biomass, kerosene, or coal</strong>. Coverage in our
+cache: 189 countries × 2000–2023.</p>
+</div>
+<div id="affordability-the-harder-axis" class="section level3">
+<h3>Affordability — the harder axis</h3>
+<p>Retail electricity prices vary &gt;20× across countries in
+<code>summary_enriched.rds</code> (128 countries with data). Compressed
+household budgets in low-income economies mean even “affordable” tariffs
+per kWh consume double-digit shares of income.</p>
+</div>
+<div id="quality-of-service-the-frontier" class="section level3">
+<h3>Quality of service — the frontier</h3>
+<p>We have three partial signals:</p>
+<ul>
+<li><strong>PM<sub>2.5</sub> exposure</strong> (WHO) — an indirect
+indicator: high PM<sub>2.5</sub> correlates with biomass indoor
+combustion and low-quality electrification. Coverage: 200
+countries.</li>
+<li><strong>EAGLE-I outages</strong> (US Oak Ridge) —
+SAIDI/SAIFI-equivalent per-county × per-15-minute outage records. US
+only.</li>
+<li><strong>ESMAP Multi-Tier Framework</strong> — 6 QoS dimensions, 0-5
+tiers. ~26 countries with data. Cache pull pending
+(<code>scripts/build_esmap_mtf_tiers.R</code>).</li>
+</ul>
+</div>
+</div>
+<div id="the-intersectional-problem" class="section level2">
+<h2>The intersectional problem</h2>
+<blockquote>
+Access without affordability is a bill that sinks the household. Access
+without QoS is a connection that doesn’t work when needed. Access with
+all three is what “energy insecurity” is really about.
+</blockquote>
+<p>Our synthesis lets us build the three-way intersection:
+<strong>“connected + affordable + reliable” vs “connected + expensive +
+unreliable”</strong> — the latter is where energy insecurity
+concentrates, and it’s invisible to any single-axis measure.</p>
+</div>
+<div id="the-distribution-of-unmet-quality" class="section level2">
+<h2>The distribution of unmet quality</h2>
+<p>Where these three axes fail together tends to be highly correlated
+with:</p>
+<ul>
+<li><strong>Cell-level suppression flags</strong> — our physics baseline
+shows that in 129 covered countries, 95% of cells fall below 90% of
+physics-required kWh</li>
+<li><strong>PM<sub>2.5</sub> hotspots</strong> — sub-national
+concentration matches suppressed cells in South Asia + SSA</li>
+<li><strong>Non-clean cooking</strong> — the 74% global clean-fuel
+access still leaves roughly 2 billion people with combustion-based
+cooking</li>
+</ul>
+</div>
+<div id="toward-a-unified-qos-index" class="section level2">
+<h2>Toward a unified QoS index</h2>
+<p>Once the ESMAP MTF pull lands, we’ll combine: - ESMAP tier × 6
+dimensions (0-5 each, 26 countries) - WB electricity access % (189
+countries) - WHO clean-fuel access % (189 countries) - PM<sub>2.5</sub>
+mean exposure (200 countries) - Retail-price affordability index - Our
+synth-based cell-level suppression share</p>
+<p>…into a single <strong>Household Service Index</strong> that answers
+the practical question: <em>“How well-served, actually, are the
+households in this cell?”</em></p>
+</div>
+<div id="see-also" class="section level2">
+<h2>See also</h2>
+<ul>
+<li><a href="atlas.html">The Atlas</a> — canonical burden map +
+climate-justice scatter</li>
+<li><a href="emergy.html">Emergy</a> — Odum quality lens on the same
+data</li>
+<li><a href="methods.html">Methods</a> — how the pipeline works</li>
+<li><a href="papers.html">Papers in flight</a></li>
+</ul>
+<footer>
+<p>
+<a href="/">← back to home</a> · <a href="emergy.html">← emergy</a> ·
+<a href="atlas.html">the atlas →</a>
+</p>
+</footer>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
