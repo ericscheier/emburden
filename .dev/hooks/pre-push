@@ -80,7 +80,24 @@ echo "  Pre-push: CRAN-style R CMD check"
 echo "=========================================="
 echo ""
 
-# Check if we have LaTeX/TinyTeX for vignettes (non-interactive)
+# Check if we have LaTeX/TinyTeX for vignettes (non-interactive).
+# If pdflatex isn't on PATH but TinyTeX is installed in the standard
+# per-user location, auto-add it. This keeps the check reproducible
+# across shells (the hook runs in a subprocess that doesn't inherit
+# interactive login PATH additions).
+if ! command -v pdflatex &> /dev/null; then
+    for _tinytex_bin in \
+        "$HOME/.TinyTeX/bin/x86_64-linux" \
+        "$HOME/.TinyTeX/bin/aarch64-linux" \
+        "$HOME/Library/TinyTeX/bin/universal-darwin" \
+        "$HOME/Library/TinyTeX/bin/x86_64-darwin"; do
+        if [ -x "$_tinytex_bin/pdflatex" ]; then
+            export PATH="$_tinytex_bin:$PATH"
+            echo "ℹ️  Added TinyTeX to PATH: $_tinytex_bin"
+            break
+        fi
+    done
+fi
 if ! command -v pdflatex &> /dev/null; then
     echo "⚠️  WARNING: pdflatex not found - skipping vignette build"
     echo "   Install TinyTeX with: Rscript .dev/install-tinytex.R"
