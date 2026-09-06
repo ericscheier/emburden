@@ -239,7 +239,7 @@ if [ "$SKIP_CRAN_DRYRUN" != "true" ]; then
 
     Rscript -e "
     # Find the tarball built from HEAD (in CHECK_SRC, not working tree)
-    tarball <- list.files(path = '$CHECK_SRC', pattern = 'emburden_.*\\.tar\\.gz$', full.names = TRUE)
+    tarball <- list.files(path = '$CHECK_SRC', pattern = 'emburden_.*[.]tar[.]gz\$', full.names = TRUE)
     if (length(tarball) == 0) {
       cat('⚠️  No tarball found - skipping CRAN submission test\n')
       quit(status = 0)
