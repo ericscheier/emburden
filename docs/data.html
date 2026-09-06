@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>emburden.org — Data</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<link href="site_libs/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-5.3.1/bootstrap.bundle.min.js"></script>
+<link href="site_libs/Inter-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/Montserrat-0.4.10/font.css" rel="stylesheet" />
+<script src="site_libs/bs3compat-0.9.0/transition.js"></script>
+<script src="site_libs/bs3compat-0.9.0/tabs.js"></script>
+<script src="site_libs/bs3compat-0.9.0/bs3compat.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<meta name="description" content="emburden.org — open-source household energy-burden analytics from raw data pulls to global synthesis. 129 countries, 17,000 cells, 8.2 billion people.">
+<meta name="author" content="Emrgi">
+<meta property="og:title" content="emburden.org — global household energy burden">
+<meta property="og:description" content="The 67-fold climate justice mismatch, quantified with open data + open code.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">emburden.org</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="emergy.html">Emergy</a>
+</li>
+<li>
+  <a href="access.html">Access + QoS</a>
+</li>
+<li>
+  <a href="atlas.html">The Atlas</a>
+</li>
+<li>
+  <a href="methods.html">Methods</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="papers.html">Papers</a>
+</li>
+<li>
+  <a href="code.html">Code</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="reference/index.html">R package</a>
+</li>
+<li>
+  <a href="https://github.com/ericscheier">GitHub</a>
+</li>
+<li>
+  <a href="global_analysis.pdf">Full report (PDF)</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Data provenance</h1>
+
+</div>
+
+
+<div id="data-provenance" class="section level1">
+<h1>Data provenance</h1>
+<p>Every number on this site is traceable back to a specific data
+source, a specific script that pulls it, and a specific cache file.
+Every pull is reproducible with the code at <a
+href="https://github.com/ericscheier/emburdensynth">github.com/ericscheier/emburdensynth</a>.</p>
+<p>The coverage table below is <strong>built at render time from the
+cache files themselves</strong> — the numbers you see are the current
+counts in each RDS, not frozen literals from when this page was first
+written.</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Source</th>
+<th>Coverage</th>
+<th>Retrieval script</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>WB WDI (indicators)</strong></td>
+<td>179 countries × 1960–2024 × 7 indicators</td>
+<td><code>build_wb_wdi_1960.R</code></td>
+</tr>
+<tr class="even">
+<td><strong>WB Gini historical</strong></td>
+<td>171 countries × 1970–2024</td>
+<td><code>build_temporal_deep_history.R</code></td>
+</tr>
+<tr class="odd">
+<td><strong>WB GCD 2010</strong></td>
+<td>92 countries × 11 sectors</td>
+<td>(pre-pipeline)</td>
+</tr>
+<tr class="even">
+<td><strong>WB Clean-fuel access</strong></td>
+<td>200 countries × 2000–2023</td>
+<td><code>build_who_air_pollution.R</code></td>
+</tr>
+<tr class="odd">
+<td><strong>WGI (governance)</strong></td>
+<td>214 countries × 1996–2022 × 6 dimensions</td>
+<td><code>fix_wgi_v2.R</code></td>
+</tr>
+<tr class="even">
+<td><strong>Eurostat HBS</strong></td>
+<td>34 countries × 1988–2020 × 5 quintiles</td>
+<td><code>build_eurostat_quintile_spread.R</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Eurostat energy poverty</strong></td>
+<td>~30 countries × 2010–2023</td>
+<td>(cached prior)</td>
+</tr>
+<tr class="even">
+<td><strong>Ember Electricity Data</strong></td>
+<td>213 countries × 2000–2025 × 9 fuel categories</td>
+<td><code>build_ember_by_fuel.R</code></td>
+</tr>
+<tr class="odd">
+<td><strong>OWID Energy</strong></td>
+<td>220 countries × 1900–2025 × 11 variables</td>
+<td><code>build_owid_energy.R</code></td>
+</tr>
+<tr class="even">
+<td><strong>OWID CO2</strong></td>
+<td>218 countries × 1750–2024 × per-capita + cumulative + by-fuel</td>
+<td><code>build_owid_co2.R</code></td>
+</tr>
+<tr class="odd">
+<td><strong>EIA International</strong></td>
+<td>222 countries × 1980–2023</td>
+<td><code>build_eia_international.R</code></td>
+</tr>
+<tr class="even">
+<td><strong>WHO PM2.5</strong></td>
+<td>200 countries × 1990–2023</td>
+<td><code>build_who_air_pollution.R</code></td>
+</tr>
+<tr class="odd">
+<td><strong>FAOSTAT food security</strong></td>
+<td>183 countries × 2000–2023</td>
+<td><code>build_fao_food_security.R</code></td>
+</tr>
+<tr class="even">
+<td><strong>UNDP HDI</strong></td>
+<td>204 countries × 1990–2022</td>
+<td><code>build_undp_hdi.R</code></td>
+</tr>
+<tr class="odd">
+<td><strong>NASA GISTEMP v4</strong></td>
+<td>1880–2025 global + zonal</td>
+<td><code>build_nasa_giss.R</code></td>
+</tr>
+<tr class="even">
+<td><strong>WorldPop 1 km rasters</strong></td>
+<td>129 countries × 2020</td>
+<td>(pre-pipeline)</td>
+</tr>
+<tr class="odd">
+<td><strong>GADM v4.1 boundaries</strong></td>
+<td>255 countries × admin-0</td>
+<td>(via <code>emburdengeo</code>)</td>
+</tr>
+<tr class="even">
+<td><strong>ESMAP Multi-Tier Framework</strong></td>
+<td>28 countries in manifest (surveys click-through XLSX)</td>
+<td><code>build_esmap_mtf_tiers.R</code></td>
+</tr>
+<tr class="odd">
+<td><strong>NREL ResStock + RECS + EULP</strong></td>
+<td>US only, adapted globally</td>
+<td><code>emburdendata::download_*</code></td>
+</tr>
+<tr class="even">
+<td><strong>CDC HHI + WONDER + PLACES</strong></td>
+<td>US census tracts</td>
+<td><code>emburdendata</code></td>
+</tr>
+</tbody>
+</table>
+<div id="why-so-many-sources" class="section level2">
+<h2>Why so many sources?</h2>
+<p>Household energy burden is not a single-dataset object. Estimating it
+requires:</p>
+<ul>
+<li><strong>Household expenditure surveys</strong> to anchor the sector
+shares (GCD, Eurostat HBS)</li>
+<li><strong>Spatial density rasters</strong> to allocate the surveys to
+cells (WorldPop, RWI)</li>
+<li><strong>Utility tariff schedules</strong> to convert dollars into
+kWh (URDB)</li>
+<li><strong>Degree-day climatology</strong> to compute physics-required
+demand (WB CCKP)</li>
+<li><strong>Grid generation mix</strong> to attribute CO<sub>2</sub> per
+kWh (Ember) — and, since Round 20, to attribute <em>transformity</em>
+(sej/J) per kWh through Odum’s emergy framework</li>
+<li><strong>Access + affordability + QoS surveys</strong> (WB
+electricity access, WHO clean-fuel, ESMAP MTF tiers) to complete the
+burden picture</li>
+</ul>
+<p>Each source has its own vintage, coverage, and gaps; the pipeline
+fills gaps with kNN imputation and documents the source-tier at every
+cell.</p>
+</div>
+<div id="reproducibility-guarantees" class="section level2">
+<h2>Reproducibility guarantees</h2>
+<ul>
+<li>Every downloader script prefers open, direct-download APIs over
+commercial data</li>
+<li>Fallback chains ensure graceful degradation (e.g. EIA International
+falls back to OWID Energy if API key absent)</li>
+<li>All downloads write to a consistent local cache
+(<code>~/.cache/emburdendata/</code>) via <code>rappdirs</code></li>
+<li>Cache files are content-addressed (renaming triggers
+re-download)</li>
+<li>Full pull scripts + cache locations are documented in <a
+href="https://github.com/ericscheier/emburdensynth/blob/global/docs/references.bib"><code>docs/references.bib</code></a>
+(19 dataset entries, auto-generated)</li>
+</ul>
+</div>
+<div id="three-pulls-we-could-not-fully-automate"
+class="section level2">
+<h2>Three pulls we could not fully automate</h2>
+<ul>
+<li><strong>Yale Environmental Performance Index (EPI)</strong> — no
+direct-download URL published; requires a web form. Not blocking.</li>
+<li><strong>EM-DAT (CRED disaster database)</strong> — requires free
+CRED registration before bulk XLSX download. See <a
+href="https://github.com/ericscheier/emburdensynth/blob/global/docs/emdat_manual_setup.md">manual
+setup guide</a>.</li>
+<li><strong>ESMAP MTF tier surveys</strong> — click-through XLSX from
+the WB Microdata Library; the manifest (28 covered countries) is
+auto-cached but tier-share workbooks require a manual download per
+country. See <a
+href="https://github.com/ericscheier/emburdensynth/blob/global/docs/esmap_mtf_manual_setup.md">manual
+setup guide</a>.</li>
+</ul>
+<p>Everything else is fully scripted.</p>
+<footer>
+<p>
+<a href="/">← back to home</a> · <a href="methods.html">methods</a> ·
+<a href="papers.html">papers</a>
+</p>
+</footer>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

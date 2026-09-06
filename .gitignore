@@ -137,11 +137,16 @@ data/*.db
 *.xls
 *.xlsx
 
-# Results
+# Results (analysis outputs, NOT the pkgdown/site docs/ tree)
 *.pdf
 *.html
 *.tex
 *.png
+# But DO track the pkgdown + ecosystem site under docs/
+!docs/**
+!docs/**/*.html
+!docs/**/*.pdf
+!docs/**/*.png
 *.docx
 *.odt
 *.jpg

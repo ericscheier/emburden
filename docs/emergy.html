@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>emburden.org — Emergy</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<link href="site_libs/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-5.3.1/bootstrap.bundle.min.js"></script>
+<link href="site_libs/Inter-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/Montserrat-0.4.10/font.css" rel="stylesheet" />
+<script src="site_libs/bs3compat-0.9.0/transition.js"></script>
+<script src="site_libs/bs3compat-0.9.0/tabs.js"></script>
+<script src="site_libs/bs3compat-0.9.0/bs3compat.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<meta name="description" content="emburden.org — open-source household energy-burden analytics from raw data pulls to global synthesis. 129 countries, 17,000 cells, 8.2 billion people.">
+<meta name="author" content="Emrgi">
+<meta property="og:title" content="emburden.org — global household energy burden">
+<meta property="og:description" content="The 67-fold climate justice mismatch, quantified with open data + open code.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  background-color: #f8f8f8; }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ef2929; } /* Alert */
+code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #204a87; } /* Attribute */
+code span.bn { color: #0000cf; } /* BaseN */
+code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4e9a06; } /* Char */
+code span.cn { color: #8f5902; } /* Constant */
+code span.co { color: #8f5902; font-style: italic; } /* Comment */
+code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code span.dt { color: #204a87; } /* DataType */
+code span.dv { color: #0000cf; } /* DecVal */
+code span.er { color: #a40000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #0000cf; } /* Float */
+code span.fu { color: #204a87; font-weight: bold; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code span.ot { color: #8f5902; } /* Other */
+code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
+code span.ss { color: #4e9a06; } /* SpecialString */
+code span.st { color: #4e9a06; } /* String */
+code span.va { color: #000000; } /* Variable */
+code span.vs { color: #4e9a06; } /* VerbatimString */
+code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">emburden.org</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="emergy.html">Emergy</a>
+</li>
+<li>
+  <a href="access.html">Access + QoS</a>
+</li>
+<li>
+  <a href="atlas.html">The Atlas</a>
+</li>
+<li>
+  <a href="methods.html">Methods</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="papers.html">Papers</a>
+</li>
+<li>
+  <a href="code.html">Code</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="reference/index.html">R package</a>
+</li>
+<li>
+  <a href="https://github.com/ericscheier">GitHub</a>
+</li>
+<li>
+  <a href="global_analysis.pdf">Full report (PDF)</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Emergy — Odum’s quality-of-energy lens</h1>
+
+</div>
+
+
+<div id="emergy-a-different-currency-for-energy-analysis"
+class="section level1">
+<h1>Emergy — a different currency for energy analysis</h1>
+<p>Climate-justice accounting uses <strong>CO<sub>2</sub>
+emissions</strong> as the currency. Odum’s emergy framework uses
+<strong>solar-energy equivalent embodied per joule delivered</strong>
+(measured in solar emjoules, sej). Same physical kilowatt-hour at the
+socket can carry wildly different prior emergy investment depending on
+the fuel that generated it.</p>
+<div class="callout">
+<div class="callout-title">
+Why care about a second currency
+</div>
+<p>
+Two grids that deliver identical kWh per capita can differ <b>5-fold or
+more</b> in the electricity-basis emergy they concentrate into each
+joule (Bundle-A-corrected range: 5.6x across 213 countries). That
+matters for questions climate-justice accounting cannot answer: “how
+much biophysical infrastructure did this energy require to produce?” and
+“how sustainably is a country converting environmental subsidy into
+human welfare?”
+</p>
+</div>
+<div id="the-transformity-spectrum" class="section level2">
+<h2>The transformity spectrum</h2>
+<p>Every fuel carries a canonical <strong>transformity</strong> — the
+sej required per joule of the output. Odum 1996’s table + Brown &amp;
+Ulgiati 2004’s revised baseline give us:</p>
+<table>
+<colgroup>
+<col width="30%" />
+<col width="40%" />
+<col width="30%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Fuel</th>
+<th align="right">Transformity (sej/J)</th>
+<th>Where in the emergy hierarchy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Wind (kinetic)</td>
+<td align="right">1,500</td>
+<td>Low — little prior emergy invested per J</td>
+</tr>
+<tr class="even">
+<td>Solar-PV (electricity)</td>
+<td align="right">3,400</td>
+<td>Low — panels themselves are direct-solar</td>
+</tr>
+<tr class="odd">
+<td>Bioenergy (wood, dung)</td>
+<td align="right">25,000</td>
+<td>Medium — biosphere × sunlight × years</td>
+</tr>
+<tr class="even">
+<td>Coal (heat)</td>
+<td align="right">40,000</td>
+<td>Medium — plants × millions of years × geologic pressure</td>
+</tr>
+<tr class="odd">
+<td>Natural gas (heat)</td>
+<td align="right">48,000</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Oil (heat)</td>
+<td align="right">54,000</td>
+<td>Medium-high</td>
+</tr>
+<tr class="odd">
+<td>Hydro (electricity)</td>
+<td align="right">80,000</td>
+<td>High — watershed × millennia + concentrator dam</td>
+</tr>
+<tr class="even">
+<td>Nuclear (electricity)</td>
+<td align="right">200,000</td>
+<td>Highest — fuel cycle + massive infrastructure</td>
+</tr>
+</tbody>
+</table>
+<p>Notice something climate-accounting hides: <strong>hydro and nuclear
+are both “clean” in CO<sub>2</sub> terms but sit at the highest
+transformity tier.</strong> They represent massive prior-emergy
+investment concentrated into each joule. Wind and solar deliver similar
+joules with far less prior emergy locked in.</p>
+</div>
+<div id="what-our-data-reveals-across-213-countries"
+class="section level2">
+<h2>What our data reveals across 213 countries</h2>
+<p><strong>Grid transformity ranges 5.6x across the world’s fuel
+mixes</strong> (29005-162072 sej/J, on a per-J-electricity-delivered
+basis after Bundle-A efficiency correction). From
+<code>emergy_metrics.rds</code>:</p>
+<ul>
+<li><strong>Top-5 highest transformity</strong> (nuclear-heavy grids):
+SVK ~162k, FRA ~154k, UKR ~151k, COM ~142k, ESH ~142k sej/J</li>
+<li><strong>Bottom-5 lowest transformity</strong> (wind + solar-dominant
+grids): DNK ~29k, LTU ~38k, LUX ~39k, URY ~48k, PRT ~51k sej/J</li>
+</ul>
+<p>The <strong>key insight</strong> for household energy policy:
+physically identical kilowatt-hours can carry very different embodied
+emergy depending on the grid mix. Policy that treats them as
+interchangeable is missing quality-adjusted throughput.</p>
+</div>
+<div id="three-findings-unique-to-the-emergy-lens"
+class="section level2">
+<h2>Three findings unique to the emergy lens</h2>
+<div class="card-grid">
+<div class="card">
+<div class="kicker">
+Finding 1
+</div>
+<h3>
+Renewable ≠ low emergy
+</h3>
+<p>
+Hydro-heavy grids (Norway, Paraguay, Ethiopia) carry <b>high</b>
+transformity because dam infrastructure + watershed × millennia
+concentrate huge emergy per J. Wind-heavy grids (Denmark) carry
+<b>low</b> transformity — they harvest kinetic energy without a large
+prior emergy investment. The “renewable” label conflates two Odum
+categories. Emergy separates them.
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Finding 2
+</div>
+<h3>
+Empower per capita is a biophysical standard-of-living metric
+</h3>
+<p>
+Country empower / population — sej/person/yr — correlates only weakly
+with GDP per capita. Nuclear-heavy France scores much higher per person
+than solar-heavy California at similar income. Suggests GDP misses a
+real dimension of energy-based welfare.
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Finding 3
+</div>
+<h3>
+Household emergy-per-dollar arbitrage exposes hidden subsidies
+</h3>
+<p>
+When a household’s sej-per-dollar exceeds the national average, they’re
+receiving a subsidised bargain on high-emergy energy — typical in
+nuclear-heavy grids with residential tariffs subsidised below marginal
+cost. When it’s <em>below</em>, they’re paying a premium for low-emergy
+energy — typical in biomass + diesel-dependent low-access economies
+where transaction costs eat their expenditure.
+</p>
+</div>
+</div>
+</div>
+<div
+id="bringing-it-together-the-household-emergy-insecurity-index-heii"
+class="section level2">
+<h2>Bringing it together — the Household Emergy Insecurity Index
+(HEII)</h2>
+<p>The three findings above each look at one axis. <strong>Emergy’s real
+power is that it lets us combine physical adequacy and economic burden
+into a single number</strong> — because both convert to the same
+currency (sej):</p>
+<div class="callout">
+<div class="callout-title">
+The unified formulation
+</div>
+<pre>
+physical_gap_sej = max(0, required_empower  − delivered_empower)
+economic_gap_sej = max(0, paid_empower      − affordable_empower)
+
+heii_sej      = physical_gap_sej + economic_gap_sej          (sej/yr)
+heii_norm     = heii_sej / income_empower                    (fraction)
+heii_esi      = (delivered/required) / (paid/affordable)     (Odum-canonical)
+heii_product  = adequacy × (1 − unaffordability)             (∈ [0, 1])
+</pre>
+</div>
+<p>All three unified forms are computed by <a
+href="https://github.com/ericscheier/emburdensynth/blob/global/R/emergy.R"><code>household_emergy_insecurity()</code></a>
+in the emburden R module. The “affordable” threshold uses the national
+em/$ rate at a 10% burden anchor by default; other conventions (6%,
+manual, national) are one-argument switches.</p>
+<div id="what-the-heii-world-reveals" class="section level3">
+<h3>What the HEII world reveals</h3>
+<p>Across the <strong>63 countries</strong> with complete kWh + spend +
+income + fuel-mix + GDP data, HEII_norm ranges 0 to 86. The five most
+insecure are <code>AFG, TCD, NER, BDI, MDG</code> — all Sub-Saharan
+Africa or Afghanistan, all bearing BOTH physical rationing (delivered
+kWh far below the physics baseline) AND economic overreach (energy
+expenditure exceeding 10% of income emergy). The five most secure —
+<code>AZE, BRA, CPV, ETH, GAB</code> — are petro-states +
+subsidised-tariff economies where households are both fully served and
+pay below the affordability threshold.</p>
+</div>
+<div id="bundle-b-biomass-cooking-counted-2026-09"
+class="section level3">
+<h3>Bundle B — biomass cooking counted (2026-09)</h3>
+<p>Pre-Bundle-B, HEII was <strong>grid-electricity only</strong>. That
+misrepresented ~2.4B people who cook primarily with biomass — the WHO
+Household Energy Database says 33 of our HEII countries have &gt;50% of
+households using non-clean cooking fuels. Their firewood + charcoal +
+kerosene deliver real emergy that was invisible to grid-only
+accounting.</p>
+<p><code>household_emergy_insecurity()</code> now accepts an
+<code>hh_fuels</code> argument that credits direct-combustion fuels via
+<code>household_fuel_transformity_table()</code> (wood 25k sej/J,
+charcoal 45k, kerosene 54k, LPG 48k, piped-gas 48k, dung 20k). The
+builder script weights an 8 GJ/yr wood-cookstove household by each
+country’s WHO <code>clean_fuel_access_pct</code> residual. Effect on the
+ranking:</p>
+<p>Top 5 biomass-cooking countries — HEII_norm change when biomass is
+counted:</p>
+<table>
+<thead>
+<tr class="header">
+<th>iso3</th>
+<th align="right">biomass share</th>
+<th align="right">HEII (grid only)</th>
+<th align="right">HEII (with biomass)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>BDI</td>
+<td align="right">100%</td>
+<td align="right">30.9</td>
+<td align="right">18.0</td>
+</tr>
+<tr class="even">
+<td>LBR</td>
+<td align="right">99%</td>
+<td align="right">7.3</td>
+<td align="right">5.1</td>
+</tr>
+<tr class="odd">
+<td>SLE</td>
+<td align="right">99%</td>
+<td align="right">24.5</td>
+<td align="right">10.3</td>
+</tr>
+<tr class="even">
+<td>GIN</td>
+<td align="right">99%</td>
+<td align="right">1.2</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="odd">
+<td>MLI</td>
+<td align="right">99%</td>
+<td align="right">6.1</td>
+<td align="right">5.2</td>
+</tr>
+</tbody>
+</table>
+<p>The interpretation is important: these households are still
+physically rationed on the electricity side (they can’t run a fridge or
+an efficient stove), but their emergy delivery is not zero. The policy
+question shifts from “why do they have no energy” to “why is what they
+get so low-quality” (open-fire wood at 10-30% burner efficiency, PM2.5
+exposure, deforestation externalities not priced).</p>
+</div>
+</div>
+<div id="bundle-n-heii-trajectories-2000-2024" class="section level2">
+<h2>Bundle N — HEII trajectories 2000-2024</h2>
+<p>Bundle C shipped a transformity/empower/em$ panel. Bundle N extends
+it to <strong>HEII</strong> — the unified physical + economic insecurity
+metric per country per year.
+<code>scripts/build_emergy_heii_panel.R</code> writes
+<code>emergy_heii_panel.rds</code> (63 countries × 25 years). The panel
+uses per-year gdp_pc, per-year grid transformity, per-year em/$,
+per-year WHO biomass-cooking share. Household median kWh + spend and
+physics- required stay at the 2022 snapshot (T80/T81/T82 will make those
+per-year too).</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-heii-trajectory-1.png" alt="HEII_norm trajectories 2000-2024 for a selection of large economies. China: dramatic drop from ~1.0 to ~0.2 as GDP tripled + biomass cooking share fell 60% → 16%. India: 0.52 → 0.30 similar story. Peru + Colombia: LATAM improvements. South Africa: slight WORSENING because GDP stagnated. Afghanistan: high volatility around 15-25." width="100%" />
+<p class="caption">
+HEII_norm trajectories 2000-2024 for a selection of large economies.
+China: dramatic drop from ~1.0 to ~0.2 as GDP tripled + biomass cooking
+share fell 60% → 16%. India: 0.52 → 0.30 similar story. Peru + Colombia:
+LATAM improvements. South Africa: slight WORSENING because GDP
+stagnated. Afghanistan: high volatility around 15-25.
+</p>
+</div>
+<p>Over 2000-2024: <strong>43 of 63 countries improved</strong> their
+HEII_norm by 10%+ (median country dropped from 0.68 to 0.33). <strong>3
+worsened by 10%+</strong>. Biggest improvement: <strong>KHM</strong>
+(16.84 → 1.15, 15x drop). Biggest worsening: <strong>JAM</strong> (0.06
+→ 0.12). China’s modernization is the dominant global story — dropped
+from ~1.0 to ~0.2 while GDP-pc tripled and biomass-cooking share fell
+from 60% to 16%.</p>
+<p><strong>What’s driving each trajectory</strong>: for a given country,
+HEII_norm changes over time when (a) grid transformity moves (Bundle C
+trajectory), (b) gdp-pc changes the affordability threshold, (c) WHO
+biomass-cooking access shifts the delivered_empower via household fuels.
+Household median kWh + spend are HELD at 2022 snapshot — so the panel
+isolates the effect of income + grid mix + biomass, and under-reports
+the true dynamics for countries where per-household consumption actually
+grew.</p>
+</div>
+<div id="time-is-now-on-the-record-bundle-c" class="section level2">
+<h2>Time is now on the record — Bundle C</h2>
+<p>The library-layer functions have always accepted a <code>year</code>
+argument, but the compiled cache used to be a snapshot at each country’s
+latest Ember year. <code>scripts/build_emergy_panel.R</code> (Bundle C)
+now produces <code>emergy_metrics_panel.rds</code> — a
+<code>(iso3, year)</code> grid covering <strong>2000-2025</strong>
+across ~213 countries. Trajectories over 25 years are readable
+directly:</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-transformity-trajectory-1.png" alt="Grid transformity 2000-2024 for a selection of large economies. Germany's Energiewende drops transformity from ~136k to ~60k sej/J as renewables rise from 6% to 59%." width="100%" />
+<p class="caption">
+Grid transformity 2000-2024 for a selection of large economies.
+Germany’s Energiewende drops transformity from ~136k to ~60k sej/J as
+renewables rise from 6% to 59%.
+</p>
+</div>
+<p><strong>What today’s panel covers</strong>: transformity, %R, ESI,
+empower per capita, em/USD for every (country, year) with Ember coverage
+(2000-2025). <strong>What’s still snapshot</strong>: HEII needs per-year
+household inputs (median_kwh_hh, spend, income) that we don’t yet
+publish as panels; the physics-required baseline uses a single climate
+normal; retail prices are a 2022-2024 vintage that carries forward.
+Follow-up work — see <a
+href="https://github.com/ericscheier/emburdensynth/blob/global/FUTURE_WORK.md"><code>FUTURE_WORK.md</code></a>.</p>
+</div>
+<div id="bundle-d-within-country-inequality-in-emergy-terms"
+class="section level2">
+<h2>Bundle D — within-country inequality in emergy terms</h2>
+<p><code>choose_country_icdf()</code> in the emburdensynth package
+cascades through three income-distribution sources:
+<strong>WID.world</strong> percentile bands (fine resolution, best
+available), <strong>World Bank</strong> quintile + tail-decile shares
+(medium), and a <strong>Hruschka</strong> log-normal fallback
+(Gini-driven, last resort). Bundle D wires that cascade into HEII: for
+each of the 26 HEII countries, we compute HEII_norm at income P10, P50,
+and P90 — holding delivered kWh + spend + physics-required at the
+country median. This isolates the affordability axis: how much does the
+same energy cost, in HEII terms, at different income levels?</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-heii-p10p90-site-1.png" alt="HEII inequality ratio HEII_norm(P10)/HEII_norm(P90), top 15 countries." width="100%" />
+<p class="caption">
+HEII inequality ratio HEII_norm(P10)/HEII_norm(P90), top 15 countries.
+</p>
+</div>
+<p>The median country’s HEII_norm(P10)/HEII_norm(P90) ratio is
+<strong>50x</strong> — the poorest decile carries 50x the
+emergy-insecurity burden of the richest. <strong>PER</strong> tops the
+ranking at 163263x.</p>
+<p><strong>Bundle M update — Engel elasticity now applied</strong>:
+Bundle D held delivered kWh + spend constant across deciles (a
+documented lower bound). Bundle M applies published Engel elasticities
+(~0.6 for both kWh consumption and energy spend w.r.t. income) so poor
+households consume less AND face a much higher burden ratio. Median
+ratio: <strong>50x (Engel-scaled)</strong> vs 20x (flat lower-bound).
+The burden gradient the Engel model produces (~15% burden at P10, ~3% at
+P90) matches published HBS observations — sanity check.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-burden-gradient-1.png" alt="Bundle M — burden gradient P10 vs P90 across countries. Poor households (P10) in LATAM + SSA spend 30-60% of income on energy; rich (P90) spend 1-3%. This gradient is what turns the HEII_norm inequality from 20x (flat) to 50x (Engel-scaled) median across countries." width="100%" />
+<p class="caption">
+Bundle M — burden gradient P10 vs P90 across countries. Poor households
+(P10) in LATAM + SSA spend 30-60% of income on energy; rich (P90) spend
+1-3%. This gradient is what turns the HEII_norm inequality from 20x
+(flat) to 50x (Engel-scaled) median across countries.
+</p>
+</div>
+</div>
+<div id="bundle-e-the-odum-vs-ulgiati-baseline-choice"
+class="section level2">
+<h2>Bundle E — the Odum-vs-Ulgiati baseline choice</h2>
+<p>The transformity values themselves are model choices. Everything on
+this page defaults to Odum’s 1996 baseline for continuity with the
+literature, but the same code accepts the <strong>Ulgiati 2020</strong>
+revision (Global Emergy Baseline 12.0e24 sej/yr, Sciubba &amp; Ulgiati
+2005 nuclear at 500,000 sej/J, Amaral 2016 wind at 2,500 and PV at 4,600
+including panel embodied emergy). Every public function now accepts a
+<code>baseline = c("odum1996", "ulgiati2020")</code> argument.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-baseline-site-1.png" alt="Country transformity under both baselines. Points above the dashed y=x line move UP under Ulgiati (nuclear-heavy). Points below move DOWN (oil-only islands, GEB rescale)." width="100%" />
+<p class="caption">
+Country transformity under both baselines. Points above the dashed y=x
+line move UP under Ulgiati (nuclear-heavy). Points below move DOWN
+(oil-only islands, GEB rescale).
+</p>
+</div>
+<p>Biggest ranking shift up under Ulgiati: <strong>ESP</strong> (rank
+185 → 19). Biggest shift down: <strong>BHS</strong> (rank 16 → 35). Both
+are honest — the baseline choice is a literature question, not a bug.
+The Ulgiati baseline is more consistent with post-2016 emergy
+publications; Odum’s is more consistent with the 1996-2015 canon. Use
+whichever matches your comparison target — the code supports both.</p>
+</div>
+<div id="bundle-f-trade-adjustment-importsexports"
+class="section level2">
+<h2>Bundle F — trade adjustment (imports/exports)</h2>
+<p>Production transformity is a domestic-generation concept. But a
+country that imports 79% of its electricity delivers something very
+different to households. Bundle F adds Odum’s M-term via
+<code>consumption_transformity()</code>, blending domestic and
+world-average transformities by the country’s electricity import share
+(from OWID <code>elec_gen_twh</code> vs <code>elec_dem_twh</code>).</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-trade-site-1.png" alt="Production vs consumption transformity. Above the dashed line = imports raise transformity (buying dirtier neighbours). Below = imports lower it (buying cleaner neighbours). Balanced countries sit on the line." width="100%" />
+<p class="caption">
+Production vs consumption transformity. Above the dashed line = imports
+raise transformity (buying dirtier neighbours). Below = imports lower it
+(buying cleaner neighbours). Balanced countries sit on the line.
+</p>
+</div>
+<p>Across 213 countries with trade data: <strong>59 net importers, 30
+net exporters, 123 balanced</strong>. Biggest trade adjustment:
+<strong>LUX</strong> (77% import share) — its consumption transformity
+is 80% higher than its production transformity because the imported mix
+carries far more embodied emergy than its own generation. The default
+HEII stays production-side; the
+<code>trade_adjustment = 'consumption'</code> arg switches every
+downstream call to the trade-blended value.</p>
+<p><strong>Bundle L update — curated bilateral partners now
+default</strong> (2026-09-05): the plain world-average approximation is
+replaced by real partner-mix data from ENTSO-E, IEA, and CIA World
+Factbook for <strong>49 importer countries</strong> (curated CSV at
+<code>inst/extdata/bilateral_electricity_partners.csv</code>, ~150
+rows). Countries not in the CSV still fall back to world-average. Real
+MRIO ingestion (EXIOBASE 3, ~2-4 GB per year, academic registration) is
+deferred to Asana T78 for full country coverage.</p>
+<div id="bundle-l-how-much-curated-partners-move-things"
+class="section level3">
+<h3>Bundle L — how much curated partners move things</h3>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-curated-vs-world-1.png" alt="Consumption transformity: curated bilateral partner-mix (Bundle L) vs Bundle F's world-average approximation. Positive = curated is HIGHER (partners dirtier than world mean); negative = LOWER (partners cleaner). Points labelled where the shift exceeds ~3000 sej/J." width="100%" />
+<p class="caption">
+Consumption transformity: curated bilateral partner-mix (Bundle L) vs
+Bundle F’s world-average approximation. Positive = curated is HIGHER
+(partners dirtier than world mean); negative = LOWER (partners cleaner).
+Points labelled where the shift exceeds ~3000 sej/J.
+</p>
+</div>
+<p>Biggest DOWNWARD shift under curated partners: <strong>LUX</strong>
+(world-avg 80k → curated 69k sej/J, 77% import share). Its actual
+partners are much cleaner than the world mean. Biggest UPWARD shift:
+<strong>HRV</strong> (world-avg 70k → curated 75k sej/J). This is the
+honest cost of assuming a global mean when the real neighbours differ.
+Where the two methods AGREE (small <code>|shift|</code>), Bundle F’s
+approximation was already fine.</p>
+</div>
+</div>
+<div
+id="bundle-j-empirical-transformities-from-primary-fuel-consumption"
+class="section level2">
+<h2>Bundle J — empirical transformities from primary-fuel
+consumption</h2>
+<p>The <code>electric_efficiency</code> column in Bundle A used
+<strong>canonical</strong> per-fuel efficiencies (coal 0.35, gas 0.50,
+oil 0.38). Real fleets don’t match. Polish coal plants average lower;
+Algerian gas plants much lower; modern Dutch CCGT close to canonical.
+Bundle J computes per-country <strong>empirical</strong> efficiencies
+from EI Statistical Review’s primary-fuel consumption divided by Ember’s
+actual electricity generation for that fuel. Formula per fossil,
+country-year: <span class="math inline">\(\eta_{empirical} =
+\frac{share_{Ember} \cdot
+elec\_gen\_TWh_{OWID}}{primary\_consumption\_TWh_{EI}}\)</span></p>
+<p>Nuclear + renewables stay at canonical (EI reports substitution-basis
+TWh for them — dividing would recover the assumed conversion, not a real
+measurement). Falls back to canonical when EI is missing.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-empirical-site-1.png" alt="Theoretical (canonical efficiency) vs empirical (per-country fossil efficiency) grid transformity. Nearly every point sits ABOVE the y=x line — the canonical model systematically under-counts real emergy per kWh because real coal + gas fleets have lower thermal efficiency than the global average." width="100%" />
+<p class="caption">
+Theoretical (canonical efficiency) vs empirical (per-country fossil
+efficiency) grid transformity. Nearly every point sits ABOVE the y=x
+line — the canonical model systematically under-counts real emergy per
+kWh because real coal + gas fleets have lower thermal efficiency than
+the global average.
+</p>
+</div>
+<p>Of the <strong>58 countries</strong> with EI Statistical Review
+coverage: <strong>44 (76%) show empirical transformity at least 10%
+above canonical</strong> — their real fleets are less efficient than the
+global average, so the true emergy per delivered kWh is higher than
+Bundles A–F reported. Biggest under-count: <strong>DZA</strong> at 2.7x
+(theoretical 95k → empirical 252k sej/J). This is not a bug in Bundle A
+— it’s the honest cost of using canonical efficiencies. Countries with
+EI data now have an option: <code>empirical_grid_transformity()</code>
+for their reality vs <code>grid_transformity()</code> for the canonical
+model.</p>
+</div>
+<div id="bundle-g-where-the-worlds-emergy-flows" class="section level2">
+<h2>Bundle G — where the world’s emergy flows</h2>
+<p>An emergy story is a story about <strong>flows</strong>. The panels
+above are snapshots; a sankey diagram exposes the plumbing. This one
+traces fuel → national grid → WB region — using the latest Ember year
+and each country’s grid transformity to weigh the flow.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/sankey-global-1.png" alt="Global emergy flow — electricity fuel to World Bank region. Ribbon widths are proportional to population × grid transformity × fuel share for the latest Ember year per country. East Asia + Pacific's coal-dominated ribbon (China's coal fleet), Europe &amp; Central Asia's diverse mix (nuclear + gas + renewables), Sub-Saharan Africa's thin but hydro/bio-heavy contribution are all readable directly." width="100%" />
+<p class="caption">
+Global emergy flow — electricity fuel to World Bank region. Ribbon
+widths are proportional to population × grid transformity × fuel share
+for the latest Ember year per country. East Asia + Pacific’s
+coal-dominated ribbon (China’s coal fleet), Europe &amp; Central Asia’s
+diverse mix (nuclear + gas + renewables), Sub-Saharan Africa’s thin but
+hydro/bio-heavy contribution are all readable directly.
+</p>
+</div>
+<p>The width of each ribbon is proportional to <strong>population × grid
+transformity × fuel share</strong>. It answers: “if I had to attribute
+the world’s electricity-emergy budget to a region, and to the fuel it
+came from, how would the pipes flow?” Notice how the East Asia + Pacific
+ribbon is dominated by coal (China is the world’s coal-electricity
+leader); Europe &amp; Central Asia is a much more diverse ribbon
+(nuclear + gas + renewables); Sub-Saharan Africa is thin overall but
+heavy on hydro + bioenergy per unit population.</p>
+<div id="household-emergy-composition-one-country-at-a-time"
+class="section level3">
+<h3>Household emergy composition — one country at a time</h3>
+<p>The same idea, zoomed into a single household. Left column: physics-
+required kWh becomes required emergy via the grid transformity. Middle:
+delivered vs suppressed. Right: paid vs affordable (economic lens). This
+is exactly what <code>household_emergy_insecurity()</code> returns —
+laid out as a flow instead of a scalar.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/sankey-household-1.png" alt="Household emergy composition — one country (Nigeria). Two independent flows on the same axis (sej/yr): PHYSICAL side shows required → delivered / suppressed; ECONOMIC side shows spend → affordable / over-paid. Ribbon width lets you eyeball where the HEII gap is coming from." width="100%" />
+<p class="caption">
+Household emergy composition — one country (Nigeria). Two independent
+flows on the same axis (sej/yr): PHYSICAL side shows required →
+delivered / suppressed; ECONOMIC side shows spend → affordable /
+over-paid. Ribbon width lets you eyeball where the HEII gap is coming
+from.
+</p>
+</div>
+<p>The green ribbons are the “OK” flows (delivered, affordable), the red
+ribbons are the two gaps that HEII adds together (physical suppression +
+economic over-payment). Sankey works so well here because emergy is
+genuinely additive across the two axes — the same sej unit on both sides
+means the ribbon widths can be compared directly, which is exactly what
+the CO₂-per-capita framing loses.</p>
+</div>
+<div id="bundle-o-how-the-same-figure-looks-across-countries"
+class="section level3">
+<h3>Bundle O — how the same figure looks across countries</h3>
+<p>The sankey above is Nigeria. Every one of the 63 HEII countries has
+its own story — some (China, India post-2010) show mostly OK green
+ribbons, some (Afghanistan, Chad) show ribbons dominated by the two red
+HEII gaps. Small-multiples make the country-to-country comparison
+direct.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/sankey-multi-1.png" alt="Household emergy composition — top 9 HEII countries (highest heii_norm). For each: physical side shows Physics-required → Delivered vs Suppressed; economic side shows Spend → Affordable vs Over-paid. Green = OK flows, red = HEII gaps. AFG, TCD, NER: mostly red on both axes. LATAM (COL, SLV, PER): dominated by economic red — physical is fine, income affordability is the issue." width="100%" />
+<p class="caption">
+Household emergy composition — top 9 HEII countries (highest heii_norm).
+For each: physical side shows Physics-required → Delivered vs
+Suppressed; economic side shows Spend → Affordable vs Over-paid. Green =
+OK flows, red = HEII gaps. AFG, TCD, NER: mostly red on both axes. LATAM
+(COL, SLV, PER): dominated by economic red — physical is fine, income
+affordability is the issue.
+</p>
+</div>
+</div>
+<div id="the-odum-spectral-hierarchy-with-esl-symbols-overlaid"
+class="section level3">
+<h3>The Odum spectral hierarchy WITH ESL symbols overlaid</h3>
+<p>Odum’s other canonical diagram type — the <strong>energy systems
+language</strong> (ESL) — draws every actor as a symbol (source circles,
+producer bullet-nosed hexagons, consumer hexagons, storage bullet-tanks,
+interaction diamonds, dashed money-flow lines, heat-sink triangles).
+Rather than a separate circuit off to the side, the natural place to put
+those symbols is <strong>on top of the spectral hierarchy at their real
+log-transformity positions</strong>. That way the “map” (spectral) and
+the “circuit” (ESL) become one figure.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-odum-overlay-1.png" alt="HEII framework in Odum ESL overlaid on the Abel-2023 spectral hierarchy. Sources (circles) at raw primary-fuel transformity. Producers (bullet-nosed hexagons) at electricity-basis transformity. Grid (bullet-tank) + Household (hexagon) at country-median. Gap diamonds (interactions). Cultural info + Culture configs in the top-hierarchy lenses. 213 countries as regional dots at their grid transformity, sized by log(population). Powered by emburdensynth::geom_odum_* — the first R grammar-of-graphics library for Odum ESL symbols (Bundle U)." width="100%" />
+<p class="caption">
+HEII framework in Odum ESL overlaid on the Abel-2023 spectral hierarchy.
+Sources (circles) at raw primary-fuel transformity. Producers
+(bullet-nosed hexagons) at electricity-basis transformity. Grid
+(bullet-tank) + Household (hexagon) at country-median. Gap diamonds
+(interactions). Cultural info + Culture configs in the top-hierarchy
+lenses. 213 countries as regional dots at their grid transformity, sized
+by log(population). Powered by emburdensynth::geom_odum_* — the first R
+grammar-of-graphics library for Odum ESL symbols (Bundle U).
+</p>
+</div>
+</div>
+<div id="every-country-as-its-own-panel-including-antarctica"
+class="section level3">
+<h3>Every country as its own panel — including Antarctica</h3>
+<p>The same figure faceted per country makes the country-to-country
+comparison direct: France (nuclear-heavy) sits far right, Germany
+(Energiewende renewable-heavy) sits far left, Antarctica (diesel + wind
+at research stations) sits above everyone.</p>
+<p><img src="figures/heii_spectral_small_multiples.png" /></p>
+</div>
+<div id="time-series-125-years-of-transformity-drift"
+class="section level3">
+<h3>Time-series — 125 years of transformity drift</h3>
+<p>Extended Ember (2000-2025, 213 countries) back to <strong>1900 via
+OWID Etemad-Luciani/Shift Project + EI Statistical Review
+synthesis</strong> (79 countries, per-fuel primary consumption
+normalized to shares — <code>scripts/build_fuel_mix_extended.R</code> in
+emburdensynth). The 125-year animation shows country dots + median
+Grid/HH position sliding as fuel-mix transforms:</p>
+<p><img src="figures/heii_overlay_extended_1900_2024.gif" /></p>
+<p>Data floor: <strong>1900</strong> now (Bundle T). Pre-1965 data via
+OWID’s combined dataset (Etemad-Luciani for oil/gas, Shift Project for
+coal). Pre-1900 would need Malanima 2020 PDF-table extraction — still
+open.</p>
+</div>
+<div id="prior-art-this-may-be-the-first-r-odum-esl-geom-library"
+class="section level3">
+<h3>Prior art: this may be the first R Odum ESL geom library</h3>
+<p>A deep scan of CRAN, GitHub, PyPI, and the Emergy Synthesis
+proceedings turned up <strong>essentially zero prior art</strong> for
+programmatic Odum ESL diagrams in the grammar of graphics. The closest
+peers: <code>EmSim</code> (Java, abandoned, ODE integrator — no
+rendering API), <a
+href="https://github.com/sholtomaud/odum-energy-language">sholtomaud/odum-energy-language</a>
+(TypeScript GUI drag-and-drop, no data binding), and static SVG
+references from UF CEP + the International Society for the Advancement
+of Emergy Research. <code>emburdensynth::odum_*</code> (7
+<code>geom_polygon</code>-returning helpers) appears to be the
+<strong>first library allowing ESL symbols to be authored
+programmatically and overlaid on real data in a grammar-of-graphics
+idiom</strong>.</p>
+</div>
+<div id="the-odum-spectral-hierarchy-with-heii-data"
+class="section level3">
+<h3>The Odum spectral hierarchy — with HEII data</h3>
+<p>Odum’s <strong>spectral hierarchy</strong> figure (Abel 2023, fig 21
+— <a
+href="https://www.tandfonline.com/doi/full/10.1080/03081079.2022.2162048">International
+Journal of General Systems</a>) lays out the biosphere along a single
+log-transformity axis: sunlight at the low end, cultural information at
+the high end, with nested lens/spindle shapes for each domain
+(atmosphere, ecosystems, economic production, households, cultural
+information). Larger transformity = more accumulated solar-emergy per
+joule = higher in the hierarchy. We can render the same figure with our
+real HEII data.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-odum-spectral-1.png" alt="Odum spectral hierarchy for the HEII framework — after Abel 2023 fig 21 (Int J General Systems). X = log10 transformity (sej/J). Nested progressively-right-shifted lenses show the biosphere hierarchy from atmosphere/ecosystems (leftmost, most territory) to cultural information (rightmost, highest concentration per joule). Our HEII framework's grid transformities (10^4-10^5 sej/J range across 213 countries) sit inside the Economic Production + Households Hierarchy lenses." width="100%" />
+<p class="caption">
+Odum spectral hierarchy for the HEII framework — after Abel 2023 fig 21
+(Int J General Systems). X = log10 transformity (sej/J). Nested
+progressively-right-shifted lenses show the biosphere hierarchy from
+atmosphere/ecosystems (leftmost, most territory) to cultural information
+(rightmost, highest concentration per joule). Our HEII framework’s grid
+transformities (10<sup>4-10</sup>5 sej/J range across 213 countries) sit
+inside the Economic Production + Households Hierarchy lenses.
+</p>
+</div>
+<p>The diagram makes visible what a bar chart or table can’t:
+<strong>our entire HEII framework occupies a narrow band around 10⁴-10⁵
+sej/J</strong> on Odum’s full log scale. Cultural information — the
+ultimate output of the biosphere hierarchy — sits ~10 orders of
+magnitude to the right. The “energy insecurity” we measure at the
+household level is one plateau on a much longer ramp; households that
+never reach that plateau also never access the cultural-information
+tiers above it.</p>
+</div>
+<div id="the-odum-emergy-pyramid-with-real-numbers"
+class="section level3">
+<h3>The Odum emergy pyramid — with real numbers</h3>
+<p>Odum’s canonical figure: solar sunlight at the base, layers of
+increasing transformity as you go up, each tier concentrating a huge
+volume from the tier below. Each tier’s height on the y-axis is its
+transformity (log sej/J); each tier’s width is proportional to the
+world’s electricity generation from that fuel category. Nuclear at the
+top (200,000 sej/J) delivers ~10% of world electricity; solar-PV at the
+bottom (3,400 sej/J) delivers a similar share but concentrates 60× less
+emergy per joule.</p>
+<div class="figure" style="text-align: center">
+<img src="emergy_files/figure-html/fig-odum-pyramid-1.png" alt="Odum's emergy pyramid — with real world electricity generation. Each fuel's transformity (electricity-basis) sets its position on the y-axis; the width of each tier is proportional to that fuel's global generation share. Nuclear + hydro concentrate massive prior emergy into a small joule count; solar + wind sit at the base with little prior investment." width="100%" />
+<p class="caption">
+Odum’s emergy pyramid — with real world electricity generation. Each
+fuel’s transformity (electricity-basis) sets its position on the y-axis;
+the width of each tier is proportional to that fuel’s global generation
+share. Nuclear + hydro concentrate massive prior emergy into a small
+joule count; solar + wind sit at the base with little prior investment.
+</p>
+</div>
+</div>
+<div id="one-cell-at-a-time-the-finest-resolution"
+class="section level3">
+<h3>One cell at a time — the finest resolution</h3>
+<p>The 17,028 cells in <code>emergy_metrics.rds$cell</code> each carry a
+full per-cell emergy story. The cell with the biggest emergy gap (a
+grid-adjacent cell in a rural Sub-Saharan African region with high
+population + low delivery) is a Bundle-O test case:</p>
+<div class="callout">
+<div class="callout-title">
+Backward-compatible with the existing insecurity score
+</div>
+<p>
+The Round-19 <code>country_unified_metrics()</code> function (EJ-native)
+computed <code>insecurity_score = max(0, 1 −
+actual_ej/required_ej)</code> — physical adequacy only, no economic
+term. HEII is additive to that: it retains physical adequacy AND
+introduces the economic axis in the same currency. Both are preserved in
+the cache; <code>unified_comparison()</code> joins them for
+cross-checking. See Layer M.7 in the <a href="global_analysis.pdf">tech
+report</a> for the sign-agreement diagnostic.
+</p>
+</div>
+</div>
+</div>
+<div id="the-math-short-version" class="section level2">
+<h2>The math (short version)</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(emburdensynth)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co"># Transformity of the fuel mix in a country-year (electricity-basis,</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># post-Bundle-A: fossil transformities divided by their electric efficiency)</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">grid_transformity</span>(<span class="st">&quot;NOR&quot;</span>, <span class="dv">2023</span>)   <span class="co"># hydro-heavy — moderate (~73k sej/J)</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">grid_transformity</span>(<span class="st">&quot;FRA&quot;</span>, <span class="dv">2023</span>)   <span class="co"># nuclear-heavy — highest tier (~150k)</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">grid_transformity</span>(<span class="st">&quot;DNK&quot;</span>, <span class="dv">2023</span>)   <span class="co"># wind + biomass — biomass lifts it (~33k)</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">grid_transformity</span>(<span class="st">&quot;POL&quot;</span>, <span class="dv">2023</span>)   <span class="co"># coal-heavy — high (~88k, was ~35k pre-Bundle-A)</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co"># Household empower — sej/yr delivered per household</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="fu">household_empower</span>(<span class="st">&quot;USA&quot;</span>, <span class="dv">2020</span>, <span class="at">kwh_per_year =</span> <span class="dv">11000</span>)  <span class="co"># sej per year</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co"># Emergy Sustainability Index (Odum)</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="fu">household_ESI</span>(<span class="st">&quot;NOR&quot;</span>, <span class="dv">2020</span>)  <span class="co"># named vec: R_pct, NR_pct, ELR, EYR, ESI</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co"># National empower / GDP</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="fu">emergy_per_money</span>(<span class="st">&quot;FRA&quot;</span>, <span class="dv">2020</span>)                    <span class="co"># sej per $</span></span></code></pre></div>
+<p>All functions ship in the <a
+href="https://github.com/ericscheier/emburdensynth/blob/global/R/emergy.R"><code>emburden</code>
+R package</a>. The full metric table for 213 countries is at <a
+href="https://github.com/ericscheier/emburdensynth/tree/glob_ln_docs/global_analysis_data"><code>docs/global_analysis_data/emergy_metrics.rds</code></a>.</p>
+<div class="callout warning">
+<div class="callout-title">
+Additive, not replacement
+</div>
+<p>
+Emergy accounting does not supersede CO<sub>2</sub> accounting. They
+answer different questions. The climate-justice mismatch (67× per-capita
+cumulative CO<sub>2</sub> disparity) still stands as a headline for who
+pays what. Emergy adds a quality axis: <em>what kind</em> of energy they
+pay for.
+</p>
+</div>
+</div>
+<div id="the-six-panels" class="section level2">
+<h2>The six panels</h2>
+<p>The <a href="global_analysis.pdf">technical report</a> (Layer M, pp
+82–91) shows six emergy figures:</p>
+<ol style="list-style-type: decimal">
+<li>Grid transformity world map (sej/J)</li>
+<li>Country empower per capita world map (sej/person/yr)</li>
+<li>ESI vs GDP-pc scatter (weak correlation)</li>
+<li>Household em/USD arbitrage scatter</li>
+<li>Cell-level %R world map (17,028 cells)</li>
+<li>Cell-level emergy insecurity gap (sej/yr)</li>
+</ol>
+<p>See also: <a href="atlas.html">The Atlas</a> · <a
+href="methods.html">Methods</a> · <a href="data.html">Data
+provenance</a> · <a href="papers.html">Papers</a> · <a
+href="code.html">Code</a></p>
+<footer>
+<p>
+<a href="/">← back to home</a> · <a href="access.html">access +
+affordability + QoS →</a>
+</p>
+</footer>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

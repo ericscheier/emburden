@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>emburden.org</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<link href="site_libs/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-5.3.1/bootstrap.bundle.min.js"></script>
+<link href="site_libs/Inter-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/Montserrat-0.4.10/font.css" rel="stylesheet" />
+<script src="site_libs/bs3compat-0.9.0/transition.js"></script>
+<script src="site_libs/bs3compat-0.9.0/tabs.js"></script>
+<script src="site_libs/bs3compat-0.9.0/bs3compat.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<meta name="description" content="emburden.org — open-source household energy-burden analytics from raw data pulls to global synthesis. 129 countries, 17,000 cells, 8.2 billion people.">
+<meta name="author" content="Emrgi">
+<meta property="og:title" content="emburden.org — global household energy burden">
+<meta property="og:description" content="The 67-fold climate justice mismatch, quantified with open data + open code.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">emburden.org</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="emergy.html">Emergy</a>
+</li>
+<li>
+  <a href="access.html">Access + QoS</a>
+</li>
+<li>
+  <a href="atlas.html">The Atlas</a>
+</li>
+<li>
+  <a href="methods.html">Methods</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="papers.html">Papers</a>
+</li>
+<li>
+  <a href="code.html">Code</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="reference/index.html">R package</a>
+</li>
+<li>
+  <a href="https://github.com/ericscheier">GitHub</a>
+</li>
+<li>
+  <a href="global_analysis.pdf">Full report (PDF)</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Global household energy — three lenses</h1>
+
+</div>
+
+
+<div class="hero">
+<div class="kicker">
+Global energy burden atlas
+</div>
+<h1>
+Three lenses on the world’s household energy
+</h1>
+<p class="subtitle">
+Household energy burden has never been comparably measured across most
+of the world. We built the first open-code, open-data pipeline that
+estimates it for 129 countries and 17,028 grid cells covering
+8.2 billion people. Three findings that no single prior study surfaces:
+a <b>quality-of-energy</b> gap Odum’s emergy framework exposes, an
+<b>access + affordability + QoS</b> gap that single-axis indicators
+miss, and a <b>climate-justice mismatch</b> sharper than any prior
+estimate.
+</p>
+</div>
+<div style="text-align:center;">
+<div class="big-number">
+<p><span class="n">6×</span> <span class="l">variation in
+grid<br/>transformity (sej/J)</span></p>
+</div>
+<div class="big-number gold">
+<p><span class="n">67×</span> <span class="l">per-capita cumulative
+CO<sub>2</sub><br/>climate-justice disparity</span></p>
+</div>
+<div class="big-number green">
+<p><span class="n">129</span> <span class="l">countries
+with<br/>cell-level microdata</span></p>
+</div>
+<div class="big-number">
+<p><span class="n">8.2<span style="font-size:0.6em;">bn</span></span>
+<span class="l">people covered<br/>by the atlas</span></p>
+</div>
+</div>
+<div id="three-findings" class="section level2">
+<h2>Three findings</h2>
+<div class="card-grid">
+<div class="card">
+<div class="kicker">
+Finding 1 — Emergy
+</div>
+<h3>
+Grid quality varies 6× across 213 countries
+</h3>
+<p>
+Nuclear-heavy grids (France, Slovakia) deliver electricity with ~15× the
+emergy per joule of wind-heavy grids (Denmark, Germany). Two grids with
+identical per-capita kWh can carry radically different prior-emergy
+investment — invisible in CO<sub>2</sub> or kWh accounting. Odum’s
+framework separates <em>quality</em> from <em>quantity</em>.
+</p>
+<p>
+<a href="emergy.html">The Odum lens →</a>
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Finding 2 — Access + QoS
+</div>
+<h3>
+“Connected” isn’t “served”
+</h3>
+<p>
+Global access to electricity is 91%; global access to clean cooking fuel
+is 74%. Ontop of that, quality of service varies enormously — outage
+frequency, voltage sag, tariff affordability. Households in low-QoS
+grids are functionally under-served regardless of the binary access
+statistic.
+</p>
+<p>
+<a href="access.html">Access, affordability, QoS →</a>
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Finding 3 — Climate justice
+</div>
+<h3>
+The 67× per-capita CO<sub>2</sub> disparity
+</h3>
+<p>
+The 20 least-electrified countries hold 498M people (6% of humanity) and
+0.13% of cumulative CO<sub>2</sub> since 1750. The 20 largest historical
+emitters hold 4.8bn people and 82%. Per-capita cumulative disparity is
+approximately 67-fold.
+</p>
+<p>
+<a href="atlas.html#climate-justice-scatter">The climate-justice scatter
+→</a>
+</p>
+</div>
+</div>
+</div>
+<div id="why-publish-this-now" class="section level2">
+<h2>Why publish this now</h2>
+<p>Each finding on its own has been sketched in prior work, but no prior
+study combines all three at cell-level for 129 countries with fully open
+data + open code. The combination reveals patterns that single-lens
+studies miss:</p>
+<ul>
+<li><strong>High-transformity + high-burden</strong> — a country like
+South Africa (coal + nuclear grid, ~90k sej/J, 8% burden) is high-emergy
+AND high-burden — quality-adjusted energy is still expensive relative to
+income.</li>
+<li><strong>Low-transformity + low-CO<sub>2</sub> +
+high-suppression</strong> — wind-heavy small emitters (Portugal,
+Denmark) have low emergy per joule + low CO<sub>2</sub> contribution,
+yet cells within them still show suppression pockets.</li>
+<li><strong>Climate-justice + emergy inversion</strong> — the 20
+countries most burdened by climate change (SSA + SAR) also receive
+lowest- transformity energy (biomass + low-access grids), a double
+penalty invisible when either lens is used alone.</li>
+</ul>
+<div class="card-grid">
+<div class="card">
+<div class="kicker">
+Atlas
+</div>
+<h3>
+39 figures across 215 countries
+</h3>
+<p>
+Cell-level maps, cross-signal PCA, climate-justice scatter, country
+archetypes, emergy panels.
+</p>
+<p>
+<a href="atlas.html">Browse the atlas →</a>
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Data
+</div>
+<h3>
+17 open sources, 1750–2025
+</h3>
+<p>
+WB, Ember, OWID, EIA, WHO, FAOSTAT, UNDP, NASA GISS, WGI, and more.
+Every number traceable to a script + cache.
+</p>
+<p>
+<a href="data.html">See the sources →</a>
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Papers
+</div>
+<h3>
+Six papers in flight
+</h3>
+<p>
+Science Policy Forum, Joule, Nature Energy scope, JSS ecosystem
+umbrella, JOSS Wave 1, Scientific Data descriptor.
+</p>
+<p>
+<a href="papers.html">See the papers →</a>
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Code
+</div>
+<h3>
+The emburden ecosystem
+</h3>
+<p>
+13 R packages + 2 Python packages, all MIT. Includes
+<code>emburden::neb_func</code> (Net Energy Return),
+<code>emburdensynth::grid_transformity</code> (Odum emergy),
+<code>emburdensynth::run_global_pipeline</code>.
+</p>
+<p>
+<a href="code.html">Explore the code →</a>
+</p>
+</div>
+</div>
+<div class="callout">
+<div class="callout-title">
+Caveats worth naming
+</div>
+<p>
+The emergy computation inherits the country’s grid mix onto every cell
+(no cell-level fuel mix data exists at this scale). Cumulative
+CO<sub>2</sub> is territorial-only (consumption-based would tighten
+rather than loosen the disparity). Physics baseline uses global-average
+building envelope. Full caveats in the <a href="global_analysis.pdf">
+technical report</a>.
+</p>
+</div>
+<footer>
+<p>
+emburden.org — an open project by <a href="https://emrgi.com">Emrgi</a>.
+Data + code at
+<a href="https://github.com/ericscheier">github.com/ericscheier</a>.
+Report bugs, ask questions, or contribute:
+<a href="mailto:hello@emrgi.com">hello@emrgi.com</a>.
+</p>
+<p>
+<small>Last updated: September 06, 2026  ·  Rendered dynamically from
+RDS caches at
+<a href="https://github.com/ericscheier/emburden-site">github.com/ericscheier/emburden-site</a></small>
+</p>
+</footer>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
