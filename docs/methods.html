@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>emburden.org — Methods</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<link href="site_libs/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-5.3.1/bootstrap.bundle.min.js"></script>
+<link href="site_libs/Inter-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet" />
+<link href="site_libs/Montserrat-0.4.10/font.css" rel="stylesheet" />
+<script src="site_libs/bs3compat-0.9.0/transition.js"></script>
+<script src="site_libs/bs3compat-0.9.0/tabs.js"></script>
+<script src="site_libs/bs3compat-0.9.0/bs3compat.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<meta name="description" content="emburden.org — open-source household energy-burden analytics from raw data pulls to global synthesis. 129 countries, 17,000 cells, 8.2 billion people.">
+<meta name="author" content="Emrgi">
+<meta property="og:title" content="emburden.org — global household energy burden">
+<meta property="og:description" content="The 67-fold climate justice mismatch, quantified with open data + open code.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">emburden.org</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="emergy.html">Emergy</a>
+</li>
+<li>
+  <a href="access.html">Access + QoS</a>
+</li>
+<li>
+  <a href="atlas.html">The Atlas</a>
+</li>
+<li>
+  <a href="methods.html">Methods</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="papers.html">Papers</a>
+</li>
+<li>
+  <a href="code.html">Code</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="reference/index.html">R package</a>
+</li>
+<li>
+  <a href="https://github.com/ericscheier">GitHub</a>
+</li>
+<li>
+  <a href="global_analysis.pdf">Full report (PDF)</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Methods</h1>
+
+</div>
+
+
+<div id="how-the-pipeline-works" class="section level1">
+<h1>How the pipeline works</h1>
+<p>The <code>emburdensynth</code> pipeline turns open data into
+cell-level household energy expenditure estimates in five phases. Each
+phase is implemented as a single exported function; each can be run
+independently for debugging.</p>
+<div id="the-five-phases" class="section level2">
+<h2>The five phases</h2>
+<div class="card-grid">
+<div class="card">
+<div class="kicker">
+Phase 1
+</div>
+<h3>
+<code>impute_physical_characteristics()</code>
+</h3>
+<p>
+Probabilistic mapping from NREL ResStock building physical attributes
+onto ACS PUMS demographic households. Produces per-household dwelling
+area, vintage, heating fuel, insulation profile.
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Phase 2
+</div>
+<h3>
+<code>calibrate_expenditures()</code>
+</h3>
+<p>
+Quantile mapping via RECS empirical CDF stratified by income bracket and
+building type. Assigns utility-expenditure quantiles to each household.
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Phase 3
+</div>
+<h3>
+<code>optimize_spatial_allocation()</code>
+</h3>
+<p>
+Multi-level simulated annealing across ~2,300 PUMAs / GADM level-2
+units, matching cell-level marginals to national totals. Runs in
+parallel via <code>furrr</code>.
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Phase 4
+</div>
+<h3>
+<code>reverse_engineer_consumption()</code>
+</h3>
+<p>
+Piecewise inverse-tariff root-finding via <code>uniroot</code>. Converts
+household dollar expenditure to physical kWh consumption using
+per-country utility rate structures from URDB.
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Phase 5
+</div>
+<h3>
+<code>generate_load_profiles()</code>
+</h3>
+<p>
+Load-profile morphing to 8,760 hourly bins, weighted by end-use and
+season using NREL EULP baselines. Output:
+<code>l1</code>–<code>l8760</code> kWh/hour columns per household in
+parquet.
+</p>
+</div>
+<div class="card">
+<div class="kicker">
+Post
+</div>
+<h3>
+<code>calculate_energy_insecurity_gap()</code>
+</h3>
+<p>
+Joins the physics baseline (degree-day derived required kWh) with the
+pipeline’s estimated consumption. Flags cells where estimated &lt; 0.9 ×
+physics-required.
+</p>
+</div>
+</div>
+</div>
+<div id="net-energy-return-aggregation" class="section level2">
+<h2><a name="aggregation"></a>Net Energy Return aggregation</h2>
+<p>Aggregating household-level burden to country-level requires a
+well-formed weighted mean. The naive choice —
+<code>weighted.mean(spending/income, weights)</code> — is biased. The
+mathematically correct formulation, derived from the Net-Energy-Return
+framework in the <code>emburden</code> package, computes
+<code>Nh = (G-S)/Se</code> per cell (where <code>Se</code> is energy
+spending), takes the weighted mean of <code>Nh</code>, and inverts
+as:</p>
+<pre><code>NEB = 1 / (1 + weighted_mean(Nh))</code></pre>
+<div class="callout">
+<div class="callout-title">
+Why this matters
+</div>
+<p>
+Across the 128 countries covered in our release, naive aggregation
+over-estimates country burden by a median <b>5.72%</b>. The bias is
+small for stable economies but becomes very large under hyperinflation.
+For VEN, where cell-level energy spending/income ratios span several
+orders of magnitude, the naive-vs-proper divergence reaches
+<b>1414%</b>. This result establishes that any prior cross-country
+comparison of household energy burden using weighted-mean-of-ratios has
+been systematically biased in a direction that inflates estimates in the
+world’s most economically volatile settings.
+</p>
+</div>
+</div>
+<div id="the-physics-baseline" class="section level2">
+<h2>The physics baseline</h2>
+<p>Cell-level physics-required kWh is derived from:</p>
+<ul>
+<li><strong>HDD × UA × area / COP_heat</strong> — heating demand</li>
+<li><strong>CDD × UA × area / COP_cool</strong> — cooling demand</li>
+<li><strong>1,800 kWh/yr baseload</strong> — appliances, lighting, hot
+water</li>
+</ul>
+<p>with country-specific HDD and CDD from World Bank Climate Change
+Knowledge Portal and a global-average building envelope (60 m², COP 2.5
+for cooling, 2.8 for heating). Per-country building-stock corrections
+are on the roadmap.</p>
+</div>
+<div id="uncertainty-quantification" class="section level2">
+<h2>Uncertainty quantification</h2>
+<p>Bootstrap 90% confidence intervals via 500 Beta-perturbation
+replicates on GCD sector shares (<code>n_eff = 100</code>) plus
+boundary-jitter sensitivity across GADM level-2 boundaries. Cell-level
+CI width is aggregated to country-mean CI width via variance
+decomposition.</p>
+</div>
+<div id="cross-signal-integration" class="section level2">
+<h2>Cross-signal integration</h2>
+<p>Country-level burden is joined to 11 external signals for the PCA +
+k-means archetype analysis:</p>
+<ul>
+<li>WB WDI 1960–2024 (7 indicators including electricity access)</li>
+<li>Ember 2000–2025 (aggregate + 9-fuel generation mix)</li>
+<li>OWID Energy 1900–2025 (per-capita electricity + primary energy)</li>
+<li>OWID CO<sub>2</sub> 1750–2024 (per-capita + cumulative +
+by-fuel)</li>
+<li>EIA International 1980–2023 (222 countries)</li>
+<li>WHO PM<sub>2.5</sub> + WB clean-fuel access</li>
+<li>FAOSTAT undernourishment 2000–2023</li>
+<li>UNDP HDI 1990–2022</li>
+<li>NASA GISTEMP 1880–2025</li>
+<li>WB Worldwide Governance Indicators 1996–2022</li>
+</ul>
+<p>See <a href="data.html">data provenance</a> for full URLs + retrieval
+dates.</p>
+<footer>
+<p>
+<a href="/">← back to home</a> · <a href="atlas.html">the atlas</a> ·
+<a href="data.html">data provenance</a>
+</p>
+</footer>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
