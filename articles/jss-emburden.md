@@ -361,7 +361,7 @@ through progressively detailed examples.
 ### Temporal comparison workflow
 
 The
-[`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md)
+[`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md)
 function provides the core temporal analysis functionality:
 
 ``` r

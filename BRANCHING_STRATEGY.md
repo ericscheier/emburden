@@ -487,14 +487,14 @@ workflow with custom version
 
 ## Additional Resources
 
-- [CODEOWNERS](https://emburden.org/.github/CODEOWNERS) - Code review
-  requirements
-- [BRANCH_PROTECTION_SETUP.md](https://emburden.org/BRANCH_PROTECTION_SETUP.md) -
+- [CODEOWNERS](https://pkg.emburden.org/.github/CODEOWNERS) - Code
+  review requirements
+- [BRANCH_PROTECTION_SETUP.md](https://pkg.emburden.org/BRANCH_PROTECTION_SETUP.md) -
   GitHub configuration
-- [DEPRECATED_WORKFLOWS.md](https://emburden.org/workflows/DEPRECATED_WORKFLOWS.md) -
+- [DEPRECATED_WORKFLOWS.md](https://pkg.emburden.org/workflows/DEPRECATED_WORKFLOWS.md) -
   Migration notes
-- [CONTRIBUTING.md](https://emburden.org/CONTRIBUTING.md) - Contribution
-  guidelines
+- [CONTRIBUTING.md](https://pkg.emburden.org/CONTRIBUTING.md) -
+  Contribution guidelines
 
 ------------------------------------------------------------------------
 

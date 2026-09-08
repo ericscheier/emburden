@@ -101,16 +101,20 @@ A tibble with columns:
 # Single state (fast, good for learning)
 nc_ami <- load_cohort_data(dataset = "ami", states = "NC")
 #> Loading 2022 AMI cohort data...
-#>   ✓ Loaded from database
+#>   Database not found, trying CSV...
+#>   Reading CSV: lead_2022_ami.csv
+#>   ✓ Loaded from CSV
 #> Filtered to state(s): NC
-#> Loaded 15821 cohort records
+#> Loaded 708016 cohort records
 
 # Load specific vintage
 nc_2018 <- load_cohort_data(dataset = "ami", states = "NC", vintage = "2018")
 #> Loading 2018 AMI cohort data...
-#>   ✓ Loaded from database
+#>   Database not found, trying CSV...
+#>   Reading CSV: lead_2018_ami.csv
+#>   ✓ Loaded from CSV
 #> Filtered to state(s): NC
-#> Loaded 10820 cohort records
+#> Loaded 21600 cohort records
 # }
 
 # \donttest{

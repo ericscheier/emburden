@@ -250,7 +250,7 @@ system.time({
   eb_harmonic <- 1 / weighted.mean(1 / eb_direct, weights)
 })
 #>    user  system elapsed 
-#>   0.000   0.000   0.001
+#>       0       0       0
 
 # Verify results are identical
 print(paste("EB via Nh:", scales::percent(eb_nh)))
@@ -469,7 +469,7 @@ For a quick reference guide, see `NEB_QUICKSTART.md` in the package
 repository.
 
 For practical examples with real data, see
-[`vignette("getting-started")`](https://emburden.org/articles/getting-started.md).
+[`vignette("getting-started")`](https://pkg.emburden.org/articles/getting-started.md).
 
 ## Mathematical Appendix
 
