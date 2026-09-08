@@ -1,13 +1,18 @@
-url: https://emburden.org
+url: https://pkg.emburden.org
 
 template:
   bootstrap: 5
 
 home:
-  title: "Energy Burden Analysis with Net Energy Return"
+  title: "emburden — R package for household energy burden analysis"
   description: >
     R package for analyzing household energy burden using proper aggregation
-    methodology based on Net Energy Return (Nh) transformations.
+    methodology based on Net Energy Return (Nh) transformations. Part of
+    the emburden ecosystem; the main analytical site is at
+    https://emburden.org.
+  links:
+  - text: Ecosystem site (emburden.org)
+    href: https://emburden.org
 
 reference:
   - title: "Energy Metrics"
