@@ -28,9 +28,9 @@ CRAN release: 2026-05-18
 ### New Features
 
 - **Net Energy Burden (NEB) Aggregation**: Enhanced
-  [`neb_func()`](https://pkg.emburden.org/reference/neb_func.md) with
-  proper weighted aggregation using Net Energy Return (Nh) methodology.
-  Added `weights` and `aggregate` parameters for correct cross-household
+  [`neb_func()`](https://emburden.org/reference/neb_func.md) with proper
+  weighted aggregation using Net Energy Return (Nh) methodology. Added
+  `weights` and `aggregate` parameters for correct cross-household
   aggregation, avoiding 1-5% errors from naive averaging. Maintains
   backward compatibility for individual household calculations.
 - **Housing Characteristics Analysis**: Preserve granular housing
@@ -70,7 +70,7 @@ CRAN release: 2026-05-18
 ### Enhancements
 
 - **Documentation**: Enhanced
-  [`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)
+  [`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)
   documentation with detailed descriptions of housing dimension columns
   and examples showing housing characteristic analysis
 - **Vignettes**: Added comprehensive housing characteristics analysis
@@ -484,10 +484,10 @@ with improved reliability and performance.
   [\#35](https://github.com/ericscheier/emburden/issues/35))
   - Database fallback test now properly mocks all download sources
   - Added mock for
-    [`download_lead_data()`](https://pkg.emburden.org/reference/download_lead_data.md)
+    [`download_lead_data()`](https://emburden.org/reference/download_lead_data.md)
     to prevent OpenEI fallback
   - Added mock for
-    [`detect_database_corruption()`](https://pkg.emburden.org/reference/detect_database_corruption.md)
+    [`detect_database_corruption()`](https://emburden.org/reference/detect_database_corruption.md)
     to allow test data
 
 #### Testing
@@ -511,8 +511,7 @@ submission.
   - Replaced Unicode ≥ character (U+2265) with LaTeX-compatible
     `\eqn{\ge}` macro
   - Fixed in `R/energy_ratios.R` documentation for
-    [`ner_func()`](https://pkg.emburden.org/reference/ner_func.md)
-    function
+    [`ner_func()`](https://emburden.org/reference/ner_func.md) function
   - All R CMD check tests passing with 0 ERRORS
 
 #### CRAN Readiness
@@ -605,8 +604,8 @@ documentation, with 648 tests passing and clean R CMD check results.
   - Performance guidance for large dataset queries (30-120 seconds,
     ~500MB RAM)
   - Metadata discovery functions showcased
-    ([`list_states()`](https://pkg.emburden.org/reference/list_states.md),
-    [`list_income_brackets()`](https://pkg.emburden.org/reference/list_income_brackets.md),
+    ([`list_states()`](https://emburden.org/reference/list_states.md),
+    [`list_income_brackets()`](https://emburden.org/reference/list_income_brackets.md),
     etc.)
 - **Language cleanup**
   - Removed “proof of concept” references from documentation
@@ -651,9 +650,9 @@ work. Nationwide capability is additive.
   - Updated `README.md` with multi-state and nationwide examples
     alongside NC examples
   - Updated all function examples
-    ([`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md),
-    [`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md),
-    [`load_census_tract_data()`](https://pkg.emburden.org/reference/load_census_tract_data.md))
+    ([`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md),
+    [`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md),
+    [`load_census_tract_data()`](https://emburden.org/reference/load_census_tract_data.md))
   - Added test validating all 51 US states are supported (614 tests
     passing)
   - **Data coverage**: 2.3M household cohort records, ~73k census
@@ -663,9 +662,9 @@ work. Nationwide capability is additive.
   - See `.dev/NC-TO-NATIONWIDE-TRANSITION.md` for comprehensive
     transition plan
 - **pkgdown build fix**: Resolved recurring CI failure
-  - Changed
-    [`backup_db()`](https://pkg.emburden.org/reference/backup_db.md) and
-    [`clear_test_environment()`](https://pkg.emburden.org/reference/clear_test_environment.md)
+  - Changed [`backup_db()`](https://emburden.org/reference/backup_db.md)
+    and
+    [`clear_test_environment()`](https://emburden.org/reference/clear_test_environment.md)
     from `@export` to `@keywords internal`
   - Added pkgdown reference index check to pre-commit hook to prevent
     recurrence
@@ -680,11 +679,11 @@ Nationwide data access is additive.
 
 - **Production database protection** to prevent accidental data loss:
   - New `R/database-helpers.R` module with safe database operations
-  - [`delete_db()`](https://pkg.emburden.org/reference/delete_db.md)
+  - [`delete_db()`](https://emburden.org/reference/delete_db.md)
     requires explicit `confirm = TRUE` for production database
-  - [`backup_db()`](https://pkg.emburden.org/reference/backup_db.md)
-    creates timestamped backups before risky operations
-  - [`clear_test_environment()`](https://pkg.emburden.org/reference/clear_test_environment.md)
+  - [`backup_db()`](https://emburden.org/reference/backup_db.md) creates
+    timestamped backups before risky operations
+  - [`clear_test_environment()`](https://emburden.org/reference/clear_test_environment.md)
     safely clears only test data
   - Separate test (`emburden_test_db.sqlite`) and production
     (`emburden_db.sqlite`) databases
@@ -719,13 +718,13 @@ Nationwide data access is additive.
   - `.dev/TEST_ZENODO_DOWNLOAD.md`: Complete testing guide
   - Updated `.gitignore` for build artifacts
 - **Metadata discovery functions** with comprehensive tests:
-  - [`list_states()`](https://pkg.emburden.org/reference/list_states.md):
+  - [`list_states()`](https://emburden.org/reference/list_states.md):
     Returns all 51 US state abbreviations
-  - [`list_income_brackets()`](https://pkg.emburden.org/reference/list_income_brackets.md):
+  - [`list_income_brackets()`](https://emburden.org/reference/list_income_brackets.md):
     Income brackets by dataset/vintage
-  - [`list_cohort_columns()`](https://pkg.emburden.org/reference/list_cohort_columns.md):
+  - [`list_cohort_columns()`](https://emburden.org/reference/list_cohort_columns.md):
     Column names and descriptions
-  - [`get_dataset_info()`](https://pkg.emburden.org/reference/get_dataset_info.md):
+  - [`get_dataset_info()`](https://emburden.org/reference/get_dataset_info.md):
     Complete dataset metadata
   - 48 new tests in `tests/testthat/test-metadata.R`
 
@@ -746,9 +745,9 @@ isolation
   - Gzip decompression support for smaller downloads
   - Automatic fallback to OpenEI if Zenodo unavailable
 - **Updated download cascade** in
-  [`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)
+  [`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)
   and
-  [`load_census_tract_data()`](https://pkg.emburden.org/reference/load_census_tract_data.md):
+  [`load_census_tract_data()`](https://emburden.org/reference/load_census_tract_data.md):
   1.  Database (SQLite) - fastest, local
   2.  CSV (cached files) - fast, local
   3.  **Zenodo (NEW!)** - faster, more reliable
@@ -786,11 +785,11 @@ configuration, ready for CRAN submission
 - **Metadata discovery functions** for easier data exploration:
   - `list_income_brackets(dataset, vintage)`: Show available income
     brackets
-  - [`list_states()`](https://pkg.emburden.org/reference/list_states.md):
+  - [`list_states()`](https://emburden.org/reference/list_states.md):
     Show all 51 available state abbreviations
   - `list_cohort_columns(dataset, vintage)`: Show column names,
     descriptions, and data types
-  - [`get_dataset_info()`](https://pkg.emburden.org/reference/get_dataset_info.md):
+  - [`get_dataset_info()`](https://emburden.org/reference/get_dataset_info.md):
     Show metadata about all available datasets
   - Enables programmatic discovery of data structure
 
@@ -799,7 +798,7 @@ configuration, ready for CRAN submission
 ### Breaking Changes
 
 - **Parameter reordering in
-  [`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md)**:
+  [`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md)**:
   `group_by` now comes before `counties`
   - **New order**:
     `compare_energy_burden(dataset, states, group_by, counties, ...)`
@@ -811,7 +810,7 @@ configuration, ready for CRAN submission
 ### New Features
 
 - **Dynamic grouping in
-  [`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md)**:
+  [`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md)**:
   `group_by` now accepts custom column names
   - Use keywords: “income_bracket”, “state”, “none” (as before)
   - OR custom columns: `group_by = "geoid"` for tract-level comparison
@@ -823,7 +822,7 @@ configuration, ready for CRAN submission
 ### New Features
 
 - **Dynamic filtering in
-  [`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)**:
+  [`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)**:
   Now accepts `...` parameter for flexible filtering
   - Filter by any column using tidyverse syntax
   - Example:
@@ -888,12 +887,12 @@ configuration, ready for CRAN submission
     requiring aggregation
 - **New data processing pipeline**:
   - Added
-    [`aggregate_cohort_data()`](https://pkg.emburden.org/reference/aggregate_cohort_data.md)
+    [`aggregate_cohort_data()`](https://emburden.org/reference/aggregate_cohort_data.md)
     function to aggregate raw data by census tract × income bracket
   - Updated detection logic to recognize both `.UNITS` and `*UNITS`
     column formats
   - Enhanced
-    [`standardize_cohort_columns()`](https://pkg.emburden.org/reference/standardize_cohort_columns.md)
+    [`standardize_cohort_columns()`](https://emburden.org/reference/standardize_cohort_columns.md)
     to handle both `FPL150` (2022) and `FPL15` (2018)
   - Reduces 588k rows → ~3.6k cohort records for NC
 - **Result**: Fresh installations now work perfectly - download from
@@ -914,7 +913,7 @@ configuration, ready for CRAN submission
 - **Renamed all internal references**: `emrgi` → `emburden` for
   consistency
   - `find_emrgi_db()` →
-    [`find_emburden_db()`](https://pkg.emburden.org/reference/find_emburden_db.md)
+    [`find_emburden_db()`](https://emburden.org/reference/find_emburden_db.md)
   - Database filename: `emrgi_db.sqlite` → `emburden_db.sqlite`
 - **Release automation**:
   - Added `.dev/RELEASE-PROCESS.md` - Comprehensive release workflow
@@ -953,7 +952,7 @@ configuration, ready for CRAN submission
 #### Enhanced Temporal Comparison
 
 - Prominently featured
-  [`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md)
+  [`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md)
   function across all documentation
   - README now includes temporal comparison section (Example 5)
   - Getting Started vignette has comprehensive temporal comparison
@@ -975,7 +974,7 @@ configuration, ready for CRAN submission
 ### Documentation Improvements
 
 - Emphasized
-  [`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md)
+  [`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md)
   usage across 7 files
   - `README.md` - Added temporal comparison section
   - `vignettes/jss-emburden.Rmd` - Replaced manual code with function
@@ -999,7 +998,7 @@ configuration, ready for CRAN submission
 ### Internal Changes
 
 - Improved data validation in
-  [`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)
+  [`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)
   - Better handling of incomplete processed CSV files
   - More informative verbose messaging
 
@@ -1043,28 +1042,28 @@ methodology.
 #### Core Functionality
 
 - Energy metric calculations
-  - [`energy_burden_func()`](https://pkg.emburden.org/reference/energy_burden_func.md) -
+  - [`energy_burden_func()`](https://emburden.org/reference/energy_burden_func.md) -
     Calculate energy burden (S/G)
-  - [`ner_func()`](https://pkg.emburden.org/reference/ner_func.md) -
+  - [`ner_func()`](https://emburden.org/reference/ner_func.md) -
     Calculate Net Energy Return (Nh)
-  - [`eroi_func()`](https://pkg.emburden.org/reference/eroi_func.md) -
+  - [`eroi_func()`](https://emburden.org/reference/eroi_func.md) -
     Calculate Energy Return on Investment
-  - [`dear_func()`](https://pkg.emburden.org/reference/dear_func.md) -
+  - [`dear_func()`](https://emburden.org/reference/dear_func.md) -
     Calculate Disposable Energy-Adjusted Resources
 - Statistical analysis
-  - [`calculate_weighted_metrics()`](https://pkg.emburden.org/reference/calculate_weighted_metrics.md) -
+  - [`calculate_weighted_metrics()`](https://emburden.org/reference/calculate_weighted_metrics.md) -
     Weighted aggregation with proper Nh methodology
   - Automatic poverty rate calculations below specified thresholds
   - Support for grouped analysis by geographic/demographic categories
 - Formatting utilities
-  - [`to_percent()`](https://pkg.emburden.org/reference/to_percent.md),
-    [`to_dollar()`](https://pkg.emburden.org/reference/to_dollar.md),
-    [`to_big()`](https://pkg.emburden.org/reference/to_big.md) -
+  - [`to_percent()`](https://emburden.org/reference/to_percent.md),
+    [`to_dollar()`](https://emburden.org/reference/to_dollar.md),
+    [`to_big()`](https://emburden.org/reference/to_big.md) -
     Publication-ready formatting
-  - [`to_million()`](https://pkg.emburden.org/reference/to_million.md),
-    [`to_billion_dollar()`](https://pkg.emburden.org/reference/to_billion_dollar.md) -
+  - [`to_million()`](https://emburden.org/reference/to_million.md),
+    [`to_billion_dollar()`](https://emburden.org/reference/to_billion_dollar.md) -
     Compact number formats
-  - [`colorize()`](https://pkg.emburden.org/reference/colorize.md) -
+  - [`colorize()`](https://emburden.org/reference/colorize.md) -
     Output-aware color formatting for R Markdown
 
 #### Package Structure

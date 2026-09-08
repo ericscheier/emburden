@@ -222,14 +222,14 @@ introduce errors; use the Nh method for individual household data
 
 ### Statistical Analysis
 
-- [`calculate_weighted_metrics()`](https://pkg.emburden.org/reference/calculate_weighted_metrics.md) -
+- [`calculate_weighted_metrics()`](https://emburden.org/reference/calculate_weighted_metrics.md) -
   Weighted mean, median, quantiles with grouping
 - Automatically calculates poverty rates below specified thresholds
 - Handles missing data and small sample sizes
 
 ### Temporal Comparison
 
-- [`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md) -
+- [`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md) -
   Compare energy burden across data vintages (2018 vs 2022)
 - Automatically handles schema differences between vintages
 - Proper Nh-based aggregation built-in
@@ -237,14 +237,14 @@ introduce errors; use the Nh method for individual household data
 
 ### Formatting
 
-- [`to_percent()`](https://pkg.emburden.org/reference/to_percent.md) -
+- [`to_percent()`](https://emburden.org/reference/to_percent.md) -
   Format as percentage with optional LaTeX escaping
-- [`to_dollar()`](https://pkg.emburden.org/reference/to_dollar.md) -
-  Format as currency
-- [`to_big()`](https://pkg.emburden.org/reference/to_big.md) - Format
-  large numbers with thousand separators
-- [`to_million()`](https://pkg.emburden.org/reference/to_million.md) /
-  [`to_billion_dollar()`](https://pkg.emburden.org/reference/to_billion_dollar.md) -
+- [`to_dollar()`](https://emburden.org/reference/to_dollar.md) - Format
+  as currency
+- [`to_big()`](https://emburden.org/reference/to_big.md) - Format large
+  numbers with thousand separators
+- [`to_million()`](https://emburden.org/reference/to_million.md) /
+  [`to_billion_dollar()`](https://emburden.org/reference/to_billion_dollar.md) -
   Compact formats for large values
 
 ## Project Structure
@@ -334,7 +334,7 @@ us_comparison <- compare_energy_burden(dataset = "ami", group_by = "income_brack
 **Data Loading Workflow:**
 
 On first use,
-[`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)
+[`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)
 automatically: 1. **Tries local database** for fast access 2. **Falls
 back to local CSV** files if database unavailable 3. **Downloads from
 OpenEI** (DOE LEAD dataset) if neither exists 4. **Imports to database**
@@ -400,7 +400,7 @@ BibTeX:
 
 GNU Affero General Public License v3.0 or later (AGPL-3+)
 
-See [LICENSE](https://pkg.emburden.org/LICENSE) for full text.
+See [LICENSE](https://emburden.org/LICENSE) for full text.
 
 ## Contributing
 

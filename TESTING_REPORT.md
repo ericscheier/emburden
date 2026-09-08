@@ -155,7 +155,7 @@ energy_burden_func(c(30000, 50000, 75000), c(2000, 2500, 3000))
 ```
 
 **Data Loading:** -
-[`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)
+[`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)
 function available and accessible - Automatic download system from
 OpenEI ready (not tested to avoid large downloads)
 

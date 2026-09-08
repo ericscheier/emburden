@@ -395,8 +395,8 @@ release afterward
 
 ## Related Documentation
 
-- [CONTRIBUTING.md](https://pkg.emburden.org/CONTRIBUTING.md) -
-  Contribution guidelines
+- [CONTRIBUTING.md](https://emburden.org/CONTRIBUTING.md) - Contribution
+  guidelines
 - [GitHub Environments
   Documentation](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)
 - [Zenodo-GitHub

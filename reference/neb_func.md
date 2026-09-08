@@ -76,10 +76,10 @@ computational simplicity and numerical stability.
 
 ## See also
 
-[`ner_func()`](https://pkg.emburden.org/reference/ner_func.md) for the
-Net Energy Return (Nh) calculation
+[`ner_func()`](https://emburden.org/reference/ner_func.md) for the Net
+Energy Return (Nh) calculation
 
-[`energy_burden_func()`](https://pkg.emburden.org/reference/energy_burden_func.md)
+[`energy_burden_func()`](https://emburden.org/reference/energy_burden_func.md)
 for simple EB without aggregation support
 
 ## Examples

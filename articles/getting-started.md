@@ -142,8 +142,8 @@ print(paste("Correct NEB (neb_func): ", scales::percent(neb_correct2)))
 **Why does this work?** The Nh transformation allows us to use simple
 arithmetic weighted mean instead of harmonic mean, making aggregation
 both simpler and more intuitive. The
-[`neb_func()`](https://pkg.emburden.org/reference/neb_func.md) with
-weights does this automatically.
+[`neb_func()`](https://emburden.org/reference/neb_func.md) with weights
+does this automatically.
 
 ## Analysis by Income Bracket
 
@@ -363,13 +363,13 @@ the housing types and populations that need them most.
 ## Next Steps
 
 - See
-  [`vignette("methodology")`](https://pkg.emburden.org/articles/methodology.md)
+  [`vignette("methodology")`](https://emburden.org/articles/methodology.md)
   for mathematical details
 - See `NEB_QUICKSTART.md` for quick reference
 - Run example scripts in `analysis/scripts/` directory
 - Read full documentation:
-  [`?energy_burden_func`](https://pkg.emburden.org/reference/energy_burden_func.md),
-  [`?ner_func`](https://pkg.emburden.org/reference/ner_func.md)
+  [`?energy_burden_func`](https://emburden.org/reference/energy_burden_func.md),
+  [`?ner_func`](https://emburden.org/reference/ner_func.md)
 
 ## References
 

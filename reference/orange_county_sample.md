@@ -75,7 +75,7 @@ Tool
 This sample data is provided for quick demos, testing, and vignettes
 without requiring a large download. For full state or national analysis,
 use
-[`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)
+[`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)
 to download complete datasets from OpenEI.
 
 **Orange County NC** (Chapel Hill, Carrboro, Hillsborough):
@@ -92,13 +92,13 @@ to download complete datasets from OpenEI.
 
 ## See also
 
-- [`load_cohort_data`](https://pkg.emburden.org/reference/load_cohort_data.md) -
+- [`load_cohort_data`](https://emburden.org/reference/load_cohort_data.md) -
   Load full datasets for any state
 
-- [`compare_energy_burden`](https://pkg.emburden.org/reference/compare_energy_burden.md) -
+- [`compare_energy_burden`](https://emburden.org/reference/compare_energy_burden.md) -
   Compare energy burden across vintages
 
-- [`calculate_weighted_metrics`](https://pkg.emburden.org/reference/calculate_weighted_metrics.md) -
+- [`calculate_weighted_metrics`](https://emburden.org/reference/calculate_weighted_metrics.md) -
   Calculate weighted metrics with grouping
 
 ## Examples

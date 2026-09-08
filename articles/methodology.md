@@ -242,7 +242,7 @@ system.time({
   eb_nh <- 1 / (1 + nh_mean)
 })
 #>    user  system elapsed 
-#>       0       0       0
+#>   0.000   0.001   0.000
 
 # Method 2: Harmonic mean
 system.time({
@@ -469,7 +469,7 @@ For a quick reference guide, see `NEB_QUICKSTART.md` in the package
 repository.
 
 For practical examples with real data, see
-[`vignette("getting-started")`](https://pkg.emburden.org/articles/getting-started.md).
+[`vignette("getting-started")`](https://emburden.org/articles/getting-started.md).
 
 ## Mathematical Appendix
 

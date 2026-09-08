@@ -222,14 +222,14 @@ introduce errors; use the Nh method for individual household data
 
 ### Statistical Analysis
 
-- [`calculate_weighted_metrics()`](https://pkg.emburden.org/reference/calculate_weighted_metrics.md) -
+- [`calculate_weighted_metrics()`](https://emburden.org/reference/calculate_weighted_metrics.md) -
   Weighted mean, median, quantiles with grouping
 - Automatically calculates poverty rates below specified thresholds
 - Handles missing data and small sample sizes
 
 ### Temporal Comparison
 
-- [`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md) -
+- [`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md) -
   Compare energy burden across data vintages (2018 vs 2022)
 - Automatically handles schema differences between vintages
 - Proper Nh-based aggregation built-in
@@ -237,14 +237,14 @@ introduce errors; use the Nh method for individual household data
 
 ### Formatting
 
-- [`to_percent()`](https://pkg.emburden.org/reference/to_percent.md) -
+- [`to_percent()`](https://emburden.org/reference/to_percent.md) -
   Format as percentage with optional LaTeX escaping
-- [`to_dollar()`](https://pkg.emburden.org/reference/to_dollar.md) -
-  Format as currency
-- [`to_big()`](https://pkg.emburden.org/reference/to_big.md) - Format
-  large numbers with thousand separators
-- [`to_million()`](https://pkg.emburden.org/reference/to_million.md) /
-  [`to_billion_dollar()`](https://pkg.emburden.org/reference/to_billion_dollar.md) -
+- [`to_dollar()`](https://emburden.org/reference/to_dollar.md) - Format
+  as currency
+- [`to_big()`](https://emburden.org/reference/to_big.md) - Format large
+  numbers with thousand separators
+- [`to_million()`](https://emburden.org/reference/to_million.md) /
+  [`to_billion_dollar()`](https://emburden.org/reference/to_billion_dollar.md) -
   Compact formats for large values
 
 ## Project Structure
@@ -334,7 +334,7 @@ us_comparison <- compare_energy_burden(dataset = "ami", group_by = "income_brack
 **Data Loading Workflow:**
 
 On first use,
-[`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)
+[`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)
 automatically: 1. **Tries local database** for fast access 2. **Falls
 back to local CSV** files if database unavailable 3. **Downloads from
 OpenEI** (DOE LEAD dataset) if neither exists 4. **Imports to database**
@@ -400,7 +400,7 @@ BibTeX:
 
 GNU Affero General Public License v3.0 or later (AGPL-3+)
 
-See [LICENSE](https://pkg.emburden.org/LICENSE) for full text.
+See [LICENSE](https://emburden.org/LICENSE) for full text.
 
 ## Contributing
 
@@ -555,87 +555,87 @@ structures and demand projections
 
 Core functions for calculating energy burden and related ratios
 
-- [`energy_burden_func()`](https://pkg.emburden.org/reference/energy_burden_func.md)
+- [`energy_burden_func()`](https://emburden.org/reference/energy_burden_func.md)
   : Calculate Energy Burden
-- [`neb_func()`](https://pkg.emburden.org/reference/neb_func.md) :
-  Calculate Net Energy Burden (NEB)
-- [`ner_func()`](https://pkg.emburden.org/reference/ner_func.md) :
-  Calculate Net Energy Return (Nh)
-- [`eroi_func()`](https://pkg.emburden.org/reference/eroi_func.md) :
+- [`neb_func()`](https://emburden.org/reference/neb_func.md) : Calculate
+  Net Energy Burden (NEB)
+- [`ner_func()`](https://emburden.org/reference/ner_func.md) : Calculate
+  Net Energy Return (Nh)
+- [`eroi_func()`](https://emburden.org/reference/eroi_func.md) :
   Calculate Energy Return on Investment (EROI)
-- [`dear_func()`](https://pkg.emburden.org/reference/dear_func.md) :
+- [`dear_func()`](https://emburden.org/reference/dear_func.md) :
   Calculate Disposable Energy-Adjusted Resources (DEAR)
 
 ## Data Loading
 
 Functions for loading LEAD Tool data
 
-- [`load_census_tract_data()`](https://pkg.emburden.org/reference/load_census_tract_data.md)
+- [`load_census_tract_data()`](https://emburden.org/reference/load_census_tract_data.md)
   : Load Census Tract Data
-- [`load_cohort_data()`](https://pkg.emburden.org/reference/load_cohort_data.md)
+- [`load_cohort_data()`](https://emburden.org/reference/load_cohort_data.md)
   : Load DOE LEAD Tool Cohort Data
-- [`check_data_sources()`](https://pkg.emburden.org/reference/check_data_sources.md)
+- [`check_data_sources()`](https://emburden.org/reference/check_data_sources.md)
   : Check Available Data Sources
 
 ## Cache Management
 
 Functions for managing data cache and database
 
-- [`clear_dataset_cache()`](https://pkg.emburden.org/reference/clear_dataset_cache.md)
+- [`clear_dataset_cache()`](https://emburden.org/reference/clear_dataset_cache.md)
   : Clear cache for a specific dataset
-- [`clear_all_cache()`](https://pkg.emburden.org/reference/clear_all_cache.md)
+- [`clear_all_cache()`](https://emburden.org/reference/clear_all_cache.md)
   : Clear all emburden cache and database
 
 ## Metadata Discovery
 
 Functions for exploring available data structure
 
-- [`list_income_brackets()`](https://pkg.emburden.org/reference/list_income_brackets.md)
+- [`list_income_brackets()`](https://emburden.org/reference/list_income_brackets.md)
   : List Available Income Brackets
-- [`get_income_brackets()`](https://pkg.emburden.org/reference/get_income_brackets.md)
+- [`get_income_brackets()`](https://emburden.org/reference/get_income_brackets.md)
   : Get Available Income Brackets for a Dataset and Vintage
-- [`list_states()`](https://pkg.emburden.org/reference/list_states.md) :
+- [`list_states()`](https://emburden.org/reference/list_states.md) :
   List Available States
-- [`list_cohort_columns()`](https://pkg.emburden.org/reference/list_cohort_columns.md)
+- [`list_cohort_columns()`](https://emburden.org/reference/list_cohort_columns.md)
   : List Available Columns in Cohort Data
-- [`get_dataset_info()`](https://pkg.emburden.org/reference/get_dataset_info.md)
+- [`get_dataset_info()`](https://emburden.org/reference/get_dataset_info.md)
   : Get Dataset Information
 
 ## Statistical Analysis
 
 Weighted aggregation and group-level calculations
 
-- [`calculate_weighted_metrics()`](https://pkg.emburden.org/reference/calculate_weighted_metrics.md)
+- [`calculate_weighted_metrics()`](https://emburden.org/reference/calculate_weighted_metrics.md)
   : Calculate Weighted Metrics for Energy Burden Analysis
-- [`compare_energy_burden()`](https://pkg.emburden.org/reference/compare_energy_burden.md)
+- [`compare_energy_burden()`](https://emburden.org/reference/compare_energy_burden.md)
   : Compare Energy Burden Between Years
-- [`print(`*`<energy_burden_comparison>`*`)`](https://pkg.emburden.org/reference/print.energy_burden_comparison.md)
+- [`print(`*`<energy_burden_comparison>`*`)`](https://emburden.org/reference/print.energy_burden_comparison.md)
   : Print Comparison Summary
 
 ## Formatting Utilities
 
 Format numbers for publication-ready tables
 
-- [`to_percent()`](https://pkg.emburden.org/reference/to_percent.md) :
+- [`to_percent()`](https://emburden.org/reference/to_percent.md) :
   Format Number as Percentage
-- [`to_dollar()`](https://pkg.emburden.org/reference/to_dollar.md) :
-  Format Number as Dollar Amount
-- [`to_big()`](https://pkg.emburden.org/reference/to_big.md) : Format
-  Large Numbers with Thousand Separators
-- [`to_million()`](https://pkg.emburden.org/reference/to_million.md) :
+- [`to_dollar()`](https://emburden.org/reference/to_dollar.md) : Format
+  Number as Dollar Amount
+- [`to_big()`](https://emburden.org/reference/to_big.md) : Format Large
+  Numbers with Thousand Separators
+- [`to_million()`](https://emburden.org/reference/to_million.md) :
   Format Numbers in Millions
-- [`to_billion_dollar()`](https://pkg.emburden.org/reference/to_billion_dollar.md)
+- [`to_billion_dollar()`](https://emburden.org/reference/to_billion_dollar.md)
   : Format Dollar Amounts in Billions
-- [`colorize()`](https://pkg.emburden.org/reference/colorize.md) :
-  Colorize Text for Knitted Documents
+- [`colorize()`](https://emburden.org/reference/colorize.md) : Colorize
+  Text for Knitted Documents
 
 ## Sample Data
 
 Bundled datasets for examples and testing
 
-- [`orange_county_sample`](https://pkg.emburden.org/reference/orange_county_sample.md)
+- [`orange_county_sample`](https://emburden.org/reference/orange_county_sample.md)
   : Orange County NC Energy Burden Sample Data
-- [`nc_sample`](https://pkg.emburden.org/reference/nc_sample.md) : North
+- [`nc_sample`](https://emburden.org/reference/nc_sample.md) : North
   Carolina Complete Energy Burden Sample Data
 
 # Articles
@@ -643,12 +643,11 @@ Bundled datasets for examples and testing
 ### Tutorials
 
 - [Getting Started with
-  emburden](https://pkg.emburden.org/articles/getting-started.md):
+  emburden](https://emburden.org/articles/getting-started.md):
 - [Net Energy Return
-  Methodology](https://pkg.emburden.org/articles/methodology.md):
+  Methodology](https://emburden.org/articles/methodology.md):
 
 ### Package Documentation
 
 - [emburden: Temporal Analysis of Household Energy Burden Using Net
-  Energy Return
-  Metrics](https://pkg.emburden.org/articles/jss-emburden.md):
+  Energy Return Metrics](https://emburden.org/articles/jss-emburden.md):

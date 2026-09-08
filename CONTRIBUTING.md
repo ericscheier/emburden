@@ -109,7 +109,7 @@ gh pr create --base dev --head feature/my-new-feature
 
 **For detailed information about the branching strategy, promotion
 workflows, and release process, see
-[.github/BRANCHING_STRATEGY.md](https://pkg.emburden.org/BRANCHING_STRATEGY.md).**
+[.github/BRANCHING_STRATEGY.md](https://emburden.org/BRANCHING_STRATEGY.md).**
 
 Key points for contributors:
 
@@ -480,7 +480,7 @@ Your changes will follow this promotion path:
 5.  **Submitted to CRAN** - Available for `install.packages("emburden")`
 
 See
-[.github/BRANCHING_STRATEGY.md](https://pkg.emburden.org/BRANCHING_STRATEGY.md)
+[.github/BRANCHING_STRATEGY.md](https://emburden.org/BRANCHING_STRATEGY.md)
 for details on the promotion process.
 
 ## Development Workflow Example

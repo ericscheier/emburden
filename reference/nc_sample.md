@@ -74,7 +74,7 @@ Tool
 
 This sample data provides full state coverage for more comprehensive
 analysis, testing, and demonstrations. For lightweight quick demos, see
-[`orange_county_sample`](https://pkg.emburden.org/reference/orange_county_sample.md).
+[`orange_county_sample`](https://emburden.org/reference/orange_county_sample.md).
 
 **North Carolina** (all 100 counties):
 
@@ -92,16 +92,16 @@ analysis, testing, and demonstrations. For lightweight quick demos, see
 
 ## See also
 
-- [`orange_county_sample`](https://pkg.emburden.org/reference/orange_county_sample.md) -
+- [`orange_county_sample`](https://emburden.org/reference/orange_county_sample.md) -
   Lightweight sample (94 KB) for quick demos
 
-- [`load_cohort_data`](https://pkg.emburden.org/reference/load_cohort_data.md) -
+- [`load_cohort_data`](https://emburden.org/reference/load_cohort_data.md) -
   Load data for any state with county filtering
 
-- [`compare_energy_burden`](https://pkg.emburden.org/reference/compare_energy_burden.md) -
+- [`compare_energy_burden`](https://emburden.org/reference/compare_energy_burden.md) -
   Compare energy burden across vintages
 
-- [`calculate_weighted_metrics`](https://pkg.emburden.org/reference/calculate_weighted_metrics.md) -
+- [`calculate_weighted_metrics`](https://emburden.org/reference/calculate_weighted_metrics.md) -
   Calculate weighted metrics with grouping
 
 ## Examples
