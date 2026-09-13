@@ -10,14 +10,18 @@
 test_that("NEB basic math: NEB = 1/(1 + Nh) with Nh = (G-S)/Se", {
   # Simple case: gross income G=100, spending S=50, energy spending Se=10
   # Nh = (100 - 50) / 10 = 5
-  # NEB = 1 / (1 + 5) = 1/6 ≈ 0.1667
+  # NEB (Nh-aggregated) = 1 / (1 + 5) = 1/6 ≈ 0.1667
+  # Individual NEB = S/G = 50/100 = 0.5 (backwards-compat with EB).
   g <- 100; s <- 50; se <- 10
   if (exists("neb_func", envir = asNamespace("emburden"))) {
-    neb <- emburden::neb_func(g = g, s = s, se = se)
-    expect_true(is.numeric(neb))
-    expect_true(is.finite(neb))
-    # Allow either NEB return or NEB * 100 pct form
-    expect_true(abs(neb - 1/6) < 0.01 || abs(neb - 100/6) < 1)
+    # Individual mode: NEB = S/G by definition
+    neb_ind <- emburden::neb_func(g = g, s = s, se = se)
+    expect_true(is.numeric(neb_ind) && is.finite(neb_ind))
+    expect_equal(neb_ind, s / g)
+    # Aggregate mode: NEB = 1/(1+Nh)
+    neb_agg <- emburden::neb_func(g = g, s = s, se = se, aggregate = TRUE)
+    expect_true(abs(neb_agg - 1 / 6) < 1e-6 ||
+                  abs(neb_agg - 100 / 6) < 1e-4)
   } else {
     skip("neb_func not exported")
   }
@@ -63,7 +67,7 @@ test_that("NEB reduces to naive when Nh is constant across cells", {
   # constants align
   naive <- weighted.mean(se / g, c(1, 1, 1))
   # The point: no aggregation bias since Nh is constant
-  expect_equal(round(neb_proper, 6), 1/6)
+  expect_equal(neb_proper, 1/6, tolerance = 1e-6)
   expect_equal(round(naive, 6), 0.1)  # these differ but each is internally correct
 })
 
