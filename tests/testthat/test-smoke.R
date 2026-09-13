@@ -9,8 +9,8 @@ test_that("package emburden can be loaded", {
 
 test_that("15 flagship exports exist as callable objects", {
   # Each export should resolve to a real object in the package namespace
-  expect_true(exists(""%>%"", envir = asNamespace("emburden")),
-              info = ""%>%" should be exported from emburden")
+  expect_true(exists("%>%", envir = asNamespace("emburden")),
+              info = "pipe operator %>% should be exported from emburden")
   expect_true(exists("calculate_weighted_metrics", envir = asNamespace("emburden")),
               info = "calculate_weighted_metrics should be exported from emburden")
   expect_true(exists("check_data_sources", envir = asNamespace("emburden")),
@@ -43,9 +43,9 @@ test_that("15 flagship exports exist as callable objects", {
 
 test_that("exports are functions or expected data objects", {
   ns <- asNamespace("emburden")
-  obj <- get(""%>%"", envir = ns)
+  obj <- get("%>%", envir = ns)
   expect_true(is.function(obj) || is.list(obj) || is.character(obj) || is.numeric(obj) || is.data.frame(obj),
-              info = ""%>%" should be a function or a data object")
+              info = "pipe operator %>% should be a function or a data object")
   obj <- get("calculate_weighted_metrics", envir = ns)
   expect_true(is.function(obj) || is.list(obj) || is.character(obj) || is.numeric(obj) || is.data.frame(obj),
               info = "calculate_weighted_metrics should be a function or a data object")
