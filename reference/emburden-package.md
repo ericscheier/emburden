@@ -20,4 +20,9 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Eric Scheier <eric@scheier.org> \[copyright holder\]
+**Maintainer**: The Emergi Foundation <info@emburden.org>
+
+Authors:
+
+- Eric Scheier ([ORCID](https://orcid.org/0000-0001-9849-9089))
+  \[copyright holder\]
