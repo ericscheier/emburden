@@ -18,7 +18,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Eric Scheier \email{eric@scheier.org} [copyright holder]
+\strong{Maintainer}: The Emergi Foundation \email{info@emburden.org}
+
+Authors:
+\itemize{
+  \item Eric Scheier (\href{https://orcid.org/0000-0001-9849-9089}{ORCID}) [copyright holder]
+}
 
 }
 \keyword{internal}

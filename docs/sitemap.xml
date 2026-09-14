@@ -8,20 +8,13 @@
 <url><loc>https://pkg.emburden.org/RELEASE_WORKFLOW.html</loc></url>
 <url><loc>https://pkg.emburden.org/TESTING_REPORT.html</loc></url>
 <url><loc>https://pkg.emburden.org/WORKFLOW-DEPLOYMENT-GUIDE.html</loc></url>
-<url><loc>https://pkg.emburden.org/access.html</loc></url>
 <url><loc>https://pkg.emburden.org/articles/getting-started.html</loc></url>
 <url><loc>https://pkg.emburden.org/articles/index.html</loc></url>
 <url><loc>https://pkg.emburden.org/articles/jss-emburden.html</loc></url>
 <url><loc>https://pkg.emburden.org/articles/methodology.html</loc></url>
-<url><loc>https://pkg.emburden.org/atlas.html</loc></url>
 <url><loc>https://pkg.emburden.org/authors.html</loc></url>
-<url><loc>https://pkg.emburden.org/code.html</loc></url>
-<url><loc>https://pkg.emburden.org/data.html</loc></url>
-<url><loc>https://pkg.emburden.org/emergy.html</loc></url>
 <url><loc>https://pkg.emburden.org/index.html</loc></url>
-<url><loc>https://pkg.emburden.org/methods.html</loc></url>
 <url><loc>https://pkg.emburden.org/news/index.html</loc></url>
-<url><loc>https://pkg.emburden.org/papers.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/aggregate_cohort_data.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/backup_db.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/cache_utils.html</loc></url>
@@ -36,6 +29,9 @@
 <url><loc>https://pkg.emburden.org/reference/dear_func.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/delete_db.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/detect_database_corruption.html</loc></url>
+<url><loc>https://pkg.emburden.org/reference/dot-extract_county_fips.html</loc></url>
+<url><loc>https://pkg.emburden.org/reference/dot-extract_state_fips.html</loc></url>
+<url><loc>https://pkg.emburden.org/reference/dot-pad_fips.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/download_and_merge_states.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/download_census_tract_data.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/download_from_zenodo.html</loc></url>
@@ -85,7 +81,5 @@
 <url><loc>https://pkg.emburden.org/reference/try_load_tracts_from_csv.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/try_load_tracts_from_database.html</loc></url>
 <url><loc>https://pkg.emburden.org/reference/validate_before_caching.html</loc></url>
-<url><loc>https://pkg.emburden.org/site_libs/jqueryui-1.13.2/index.html</loc></url>
-<url><loc>https://pkg.emburden.org/styles/head_extras.html</loc></url>
 </urlset>
 
