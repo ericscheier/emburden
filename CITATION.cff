@@ -1,0 +1,30 @@
+# Machine-readable citation metadata (Citation File Format v1.2.0).
+# https://citation-file-format.github.io/
+cff-version: 1.2.0
+message: "If you use emburden in academic work, please cite as below."
+title: emburden
+abstract: >-
+  Core Net-Energy-Return household energy burden analysis for the US. Part of the emburden ecosystem, stewarded for public
+  release by the Emergi Foundation. See https://emburden.org for the
+  companion research site and https://emrgi.org for the Foundation.
+type: software
+license: AGPL-3.0-or-later
+url: https://emburden.org
+# repository-code moves to github.com/emergi-foundation/emburden
+# on first tagged release; kept at Mirror tier until then.
+repository-code: https://github.com/ericscheier/emburden
+repository: https://github.com/emergi-foundation/emburden
+authors:
+  - name: Emergi Foundation
+    email: info@emrgi.org
+    website: https://emrgi.org
+    orcid: https://orcid.org/0000-0002-6628-1389
+identifiers:
+  # Populated on first Zenodo release.
+  - type: url
+    value: https://github.com/emergi-foundation
+    description: Foundation home
+keywords:
+  - energy-burden
+  - open-science
+  - energy-poverty
