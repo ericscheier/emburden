@@ -1,0 +1,12 @@
+# git-mailmap — aliases the raw commit-author record for display.
+# Does NOT rewrite history; only affects how `git log`, `git shortlog`,
+# and GitHub's contributor UI display commit authors.
+#
+# Format: <canonical name> <canonical email> <legacy email>
+# See https://git-scm.com/docs/gitmailmap
+#
+# Enable once info@emburden.org is the intended canonical identity.
+# Kept in place, unactivated, until then. Uncomment by removing the
+# leading '#' on the line below.
+#
+# emburden project <info@emburden.org> <eric@scheier.org>
